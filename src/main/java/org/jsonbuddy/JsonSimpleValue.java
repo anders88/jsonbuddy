@@ -1,8 +1,6 @@
 package org.jsonbuddy;
 
-import org.jsonbuddy.factory.JsonSimpleValueFactory;
-
-public class JsonSimpleValue {
+public class JsonSimpleValue extends JsonNode {
     private final String value;
 
     public JsonSimpleValue(JsonSimpleValueFactory jsonSimpleValueFactory) {

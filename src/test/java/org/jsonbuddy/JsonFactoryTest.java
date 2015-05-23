@@ -1,7 +1,5 @@
 package org.jsonbuddy;
 
-import org.jsonbuddy.factory.JsonFactory;
-import org.jsonbuddy.factory.JsonSimpleValueFactory;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,6 +17,17 @@ public class JsonFactoryTest {
         JsonSimpleValueFactory text = JsonSimpleValueFactory.text("Darth Vader");
         JsonSimpleValue jsonSimpleValue = text.create();
         assertThat(jsonSimpleValue.value()).isEqualTo("Darth Vader");
+
+    }
+
+    @Test
+    public void shouldCreateObjectWithValue() throws Exception {
+        JsonObject jsonObject = JsonObjectFactory.jsonObject()
+                .withValue("name", JsonSimpleValueFactory.text("Darth Vader"))
+                .create();
+
+        assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
+        assertThat(jsonObject.stringValue("xxx").isPresent()).isFalse();
 
     }
 }
