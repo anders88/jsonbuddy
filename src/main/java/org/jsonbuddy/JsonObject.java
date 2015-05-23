@@ -10,7 +10,7 @@ public class JsonObject extends JsonNode {
 
     public JsonObject(JsonObjectFactory jsonObjectFactory) {
         Map<String, JsonNode> nodeMap = jsonObjectFactory.values.entrySet().stream()
-                .collect(Collectors.toMap(en -> en.getKey(), en -> en.getValue().create()));
+                .collect(Collectors.toMap(Map.Entry::getKey, en -> en.getValue().create()));
         values = Collections.unmodifiableMap(nodeMap);
     }
 
