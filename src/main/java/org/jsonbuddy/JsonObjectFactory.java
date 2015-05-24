@@ -15,10 +15,11 @@ public class JsonObjectFactory extends JsonFactory {
         return new JsonObject(this);
     }
 
-    public JsonObjectFactory withValue(String key, JsonSimpleValueFactory text) {
+    public JsonObjectFactory withValue(String key, JsonFactory text) {
         values.put(key,text);
         return this;
     }
+
 
 
 
