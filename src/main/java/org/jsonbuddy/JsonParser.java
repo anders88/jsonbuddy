@@ -1,12 +1,26 @@
 package org.jsonbuddy;
 
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 public class JsonParser {
+    public static JsonNode parse(Reader reader) {
+        JsonParser jsonParser = new JsonParser(reader);
+        JsonFactory jsonFactory = jsonParser.parseValue();
+        return Optional.ofNullable(jsonFactory).map(JsonFactory::create).orElse(null);
+    }
+
+    public static JsonNode parse(InputStream inputStream) {
+        return parse(new InputStreamReader(inputStream));
+    }
+
+    public static JsonNode parse(String input) {
+        return parse(new StringReader(input));
+    }
+
+
     private Reader reader;
     private char lastRead;
     private boolean finished;
@@ -31,11 +45,6 @@ public class JsonParser {
     }
 
 
-    public static JsonNode parse(Reader reader) {
-        JsonParser jsonParser = new JsonParser(reader);
-        JsonFactory jsonFactory = jsonParser.parseValue();
-        return Optional.ofNullable(jsonFactory).map(JsonFactory::create).orElse(null);
-    }
 
     private JsonFactory parseValue() {
         while (!finished) {
