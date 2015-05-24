@@ -4,6 +4,7 @@ package org.jsonbuddy;
 import org.junit.Test;
 
 import java.io.StringReader;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +29,16 @@ public class JsonParserTest {
         JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
         assertThat(jsonObject.stringValue("firstname")).isPresent().contains("Darth");
         assertThat(jsonObject.stringValue("lastname")).isPresent().contains("Vader");
+    }
+
+    @Test
+    public void shouldHandleArrays() throws Exception {
+        StringReader input = new StringReader(fixQuotes("['one','two','three']"));
+        JsonArray array = (JsonArray) JsonParser.parse(input);
+        assertThat(array.nodeStream()
+                .map(n -> ((JsonSimpleValue) n).value())
+                .collect(Collectors.toList()))
+                .containsExactly("one","two","three");
 
     }
 

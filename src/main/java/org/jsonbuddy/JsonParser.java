@@ -17,7 +17,7 @@ public class JsonParser {
     }
 
     private void readNext()  {
-        int read = 0;
+        int read;
         try {
             read = reader.read();
         } catch (IOException e) {
@@ -42,12 +42,25 @@ public class JsonParser {
             switch (lastRead) {
                 case '{':
                     return parseObject();
+                case '[':
+                    return parseArray();
                 case '"':
                     return parseStringValue();
             }
             readNext();
         }
         return null;
+    }
+
+    private JsonArrayFactory parseArray() {
+        JsonArrayFactory jsonArrayFactory = JsonFactory.jsonArray();
+        while (lastRead != ']') {
+            readNext();
+            JsonFactory jsonFactory = parseValue();
+            jsonArrayFactory.add(jsonFactory);
+            readUntil(']',',');
+        }
+        return jsonArrayFactory;
     }
 
     private JsonSimpleValueFactory parseStringValue() {

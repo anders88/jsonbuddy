@@ -18,7 +18,7 @@ public class JsonArrayFactory extends JsonFactory {
         return add(JsonSimpleValueFactory.text(value));
     }
 
-    private JsonArrayFactory add(JsonSimpleValueFactory value) {
+    public JsonArrayFactory add(JsonFactory value) {
         nodes.add(value);
         return this;
     }
