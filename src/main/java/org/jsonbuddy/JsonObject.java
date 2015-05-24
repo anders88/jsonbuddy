@@ -19,4 +19,11 @@ public class JsonObject extends JsonNode {
                 .filter(n -> n instanceof JsonSimpleValue)
                 .map(n -> ((JsonSimpleValue) n).value());
     }
+
+    public Optional<JsonArray> arrayValue(String key) {
+        return Optional.ofNullable(values.get(key))
+                .filter(n -> n instanceof JsonArray)
+                .map(n -> (JsonArray) n);
+
+    }
 }
