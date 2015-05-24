@@ -22,6 +22,15 @@ public class JsonParserTest {
         assertThat(jsonObject.stringValue("name")).isPresent().contains("Darth Vader");
     }
 
+    @Test
+    public void shouldHandleMultipleValuesInObject() throws Exception {
+        StringReader input = new StringReader(fixQuotes("{'firstname':'Darth', 'lastname': 'Vader'}"));
+        JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
+        assertThat(jsonObject.stringValue("firstname")).isPresent().contains("Darth");
+        assertThat(jsonObject.stringValue("lastname")).isPresent().contains("Vader");
+
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }

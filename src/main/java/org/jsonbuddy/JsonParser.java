@@ -58,7 +58,7 @@ public class JsonParser {
 
     private JsonObjectFactory parseObject() {
         JsonObjectFactory jsonObjectFactory = JsonFactory.jsonObject();
-        while (true) {
+        while (lastRead != '}') {
             readUntil('}','"');
             if (lastRead == '}') {
                 return jsonObjectFactory;
@@ -68,8 +68,9 @@ public class JsonParser {
             readUntil(':');
             JsonFactory value = parseValue();
             jsonObjectFactory.withValue(key,value);
-            readNext();
+            readUntil(',','}');
         }
+        return jsonObjectFactory;
     }
 
     private String readUntil(Character... readUntil) {
