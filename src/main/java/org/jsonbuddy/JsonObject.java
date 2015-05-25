@@ -28,6 +28,10 @@ public class JsonObject extends JsonNode {
 
     }
 
+    public Optional<JsonNode> value(String key) {
+        return Optional.ofNullable(values.get(key));
+    }
+
     @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("{");

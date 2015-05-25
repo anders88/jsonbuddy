@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,6 +66,15 @@ public class JsonParserTest {
     public void shouldHandleString() throws Exception {
         JsonObject obj = (JsonObject) JsonParser.parse("{}");
         assertThat(obj).isNotNull();
+
+    }
+
+    @Test
+    public void shouldHandleBoolean() throws Exception {
+        JsonObject jsonObject = (JsonObject) JsonParser.parse(fixQuotes("{'boolVal':false}"));
+        JsonNode boolVal = jsonObject.value("boolVal").get();
+
+        assertThat(boolVal).isInstanceOf(JsonBooleanValue.class);
 
     }
 

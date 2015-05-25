@@ -56,10 +56,26 @@ public class JsonParser {
                     return parseArray();
                 case '"':
                     return parseStringValue();
+                case 't':
+                case 'f':
+                    return parseBooleanValue();
             }
             readNext();
         }
         return null;
+    }
+
+    private JsonSimpleValueFactory<JsonBooleanValue> parseBooleanValue() {
+        boolean isTrue = (lastRead == 't');
+        String expect = isTrue ? "true" : "false";
+        expectValue(expect);
+        return isTrue ? JsonSimpleValueFactory.trueValue() : JsonSimpleValueFactory.falseValue();
+    }
+
+    private void expectValue(String value) {
+        for (int i=0;i<value.length();i++) {
+            readNext();
+        }
     }
 
     private JsonArrayFactory parseArray() {
@@ -73,7 +89,7 @@ public class JsonParser {
         return jsonArrayFactory;
     }
 
-    private JsonSimpleValueFactory parseStringValue() {
+    private JsonSimpleValueFactory<JsonTextValue> parseStringValue() {
         readNext();
         String value = readUntil('"');
         return JsonSimpleValueFactory.text(value);
