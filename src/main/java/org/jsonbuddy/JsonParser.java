@@ -70,18 +70,21 @@ public class JsonParser {
         return null;
     }
 
-    private static enum NumberParseStage {
-        INTEGER,DECIMAL,EXPONENT;
-    }
 
     private JsonFactory parseNumberValue() {
         StringBuilder val = new StringBuilder();
-        while (Character.isDigit(lastRead)) {
+        boolean isDouble = false;
+        while (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead)) {
+            isDouble = isDouble || ".eE".contains("" + lastRead);
             val.append(lastRead);
             readNext();
         }
+        if (isDouble) {
+            return JsonSimpleValueFactory.doubleNumber(Double.parseDouble(val.toString()));
+        }
         return JsonSimpleValueFactory.longNumber(Long.parseLong(val.toString()));
     }
+
 
     private JsonSimpleValueFactory<JsonNullValue> parseNullValue() {
         expectValue("null");

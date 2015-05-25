@@ -96,10 +96,7 @@ public class JsonParserTest {
     }
 
     @Test
-    @Ignore
     public void shouldHandleComplexNumbers() throws Exception {
-        double v = Double.parseDouble("2.5e3");
-        assertThat(v).isEqualTo(2500d);
         JsonObject jsonObject = JsonParser.parse(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}")).as(JsonObject.class);
         assertThat(jsonObject.value("a").get().as(JsonLong.class).longValue()).isEqualTo(-1);
         assertThat(jsonObject.value("b").get().as(JsonDouble.class).doubleValue()).isEqualTo(3.14d);

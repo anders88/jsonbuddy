@@ -16,7 +16,7 @@ public class JsonSimpleValueFactory<T extends JsonSimpleValue> extends JsonFacto
     }
 
     public static JsonSimpleValueFactory<JsonDouble> doubleNumber(double value) {
-        return new JsonSimpleValueFactory<>(new JsonDouble(value,0L));
+        return new JsonSimpleValueFactory<>(new JsonDouble(value));
     }
 
     public static JsonSimpleValueFactory<JsonBooleanValue> trueValue() {

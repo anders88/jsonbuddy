@@ -5,28 +5,22 @@ import java.text.NumberFormat;
 
 public class JsonDouble extends JsonSimpleValue {
     private final double value;
-    private final long exp;
 
-    JsonDouble(double value, long exp) {
+    JsonDouble(double value) {
         this.value = value;
-        this.exp = exp;
     }
 
     @Override
     public String stringValue() {
-        return Double.toString(Math.pow(value,exp));
+        return Double.toString(value);
     }
 
     @Override
     public void toJson(PrintWriter printWriter) {
-        printWriter.append(NumberFormat.getInstance().format(value));
-        if (exp != 1L) {
-            printWriter.append("e");
-            printWriter.append(Long.toString(exp));
-        }
+        printWriter.append(stringValue());
     }
 
     public double doubleValue() {
-        return exp == 1d ? value : Math.pow(value,exp);
+        return value;
     }
 }
