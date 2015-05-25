@@ -25,4 +25,8 @@ public class JsonDouble extends JsonSimpleValue {
             printWriter.append(Long.toString(exp));
         }
     }
+
+    public double doubleValue() {
+        return exp == 1d ? value : Math.pow(value,exp);
+    }
 }

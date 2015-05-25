@@ -12,4 +12,11 @@ public abstract class JsonNode {
 
     public abstract void toJson(PrintWriter printWriter);
 
+    public <T> T as(Class<T> clazz) {
+        if (!clazz.isInstance(this)) {
+            throw new ClassCastException();
+        }
+        return (T) this;
+    }
+
 }

@@ -70,6 +70,10 @@ public class JsonParser {
         return null;
     }
 
+    private static enum NumberParseStage {
+        INTEGER,DECIMAL,EXPONENT;
+    }
+
     private JsonFactory parseNumberValue() {
         StringBuilder val = new StringBuilder();
         while (Character.isDigit(lastRead)) {

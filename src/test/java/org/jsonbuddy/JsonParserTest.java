@@ -1,12 +1,12 @@
 package org.jsonbuddy;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,11 +88,22 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleInteger() throws Exception {
-        JsonObject jsonObject = (JsonObject) JsonParser.parse(fixQuotes("{'theMeaning':42}"));
+        JsonObject jsonObject = JsonParser.parse(fixQuotes("{'theMeaning':42}")).as(JsonObject.class);
         JsonNode theMeaning = jsonObject.value("theMeaning").get();
         assertThat(theMeaning).isInstanceOf(JsonLong.class);
         JsonLong longval = (JsonLong) theMeaning;
         assertThat(longval.longValue()).isEqualTo(42);
+    }
+
+    @Test
+    @Ignore
+    public void shouldHandleComplexNumbers() throws Exception {
+        double v = Double.parseDouble("2.5e3");
+        assertThat(v).isEqualTo(2500d);
+        JsonObject jsonObject = JsonParser.parse(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}")).as(JsonObject.class);
+        assertThat(jsonObject.value("a").get().as(JsonLong.class).longValue()).isEqualTo(-1);
+        assertThat(jsonObject.value("b").get().as(JsonDouble.class).doubleValue()).isEqualTo(3.14d);
+        assertThat(jsonObject.value("c").get().as(JsonDouble.class).doubleValue()).isEqualTo(2500d);
 
     }
 
