@@ -1,5 +1,6 @@
 package org.jsonbuddy;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -25,5 +26,23 @@ public class JsonObject extends JsonNode {
                 .filter(n -> n instanceof JsonArray)
                 .map(n -> (JsonArray) n);
 
+    }
+
+    @Override
+    public void toJson(PrintWriter printWriter) {
+        printWriter.append("{");
+        boolean notFirst = false;
+        for (Map.Entry<String,JsonNode> entry : values.entrySet()) {
+            if (notFirst) {
+                printWriter.append(",");
+            }
+            notFirst = true;
+            printWriter.append('"');
+            printWriter.append(entry.getKey());
+            printWriter.append("\":");
+            entry.getValue().toJson(printWriter);
+        }
+
+        printWriter.append("}");
     }
 }

@@ -12,6 +12,7 @@ public class JsonParser {
         return Optional.ofNullable(jsonFactory).map(JsonFactory::create).orElse(null);
     }
 
+
     public static JsonNode parse(InputStream inputStream) {
         return parse(new InputStreamReader(inputStream));
     }

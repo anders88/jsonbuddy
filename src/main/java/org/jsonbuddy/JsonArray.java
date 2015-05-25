@@ -1,5 +1,6 @@
 package org.jsonbuddy;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,5 +16,10 @@ public class JsonArray extends JsonNode {
 
     public Stream<JsonNode> nodeStream() {
         return values.stream();
+    }
+
+    @Override
+    public void toJson(PrintWriter printWriter) {
+
     }
 }

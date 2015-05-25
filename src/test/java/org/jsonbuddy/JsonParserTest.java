@@ -3,6 +3,7 @@ package org.jsonbuddy;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -54,7 +55,22 @@ public class JsonParserTest {
 
     }
 
+    @Test
+    public void shouldHandleInputStream() throws Exception {
+        JsonObject obj = (JsonObject) JsonParser.parse(new ByteArrayInputStream("{}".getBytes()));
+        assertThat(obj).isNotNull();
+    }
+
+    @Test
+    public void shouldHandleString() throws Exception {
+        JsonObject obj = (JsonObject) JsonParser.parse("{}");
+        assertThat(obj).isNotNull();
+
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }
+
+
 }
