@@ -38,7 +38,7 @@ public class JsonParserTest {
         StringReader input = new StringReader(fixQuotes("['one','two','three']"));
         JsonArray array = (JsonArray) JsonParser.parse(input);
         assertThat(array.nodeStream()
-                .map(n -> ((JsonSimpleValue) n).value())
+                .map(n -> ((JsonSimpleValue) n).stringValue())
                 .collect(Collectors.toList()))
                 .containsExactly("one", "two", "three");
 
@@ -49,7 +49,7 @@ public class JsonParserTest {
         StringReader input = new StringReader(fixQuotes("{'name':'Anakin','children':['Luke','Leia']}"));
         JsonObject vader = (JsonObject) JsonParser.parse(input);
         List<String> children = vader.arrayValue("children").get().nodeStream()
-                .map(n -> ((JsonSimpleValue) n).value())
+                .map(n -> ((JsonSimpleValue) n).stringValue())
                 .collect(Collectors.toList());
         assertThat(children).containsExactly("Luke","Leia");
 

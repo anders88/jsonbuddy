@@ -9,7 +9,7 @@ public class JsonSimpleValue extends JsonNode {
         this.value = jsonSimpleValueFactory.getValue();
     }
 
-    public String value() {
+    public String stringValue() {
         return value;
     }
 

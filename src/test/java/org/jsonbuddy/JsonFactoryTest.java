@@ -18,7 +18,7 @@ public class JsonFactoryTest {
     public void shouldCreateValue() throws Exception {
         JsonSimpleValueFactory text = JsonSimpleValueFactory.text("Darth Vader");
         JsonSimpleValue jsonSimpleValue = text.create();
-        assertThat(jsonSimpleValue.value()).isEqualTo("Darth Vader");
+        assertThat(jsonSimpleValue.stringValue()).isEqualTo("Darth Vader");
 
     }
 
@@ -40,7 +40,7 @@ public class JsonFactoryTest {
                 .add("Luke")
                 .create();
         assertThat(jsonArray.nodeStream()
-                .map(an -> ((JsonSimpleValue) an).value())
+                .map(an -> ((JsonSimpleValue) an).stringValue())
                 .collect(Collectors.toList())).containsExactly("Darth","Luke");
     }
 }

@@ -18,7 +18,7 @@ public class JsonObject extends JsonNode {
     public Optional<String> stringValue(String key) {
         return Optional.ofNullable(values.get(key))
                 .filter(n -> n instanceof JsonSimpleValue)
-                .map(n -> ((JsonSimpleValue) n).value());
+                .map(n -> ((JsonSimpleValue) n).stringValue());
     }
 
     public Optional<JsonArray> arrayValue(String key) {
