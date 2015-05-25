@@ -6,10 +6,6 @@ public abstract class JsonFactory {
         return new JsonObjectFactory();
     }
 
-    public static JsonSimpleValueFactory text(String value) {
-        return JsonSimpleValueFactory.text(value);
-    }
-
     public static JsonArrayFactory jsonArray() {
         return new JsonArrayFactory();
     }
