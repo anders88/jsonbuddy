@@ -84,6 +84,15 @@ public class JsonParserTest {
         JsonNode nullVal = jsonObject.value("boolVal").get();
 
         assertThat(nullVal).isInstanceOf(JsonNullValue.class);
+    }
+
+    @Test
+    public void shouldHandleInteger() throws Exception {
+        JsonObject jsonObject = (JsonObject) JsonParser.parse(fixQuotes("{'theMeaning':42}"));
+        JsonNode theMeaning = jsonObject.value("theMeaning").get();
+        assertThat(theMeaning).isInstanceOf(JsonLong.class);
+        JsonLong longval = (JsonLong) theMeaning;
+        assertThat(longval.longValue()).isEqualTo(42);
 
     }
 

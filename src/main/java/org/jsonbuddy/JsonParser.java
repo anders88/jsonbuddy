@@ -62,9 +62,21 @@ public class JsonParser {
                 case 'n':
                     return parseNullValue();
             }
+            if (lastRead == '-' || Character.isDigit(lastRead)) {
+                return parseNumberValue();
+            }
             readNext();
         }
         return null;
+    }
+
+    private JsonFactory parseNumberValue() {
+        StringBuilder val = new StringBuilder();
+        while (Character.isDigit(lastRead)) {
+            val.append(lastRead);
+            readNext();
+        }
+        return JsonSimpleValueFactory.longNumber(Long.parseLong(val.toString()));
     }
 
     private JsonSimpleValueFactory<JsonNullValue> parseNullValue() {

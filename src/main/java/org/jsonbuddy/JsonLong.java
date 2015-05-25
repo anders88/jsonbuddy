@@ -19,4 +19,8 @@ public class JsonLong extends JsonSimpleValue {
     public void toJson(PrintWriter printWriter) {
         printWriter.append(stringValue());
     }
+
+    public long longValue() {
+        return value;
+    }
 }
