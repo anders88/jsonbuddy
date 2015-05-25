@@ -75,6 +75,15 @@ public class JsonParserTest {
         JsonNode boolVal = jsonObject.value("boolVal").get();
 
         assertThat(boolVal).isInstanceOf(JsonBooleanValue.class);
+        assertThat(((JsonBooleanValue) boolVal).boolValue()).isFalse();
+    }
+
+    @Test
+    public void shouldHandleNull() throws Exception {
+        JsonObject jsonObject = (JsonObject) JsonParser.parse(fixQuotes("{'boolVal':null}"));
+        JsonNode nullVal = jsonObject.value("boolVal").get();
+
+        assertThat(nullVal).isInstanceOf(JsonNullValue.class);
 
     }
 

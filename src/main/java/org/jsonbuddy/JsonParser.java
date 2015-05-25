@@ -59,10 +59,17 @@ public class JsonParser {
                 case 't':
                 case 'f':
                     return parseBooleanValue();
+                case 'n':
+                    return parseNullValue();
             }
             readNext();
         }
         return null;
+    }
+
+    private JsonSimpleValueFactory<JsonNullValue> parseNullValue() {
+        expectValue("null");
+        return JsonSimpleValueFactory.nullValue();
     }
 
     private JsonSimpleValueFactory<JsonBooleanValue> parseBooleanValue() {

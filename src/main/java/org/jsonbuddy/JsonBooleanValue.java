@@ -18,4 +18,8 @@ public class JsonBooleanValue extends JsonSimpleValue {
     public void toJson(PrintWriter printWriter) {
         printWriter.append(stringValue());
     }
+
+    public boolean boolValue() {
+        return value;
+    }
 }
