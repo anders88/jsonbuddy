@@ -20,6 +20,15 @@ public class JsonArray extends JsonNode {
 
     @Override
     public void toJson(PrintWriter printWriter) {
-
+        printWriter.append("[");
+        boolean notFirst = false;
+        for (JsonNode node : values) {
+            if (notFirst) {
+                printWriter.append(",");
+            }
+            notFirst = true;
+            node.toJson(printWriter);
+        }
+        printWriter.append("]");
     }
 }

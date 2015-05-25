@@ -10,6 +10,12 @@ public class ToJsonTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", JsonSimpleValueFactory.text("Darth Vader")).create();
 
         assertThat(jsonObject.toJson()).isEqualTo(fixQuotes("{'name':'Darth Vader'}"));
+    }
+
+    @Test
+    public void shouldHandleArrays() throws Exception {
+        JsonArray jsonArray = JsonFactory.jsonArray().add("Luke").add("Leia").create();
+        assertThat(jsonArray.toJson()).isEqualTo(fixQuotes("['Luke','Leia']"));
 
     }
 

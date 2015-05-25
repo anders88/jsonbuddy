@@ -12,5 +12,4 @@ public abstract class JsonNode {
 
     public abstract void toJson(PrintWriter printWriter);
 
-    ;
 }
