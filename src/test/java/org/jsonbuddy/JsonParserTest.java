@@ -104,6 +104,15 @@ public class JsonParserTest {
 
     }
 
+    @Test
+    public void shouldHandleSpecialCharacters() throws Exception {
+        String input = fixQuotes("{'aval':'quoute:\\\" newline\nrest'}");
+        JsonObject val = JsonParser.parse(input).as(JsonObject.class);
+
+        assertThat(val.stringValue("aval").get()).isEqualTo("quoute:\" newline\nrest");
+
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }

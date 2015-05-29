@@ -117,7 +117,7 @@ public class JsonParser {
 
     private JsonSimpleValueFactory<JsonTextValue> parseStringValue() {
         readNext();
-        String value = readUntil('"');
+        String value = readText();
         return JsonSimpleValueFactory.text(value);
     }
 
@@ -136,6 +136,48 @@ public class JsonParser {
             readUntil(',','}');
         }
         return jsonObjectFactory;
+    }
+
+    private String readText() {
+        StringBuilder res = new StringBuilder();
+        while (!(finished || lastRead == '"')) {
+            if (lastRead == '\\') {
+                readNext();
+                if (finished) {
+                    // Todo this is error
+                    break;
+                }
+                switch (lastRead) {
+                    case '"':
+                        res.append("\"");
+                        break;
+                    case '\\':
+                        res.append("\\");
+                        break;
+                    case '/':
+                        res.append("/");
+                        break;
+                    case 'b':
+                        res.append("\b");
+                        break;
+                    case 'f':
+                        res.append("\f");
+                        break;
+                    case 'n':
+                        res.append("\n");
+                        break;
+                    case 't':
+                        res.append("\t");
+                        break;
+                    case 'u':
+                        throw new RuntimeException("\\u Not supported yet");
+                }
+            } else {
+                res.append(lastRead);
+            }
+            readNext();
+        }
+        return res.toString();
     }
 
     private String readUntil(Character... readUntil) {
