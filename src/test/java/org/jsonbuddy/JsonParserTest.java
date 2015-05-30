@@ -116,6 +116,10 @@ public class JsonParserTest {
     public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
         validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
         validateException("['Luke'", "JsonArray not closed. Expected ]");
+        validateException("{'name':'Luke}", "JsonObject not closed. Expected }");
+        validateException("{'name'}", "Expected value for objectkey name");
+
+
 
 
     }
