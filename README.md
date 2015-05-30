@@ -27,6 +27,11 @@ The following list is not complete
 - Javadoc for core functions
 - Parse from and to POJOs
 
+# Version history
+Version | Description
+---------------------
+0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
+
 # Licence
 Copyright © 2015 Anders Karlsen
 
