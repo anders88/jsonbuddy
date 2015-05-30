@@ -1,7 +1,6 @@
 package org.jsonbuddy;
 
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class JsonParserTest {
 
@@ -110,7 +110,23 @@ public class JsonParserTest {
         JsonObject val = JsonParser.parse(input).as(JsonObject.class);
 
         assertThat(val.stringValue("aval").get()).isEqualTo("quoute:\" newline\nrest");
+    }
 
+    @Test
+    public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
+        validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
+        validateException("['Luke'", "JsonArray not closed. Expected ]");
+
+
+    }
+
+    private void validateException(String json, String errormessage) {
+        try {
+            JsonParser.parse(fixQuotes(json));
+            fail("Expected exception");
+        } catch (JsonParseException e) {
+            assertThat(e.getMessage()).isEqualTo(errormessage);
+        }
     }
 
     private static String fixQuotes(String content) {

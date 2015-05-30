@@ -6,18 +6,18 @@ import java.util.List;
 import java.util.Optional;
 
 public class JsonParser {
-    public static JsonNode parse(Reader reader) {
+    public static JsonNode parse(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         JsonFactory jsonFactory = jsonParser.parseValue();
         return Optional.ofNullable(jsonFactory).map(JsonFactory::create).orElse(null);
     }
 
 
-    public static JsonNode parse(InputStream inputStream) {
+    public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
         return parse(new InputStreamReader(inputStream));
     }
 
-    public static JsonNode parse(String input) {
+    public static JsonNode parse(String input) throws JsonParseException  {
         return parse(new StringReader(input));
     }
 
@@ -106,11 +106,14 @@ public class JsonParser {
 
     private JsonArrayFactory parseArray() {
         JsonArrayFactory jsonArrayFactory = JsonFactory.jsonArray();
-        while (lastRead != ']') {
+        while (!(finished || lastRead == ']')) {
             readNext();
             JsonFactory jsonFactory = parseValue();
             jsonArrayFactory.add(jsonFactory);
             readUntil(']',',');
+        }
+        if (finished) {
+            throw new JsonParseException("JsonArray not closed. Expected ]");
         }
         return jsonArrayFactory;
     }
@@ -123,7 +126,7 @@ public class JsonParser {
 
     private JsonObjectFactory parseObject() {
         JsonObjectFactory jsonObjectFactory = JsonFactory.jsonObject();
-        while (lastRead != '}') {
+        while (!(finished || lastRead == '}')) {
             readUntil('}','"');
             if (lastRead == '}') {
                 return jsonObjectFactory;
@@ -134,6 +137,9 @@ public class JsonParser {
             JsonFactory value = parseValue();
             jsonObjectFactory.withValue(key,value);
             readUntil(',','}');
+        }
+        if (finished) {
+            throw new JsonParseException("JsonObject not closed. Expected }");
         }
         return jsonObjectFactory;
     }
