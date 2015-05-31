@@ -120,8 +120,7 @@ public class JsonParserTest {
         validateException("{'name'}", "Expected value for objectkey name");
         validateException("{'name' 'Darth'","Expected value for objectkey name");
         validateException("[1 2]","Expected , or ] in array");
-
-
+        validateException("{'dummy':2gh}","Illegal value 2g");
     }
 
     private void validateException(String json, String errormessage) {
