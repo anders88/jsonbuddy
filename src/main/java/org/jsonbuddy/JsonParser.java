@@ -110,10 +110,10 @@ public class JsonParser {
             readNext();
             JsonFactory jsonFactory = parseValue();
             jsonArrayFactory.add(jsonFactory);
-            readUntil("JsonArray not closed. Expected ]", ']', ',');
+            readSpaceUntil("Expected , or ] in array", ']', ',');
         }
         if (finished) {
-            throw new JsonParseException("JsonArray not closed. Expected ]");
+            throw new JsonParseException("Expected , or ] in array");
         }
         return jsonArrayFactory;
     }
@@ -127,16 +127,16 @@ public class JsonParser {
     private JsonObjectFactory parseObject() {
         JsonObjectFactory jsonObjectFactory = JsonFactory.jsonObject();
         while (!(finished || lastRead == '}')) {
-            readUntil("JsonObject not closed. Expected }", '}', '"');
+            readSpaceUntil("JsonObject not closed. Expected }", '}', '"');
             if (lastRead == '}') {
                 return jsonObjectFactory;
             }
             readNext();
             String key = readText();
-            readUntil("Expected value for objectkey " + key, ':');
+            readSpaceUntil("Expected value for objectkey " + key, ':');
             JsonFactory value = parseValue();
             jsonObjectFactory.withValue(key,value);
-            readUntil("JsonObject not closed. Expected }", ',', '}');
+            readSpaceUntil("JsonObject not closed. Expected }", ',', '}');
         }
         if (finished) {
             throw new JsonParseException("JsonObject not closed. Expected }");
@@ -186,9 +186,16 @@ public class JsonParser {
         return res.toString();
     }
 
-    private void readUntil(String errormessage,Character... readUntil) {
+    private void readSpaceUntil(String errormessage, Character... readUntil) {
         List<Character> until = Arrays.asList(readUntil);
+        if (until.contains(lastRead)) {
+            return;
+        }
+        readNext();
         while (!(finished || until.contains(lastRead))) {
+            if (!Character.isSpaceChar(lastRead)) {
+                throw new JsonParseException(errormessage);
+            }
             readNext();
         }
         if (finished) {

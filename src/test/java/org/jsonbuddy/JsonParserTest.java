@@ -115,11 +115,11 @@ public class JsonParserTest {
     @Test
     public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
         validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
-        validateException("['Luke'", "JsonArray not closed. Expected ]");
+        validateException("['Luke'", "Expected , or ] in array");
         validateException("{'name':'Luke}", "JsonObject not closed. Expected }");
         validateException("{'name'}", "Expected value for objectkey name");
         validateException("{'name' 'Darth'","Expected value for objectkey name");
-        //validateException("[1 2]","Expected , or ] in array");
+        validateException("[1 2]","Expected , or ] in array");
 
 
     }
