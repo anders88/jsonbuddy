@@ -110,7 +110,7 @@ public class JsonParser {
             readNext();
             JsonFactory jsonFactory = parseValue();
             jsonArrayFactory.add(jsonFactory);
-            readUntil(Optional.of("JsonArray not closed. Expected ]"),']',',');
+            readUntil("JsonArray not closed. Expected ]", ']', ',');
         }
         if (finished) {
             throw new JsonParseException("JsonArray not closed. Expected ]");
@@ -127,16 +127,16 @@ public class JsonParser {
     private JsonObjectFactory parseObject() {
         JsonObjectFactory jsonObjectFactory = JsonFactory.jsonObject();
         while (!(finished || lastRead == '}')) {
-            readUntil(Optional.of("JsonObject not closed. Expected }"),'}','"');
+            readUntil("JsonObject not closed. Expected }", '}', '"');
             if (lastRead == '}') {
                 return jsonObjectFactory;
             }
             readNext();
-            String key = readUntil(Optional.of("Expecting \" to end object key"), '"');
-            readUntil(Optional.of("Expected value for objectkey " + key),':');
+            String key = readText();
+            readUntil("Expected value for objectkey " + key, ':');
             JsonFactory value = parseValue();
             jsonObjectFactory.withValue(key,value);
-            readUntil(Optional.of("JsonObject not closed. Expected }"),',','}');
+            readUntil("JsonObject not closed. Expected }", ',', '}');
         }
         if (finished) {
             throw new JsonParseException("JsonObject not closed. Expected }");
@@ -186,20 +186,13 @@ public class JsonParser {
         return res.toString();
     }
 
-    private String readUntil(Optional<String> errormessage,Character... readUntil) {
+    private void readUntil(String errormessage,Character... readUntil) {
         List<Character> until = Arrays.asList(readUntil);
-        StringBuilder res = new StringBuilder();
         while (!(finished || until.contains(lastRead))) {
-            res.append(lastRead);
             readNext();
         }
         if (finished) {
-            if (errormessage.isPresent()) {
-                throw new JsonParseException(errormessage.get());
-            }
-            String expecting = until.stream().map(c -> "'" + c + "'").reduce((a, b) -> a + "," + b).get();
-            throw new JsonParseException("Expecting one of " + expecting + " before end");
+            throw new JsonParseException(errormessage);
         }
-        return res.toString();
     }
 }

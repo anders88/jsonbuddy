@@ -118,8 +118,8 @@ public class JsonParserTest {
         validateException("['Luke'", "JsonArray not closed. Expected ]");
         validateException("{'name':'Luke}", "JsonObject not closed. Expected }");
         validateException("{'name'}", "Expected value for objectkey name");
-
-
+        validateException("{'name' 'Darth'","Expected value for objectkey name");
+        //validateException("[1 2]","Expected , or ] in array");
 
 
     }
