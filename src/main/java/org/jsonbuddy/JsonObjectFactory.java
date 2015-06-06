@@ -21,6 +21,9 @@ public class JsonObjectFactory extends JsonFactory {
     }
 
 
+    public JsonObjectFactory withValue(String key, String value) {
+        return withValue(key,JsonSimpleValueFactory.text(value));
+    }
 
 
 }

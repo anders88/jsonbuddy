@@ -19,6 +19,12 @@ public class ToJsonTest {
 
     }
 
+    @Test
+    public void shouldHandleSpecialCharacters() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("atext", "o\"ne\ntwo").create();
+        assertThat(jsonObject.toJson()).isEqualTo(fixQuotes("{'atext':'o\\\"ne\\ntwo'}"));
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }
