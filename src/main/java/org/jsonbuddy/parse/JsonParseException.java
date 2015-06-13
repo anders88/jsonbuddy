@@ -1,4 +1,4 @@
-package org.jsonbuddy;
+package org.jsonbuddy.parse;
 
 public class JsonParseException extends RuntimeException {
     public JsonParseException(String message) {

@@ -1,4 +1,6 @@
-package org.jsonbuddy;
+package org.jsonbuddy.parse;
+
+import org.jsonbuddy.*;
 
 import java.io.*;
 import java.util.Arrays;

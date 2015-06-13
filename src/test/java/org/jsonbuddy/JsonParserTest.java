@@ -1,6 +1,8 @@
 package org.jsonbuddy;
 
 
+import org.jsonbuddy.parse.JsonParseException;
+import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
