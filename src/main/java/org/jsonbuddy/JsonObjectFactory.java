@@ -5,18 +5,19 @@ import java.util.Map;
 
 public class JsonObjectFactory extends JsonFactory {
     final Map<String,JsonFactory> values = new HashMap<>();
+    private final JsonObject jsonObject = new JsonObject();
 
-    JsonObjectFactory() {
+    public JsonObjectFactory() {
 
     }
 
     @Override
     public JsonObject create() {
-        return new JsonObject(this);
+        return jsonObject;
     }
 
     public JsonObjectFactory withValue(String key, JsonFactory text) {
-        values.put(key,text);
+        jsonObject.withValue(key,text.create());
         return this;
     }
 

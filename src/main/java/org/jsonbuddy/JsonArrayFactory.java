@@ -4,22 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JsonArrayFactory extends JsonFactory {
-    List<JsonFactory> nodes = new ArrayList<>();
+    private JsonArray jsonArray = new JsonArray();
 
     JsonArrayFactory() {
     }
 
     @Override
     public JsonArray create() {
-        return new JsonArray(this);
+        return jsonArray;
     }
 
     public JsonArrayFactory add(String value) {
-        return add(JsonSimpleValueFactory.text(value));
+        jsonArray.add(JsonSimpleValueFactory.text(value).create());
+        return this;
     }
 
     public JsonArrayFactory add(JsonFactory value) {
-        nodes.add(value);
+        jsonArray.add(value.create());
         return this;
     }
 

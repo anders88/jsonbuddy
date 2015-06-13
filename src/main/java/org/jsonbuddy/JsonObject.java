@@ -2,17 +2,17 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonNode {
-    private final Map<String,JsonNode> values;
+    private final Map<String,JsonNode> values = new HashMap<>();
 
-    public JsonObject(JsonObjectFactory jsonObjectFactory) {
-        Map<String, JsonNode> nodeMap = jsonObjectFactory.values.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, en -> en.getValue().create()));
-        values = Collections.unmodifiableMap(nodeMap);
+
+    public JsonObject() {
+
     }
 
     public Optional<String> stringValue(String key) {
@@ -48,5 +48,10 @@ public class JsonObject extends JsonNode {
         }
 
         printWriter.append("}");
+    }
+
+    public JsonObject withValue(String key, JsonNode jsonNode) {
+        values.put(key,jsonNode);
+        return this;
     }
 }
