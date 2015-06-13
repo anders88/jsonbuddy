@@ -6,7 +6,7 @@ public class JsonLong extends JsonSimpleValue {
 
     private final long value;
 
-    JsonLong(long value) {
+    public JsonLong(long value) {
         this.value = value;
     }
 

@@ -6,7 +6,7 @@ import java.text.NumberFormat;
 public class JsonDouble extends JsonSimpleValue {
     private final double value;
 
-    JsonDouble(double value) {
+    public JsonDouble(double value) {
         this.value = value;
     }
 

@@ -3,13 +3,11 @@ package org.jsonbuddy;
 import java.io.*;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class JsonParser {
     public static JsonNode parse(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
-        JsonFactory jsonFactory = jsonParser.parseValue();
-        return Optional.ofNullable(jsonFactory).map(JsonFactory::create).orElse(null);
+        return jsonParser.parseValue();
     }
 
 
@@ -47,7 +45,7 @@ public class JsonParser {
 
 
 
-    private JsonFactory parseValue() {
+    private JsonNode parseValue() {
         while (!finished) {
             switch (lastRead) {
                 case '{':
@@ -74,7 +72,7 @@ public class JsonParser {
     }
 
 
-    private JsonFactory parseNumberValue() {
+    private JsonSimpleValue parseNumberValue() {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
         while (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead)) {
@@ -86,22 +84,22 @@ public class JsonParser {
             throw new JsonParseException("Illegal value " + val + lastRead);
         }
         if (isDouble) {
-            return JsonSimpleValueFactory.doubleNumber(Double.parseDouble(val.toString()));
+            return new JsonDouble(Double.parseDouble(val.toString()));
         }
-        return JsonSimpleValueFactory.longNumber(Long.parseLong(val.toString()));
+        return new JsonLong(Long.parseLong(val.toString()));
     }
 
 
-    private JsonSimpleValueFactory<JsonNullValue> parseNullValue() {
+    private JsonNullValue parseNullValue() {
         expectValue("null");
-        return JsonSimpleValueFactory.nullValue();
+        return new JsonNullValue();
     }
 
-    private JsonSimpleValueFactory<JsonBooleanValue> parseBooleanValue() {
+    private JsonBooleanValue parseBooleanValue() {
         boolean isTrue = (lastRead == 't');
         String expect = isTrue ? "true" : "false";
         expectValue(expect);
-        return isTrue ? JsonSimpleValueFactory.trueValue() : JsonSimpleValueFactory.falseValue();
+        return new JsonBooleanValue(isTrue);
     }
 
     private void expectValue(String value) {
@@ -110,11 +108,11 @@ public class JsonParser {
         }
     }
 
-    private JsonArrayFactory parseArray() {
-        JsonArrayFactory jsonArrayFactory = JsonFactory.jsonArray();
+    private JsonArray parseArray() {
+        JsonArray jsonArrayFactory = new JsonArray();
         while (!(finished || lastRead == ']')) {
             readNext();
-            JsonFactory jsonFactory = parseValue();
+            JsonNode jsonFactory = parseValue();
             jsonArrayFactory.add(jsonFactory);
             readSpaceUntil("Expected , or ] in array", ']', ',');
         }
@@ -124,18 +122,18 @@ public class JsonParser {
         return jsonArrayFactory;
     }
 
-    private JsonSimpleValueFactory<JsonTextValue> parseStringValue() {
+    private JsonTextValue parseStringValue() {
         readNext();
         String value = readText();
-        return JsonSimpleValueFactory.text(value);
+        return new JsonTextValue(value);
     }
 
-    private JsonObjectFactory parseObject() {
-        JsonObjectFactory jsonObjectFactory = JsonFactory.jsonObject();
+    private JsonObject parseObject() {
+        JsonObject jsonObject = new JsonObject();
         while (!(finished || lastRead == '}')) {
             readSpaceUntil("JsonObject not closed. Expected }", '}', '"');
             if (lastRead == '}') {
-                return jsonObjectFactory;
+                return jsonObject;
             }
             readNext();
             String key = readText();
@@ -144,14 +142,14 @@ public class JsonParser {
             if (finished) {
                 throw new JsonParseException("Expected value for key " + key);
             }
-            JsonFactory value = parseValue();
-            jsonObjectFactory.withValue(key,value);
+            JsonNode value = parseValue();
+            jsonObject.withValue(key, value);
             readSpaceUntil("JsonObject not closed. Expected }", ',', '}');
         }
         if (finished) {
             throw new JsonParseException("JsonObject not closed. Expected }");
         }
-        return jsonObjectFactory;
+        return jsonObject;
     }
 
     private String readText() {

@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 public class JsonTextValue extends JsonSimpleValue {
     private final String value;
 
-    JsonTextValue(String value) {
+    public JsonTextValue(String value) {
         this.value = value;
     }
 
