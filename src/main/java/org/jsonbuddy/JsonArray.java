@@ -33,13 +33,14 @@ public class JsonArray extends JsonNode {
         printWriter.append("]");
     }
 
-    public JsonArray add(JsonTextValue jsonTextValue) {
-        values.add(jsonTextValue);
-        return this;
-    }
 
     public JsonArray add(JsonNode jsonNode) {
         values.add(jsonNode);
+        return this;
+    }
+
+    public JsonArray add(String text) {
+        values.add(new JsonTextValue(text));
         return this;
     }
 }

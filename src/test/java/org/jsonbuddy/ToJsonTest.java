@@ -7,14 +7,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ToJsonTest {
     @Test
     public void shouldConvertObject() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", JsonSimpleValueFactory.text("Darth Vader")).create();
+        JsonObject jsonObject = new JsonObject().withValue("name", new JsonTextValue("Darth Vader"));
 
         assertThat(jsonObject.toJson()).isEqualTo(fixQuotes("{'name':'Darth Vader'}"));
     }
 
     @Test
     public void shouldHandleArrays() throws Exception {
-        JsonArray jsonArray = JsonFactory.jsonArray().add("Luke").add("Leia").create();
+        JsonArray jsonArray = new JsonArray().add("Luke").add("Leia");
         assertThat(jsonArray.toJson()).isEqualTo(fixQuotes("['Luke','Leia']"));
 
     }

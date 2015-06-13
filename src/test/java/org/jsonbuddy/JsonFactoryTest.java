@@ -7,26 +7,18 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonFactoryTest {
-    @Test
-    public void shouldCreateJsonNode() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .create();
-        assertThat(jsonObject).isNotNull();
-    }
 
     @Test
     public void shouldCreateValue() throws Exception {
-        JsonSimpleValueFactory text = JsonSimpleValueFactory.text("Darth Vader");
-        JsonSimpleValue jsonSimpleValue = text.create();
+        JsonSimpleValue jsonSimpleValue = new JsonTextValue("Darth Vader");
         assertThat(jsonSimpleValue.stringValue()).isEqualTo("Darth Vader");
 
     }
 
     @Test
     public void shouldCreateObjectWithValue() throws Exception {
-        JsonObject jsonObject = JsonObjectFactory.jsonObject()
-                .withValue("name", JsonSimpleValueFactory.text("Darth Vader"))
-                .create();
+        JsonObject jsonObject = new JsonObject()
+                .withValue("name", new JsonTextValue("Darth Vader"));
 
         assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
         assertThat(jsonObject.stringValue("xxx").isPresent()).isFalse();
@@ -35,10 +27,9 @@ public class JsonFactoryTest {
 
     @Test
     public void shouldCreateJsonArray() throws Exception {
-        JsonArray jsonArray = JsonFactory.jsonArray()
+        JsonArray jsonArray = new JsonArray()
                 .add("Darth")
-                .add("Luke")
-                .create();
+                .add("Luke");
         assertThat(jsonArray.nodeStream()
                 .map(an -> ((JsonSimpleValue) an).stringValue())
                 .collect(Collectors.toList())).containsExactly("Darth","Luke");
