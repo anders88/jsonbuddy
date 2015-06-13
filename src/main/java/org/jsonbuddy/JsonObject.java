@@ -32,6 +32,14 @@ public class JsonObject extends JsonNode {
         return Optional.ofNullable(values.get(key));
     }
 
+    public String requiredString(String key) throws JsonValueNotPresentException {
+        Optional<String> val = stringValue(key);
+        if (!val.isPresent()) {
+            throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
+        }
+        return val.get();
+    }
+
     @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("{");
@@ -53,5 +61,9 @@ public class JsonObject extends JsonNode {
     public JsonObject withValue(String key, JsonNode jsonNode) {
         values.put(key,jsonNode);
         return this;
+    }
+
+    public JsonObject withValue(String key,String value) {
+        return withValue(key,JsonFactory.jsonText(value));
     }
 }

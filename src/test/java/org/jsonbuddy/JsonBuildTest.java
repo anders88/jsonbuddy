@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class JsonBuildTest {
 
@@ -33,5 +34,16 @@ public class JsonBuildTest {
         assertThat(jsonArray.nodeStream()
                 .map(an -> ((JsonSimpleValue) an).stringValue())
                 .collect(Collectors.toList())).containsExactly("Darth","Luke");
+    }
+
+    @Test
+    public void shouldThrowExceptionIfRequiredValueIsNotPresent() throws Exception {
+        try {
+            JsonFactory.jsonObject().requiredString("cake");
+            fail("Expected exception");
+        } catch (JsonValueNotPresentException e) {
+            assertThat(e.getMessage()).isEqualTo("Required key 'cake' does not exsist");
+        }
+
     }
 }
