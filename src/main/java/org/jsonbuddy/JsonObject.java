@@ -32,6 +32,7 @@ public class JsonObject extends JsonNode {
         return Optional.ofNullable(values.get(key));
     }
 
+    @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
         Optional<String> val = stringValue(key);
         if (!val.isPresent()) {

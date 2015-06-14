@@ -19,4 +19,13 @@ public abstract class JsonNode {
         return (T) this;
     }
 
+
+    public String requiredString(String key) throws JsonValueNotPresentException {
+        throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
+    }
+
+    public String textValue() {
+        throw new JsonValueNotPresentException(String.format("Not supported for class %s",getClass().getSimpleName()));
+
+    }
 }

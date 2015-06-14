@@ -2,6 +2,7 @@ package org.jsonbuddy;
 
 import org.junit.Test;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +45,14 @@ public class JsonBuildTest {
         } catch (JsonValueNotPresentException e) {
             assertThat(e.getMessage()).isEqualTo("Required key 'cake' does not exsist");
         }
+    }
+
+    @Test
+    public void shouldHandleTextValue() throws Exception {
+        JsonArray array = new JsonArray().add("one").add("two");
+        List<String> values = array.nodeStream().map(JsonNode::textValue).collect(Collectors.toList());
+        assertThat(values).containsExactly("one","two");
+
 
     }
 }
