@@ -29,7 +29,7 @@ The following list is not complete
 Version | Description
 ------- | -------------
 0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
-0.2.0   | Not released yet.
+0.2.0   | New api without factories. Errorhandling. Basic testing and tuning
 
 
 # Licence
