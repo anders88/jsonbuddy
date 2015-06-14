@@ -1,10 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonNode {
@@ -66,5 +63,9 @@ public class JsonObject extends JsonNode {
 
     public JsonObject withValue(String key,String value) {
         return withValue(key,JsonFactory.jsonText(value));
+    }
+
+    public Set<String> keys() {
+        return values.keySet();
     }
 }
