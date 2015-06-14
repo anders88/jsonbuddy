@@ -8,29 +8,29 @@ Parses json to a java object structure. Generates json
 ## Parsing json
 Parsing a string to a node
 ```java
-String jsonString = "{\"name\":\"Darth Vader \"}";
+String jsonString = "{\"name\":\"Darth Vader\"}";
 JsonNode node = JsonJsonParser.parse(jsonString);
+String name = node.requiredString("name"); // = Darth Vader
 ```
 ## Generating json
 Generating json as string
 ```java
-JsonObject jsonObject = JsonObjectFactory.jsonObject()
-        .withValue("name", JsonSimpleValueFactory.text("Darth Vader"))
-        .create();
-String jsonString = jsonObject.toJson();
+JsonObject jsonObject = JsonFactory.jsonObject()
+        .withValue("name", "Darth Vader");
+String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
 ```
 
 # Todo
 The following list is not complete
-- Handling illegal json - Give a sensible errormessage
-- Performance testing and tuning
-- Javadoc for core functions
 - Parse from and to POJOs
 
 # Version history
+
 Version | Description
----------------------
+------- | -------------
 0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
+0.2.0   | Not released yet.
+
 
 # Licence
 Copyright © 2015 Anders Karlsen
