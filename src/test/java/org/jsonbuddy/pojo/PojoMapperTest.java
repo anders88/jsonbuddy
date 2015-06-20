@@ -3,6 +3,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.pojo.testclasses.CombinedClass;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
@@ -29,6 +30,16 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
         SimpleWithName result = PojoMapper.map(jsonObject, SimpleWithName.class);
         assertThat(result.name).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleCombinedClass() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("person", JsonFactory.jsonObject().withValue("name", "Darth Vader"))
+                .withValue("occupation", "Dark Lord of Sith");
+        CombinedClass combinedClass = PojoMapper.map(jsonObject, CombinedClass.class);
+
+        assertThat(combinedClass.occupation).isEqualTo("Dark Lord of Sith");
 
     }
 }
