@@ -8,6 +8,7 @@ import org.jsonbuddy.JsonSimpleValue;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class PojoMapper {
@@ -27,27 +28,40 @@ public class PojoMapper {
         JsonObject jsonObject = (JsonObject) jsonNode;
         Object result = clazz.newInstance();
         for (String key : jsonObject.keys()) {
+            findField(clazz, jsonObject, result, key);
             if (findSetter(jsonObject, clazz, result, key)) {
                 continue;
             }
-            Field declaredField = clazz.getDeclaredField(key);
-            Object value = mapit(jsonObject.value(key).get(),declaredField.getType());
-            declaredField.setAccessible(true);
-            declaredField.set(result,value);
-            declaredField.setAccessible(false);
         };
         return result;
     }
 
-    private static boolean findSetter(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws IllegalAccessException, InvocationTargetException {
-        String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
-        Method method = null;
+    private static boolean findField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
+        Field declaredField = null;
         try {
-            method = clazz.getMethod(setterName, String.class);
-        } catch (NoSuchMethodException e) {
+            declaredField = clazz.getDeclaredField(key);
+        } catch (NoSuchFieldException e) {
             return false;
         }
-        String value = jsonObject.stringValue(key).get();
+        Object value = mapit(jsonObject.value(key).get(),declaredField.getType());
+        declaredField.setAccessible(true);
+        declaredField.set(result,value);
+        declaredField.setAccessible(false);
+        return true;
+    }
+
+    private static boolean findSetter(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
+        String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
+        Optional<Method> setter = Arrays.asList(clazz.getMethods()).stream()
+                .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
+                .findAny();
+        if (!setter.isPresent()) {
+            return false;
+        }
+
+        Method method = setter.get();
+        Class<?> setterClass = method.getParameterTypes()[0];
+        Object value = mapit(jsonObject.value(key).get(),setterClass);
         method.invoke(instance,value);
         return true;
     }

@@ -4,6 +4,7 @@ package org.jsonbuddy.pojo;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.CombinedClass;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
@@ -40,6 +41,19 @@ public class PojoMapperTest {
         CombinedClass combinedClass = PojoMapper.map(jsonObject, CombinedClass.class);
 
         assertThat(combinedClass.occupation).isEqualTo("Dark Lord of Sith");
+        assertThat(combinedClass.person.name).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleCombinedClassWithGetterSetter() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("person", JsonFactory.jsonObject().withValue("name", "Darth Vader"))
+                .withValue("occupation", "Dark Lord of Sith");
+        CombinedClassWithSetter combinedClassWithSetter = PojoMapper.map(jsonObject, CombinedClassWithSetter.class);
+
+        assertThat(combinedClassWithSetter.getPerson().name).isEqualTo("Darth Vader");
+        assertThat(combinedClassWithSetter.getOccupation()).isEqualTo("Dark Lord of Sith");
+
 
     }
 }
