@@ -8,4 +8,6 @@ public abstract class JsonSimpleValue extends JsonNode {
     public String textValue() {
         return stringValue();
     }
+
+    public abstract Object javaObjectValue();
 }

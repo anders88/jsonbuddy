@@ -15,6 +15,11 @@ public class JsonTextValue extends JsonSimpleValue {
     }
 
     @Override
+    public Object javaObjectValue() {
+        return value;
+    }
+
+    @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("\"");
         StringBuilder val = new StringBuilder(value);

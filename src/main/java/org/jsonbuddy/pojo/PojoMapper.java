@@ -23,7 +23,7 @@ public class PojoMapper {
 
     private static Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
         if (jsonNode instanceof JsonSimpleValue) {
-            return ((JsonSimpleValue) jsonNode).stringValue();
+            return ((JsonSimpleValue) jsonNode).javaObjectValue();
         }
         JsonObject jsonObject = (JsonObject) jsonNode;
         Object result = clazz.newInstance();

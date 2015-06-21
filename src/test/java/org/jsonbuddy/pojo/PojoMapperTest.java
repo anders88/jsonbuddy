@@ -3,10 +3,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.pojo.testclasses.CombinedClass;
-import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
-import org.jsonbuddy.pojo.testclasses.SimpleWithName;
-import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
+import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +50,19 @@ public class PojoMapperTest {
 
         assertThat(combinedClassWithSetter.getPerson().name).isEqualTo("Darth Vader");
         assertThat(combinedClassWithSetter.getOccupation()).isEqualTo("Dark Lord of Sith");
+    }
 
+
+    @Test
+    public void shouldHandleDifferentTypes() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("text", "the meaning")
+                .withValue("number", 42)
+                .withValue("bool", JsonFactory.jsonTrue());
+        ClassWithDifferentTypes differentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
+        assertThat(differentTypes.text).isEqualTo("the meaning");
+        assertThat(differentTypes.number).isEqualTo(42);
+        assertThat(differentTypes.bool).isTrue();
 
     }
 }

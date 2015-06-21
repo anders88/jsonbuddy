@@ -12,4 +12,16 @@ public class JsonFactory {
     public static JsonTextValue jsonText(String text) {
         return new JsonTextValue(text);
     }
+
+    public static JsonLong jsonLong(long number) {
+        return new JsonLong(number);
+    }
+
+    public static JsonBooleanValue jsonTrue() {
+        return new JsonBooleanValue(true);
+    }
+
+    public static JsonBooleanValue jsonFalse() {
+        return new JsonBooleanValue(false);
+    }
 }

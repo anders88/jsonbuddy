@@ -12,6 +12,11 @@ public class JsonNullValue extends JsonSimpleValue {
     }
 
     @Override
+    public Object javaObjectValue() {
+        return null;
+    }
+
+    @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("null");
     }

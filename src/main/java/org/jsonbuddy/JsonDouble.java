@@ -16,6 +16,11 @@ public class JsonDouble extends JsonSimpleValue {
     }
 
     @Override
+    public Object javaObjectValue() {
+        return value;
+    }
+
+    @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append(stringValue());
     }
