@@ -2,6 +2,7 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +42,11 @@ public class JsonArray extends JsonNode {
 
     public JsonArray add(String text) {
         values.add(new JsonTextValue(text));
+        return this;
+    }
+
+    public JsonArray add(List<String> values) {
+        this.values.addAll(values.stream().map(JsonFactory::jsonText).collect(Collectors.toList()));
         return this;
     }
 }

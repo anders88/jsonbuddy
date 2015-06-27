@@ -6,6 +6,8 @@ import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PojoMapperTest {
@@ -63,6 +65,14 @@ public class PojoMapperTest {
         assertThat(differentTypes.text).isEqualTo("the meaning");
         assertThat(differentTypes.number).isEqualTo(42);
         assertThat(differentTypes.bool).isTrue();
+    }
 
+    @Test
+    public void shouldHandleLists() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("name", "Darth")
+                .withValue("children", Arrays.asList("Luke", "Leia"));
+        ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
+        assertThat(classWithList.children).containsExactly("Luke","Leia");
     }
 }

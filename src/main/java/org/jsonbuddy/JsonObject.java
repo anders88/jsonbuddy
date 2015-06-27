@@ -72,4 +72,8 @@ public class JsonObject extends JsonNode {
     public Set<String> keys() {
         return values.keySet();
     }
+
+    public JsonObject withValue(String key, List<String> values) {
+        return withValue(key,JsonFactory.jsonArray().add(values));
+    }
 }
