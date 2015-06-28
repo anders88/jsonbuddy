@@ -3,7 +3,6 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonPojoBuilder;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
