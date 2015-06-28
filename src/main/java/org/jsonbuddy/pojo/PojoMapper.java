@@ -11,6 +11,14 @@ import java.util.stream.Collectors;
 
 public class PojoMapper {
     public static <T> T map(JsonObject jsonObject,Class<T> clazz) {
+        return new PojoMapper().mapToPojo(jsonObject,clazz);
+    }
+
+    private PojoMapper() {
+
+    }
+
+    public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) {
         try {
             return (T) mapit(jsonObject,clazz);
         } catch (Exception e) {
@@ -19,7 +27,7 @@ public class PojoMapper {
         }
     }
 
-    private static Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
+    private Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
         if (jsonNode instanceof JsonSimpleValue) {
             return ((JsonSimpleValue) jsonNode).javaObjectValue();
         }
@@ -37,7 +45,7 @@ public class PojoMapper {
         return result;
     }
 
-    private static Object mapArray(JsonArray jsonArray, Class<?> clazz) {
+    private Object mapArray(JsonArray jsonArray, Class<?> clazz) {
         return jsonArray.nodeStream().map(jn -> {
             try {
                 return mapit(jn, clazz);
@@ -47,7 +55,7 @@ public class PojoMapper {
         }).collect(Collectors.toList());
     }
 
-    private static boolean findField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
+    private boolean findField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
         Field declaredField = null;
         try {
             declaredField = clazz.getDeclaredField(key);
@@ -76,7 +84,7 @@ public class PojoMapper {
         }
     }
 
-    private static boolean findSetter(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
+    private boolean findSetter(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
         String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
         Optional<Method> setter = Arrays.asList(clazz.getMethods()).stream()
                 .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
