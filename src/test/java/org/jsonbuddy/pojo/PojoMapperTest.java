@@ -3,6 +3,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonPojoBuilder;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
@@ -74,5 +75,22 @@ public class PojoMapperTest {
                 .withValue("children", Arrays.asList("Luke", "Leia"));
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
         assertThat(classWithList.children).containsExactly("Luke","Leia");
+    }
+
+    @Test
+    public void shouldUseOwnMapper() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("secret", "Darth");
+        PojoMapper pojoMapper = PojoMapper.create().registerClassBuilder(SimpleWithNameGetter.class, new JsonPojoBuilder<SimpleWithNameGetter>() {
+            @Override
+            public SimpleWithNameGetter build(JsonObject jsonObject) {
+
+                SimpleWithNameGetter res = new SimpleWithNameGetter();
+                res.setName(jsonObject.value("secret").get().textValue());
+                return res;
+            }
+        });
+        SimpleWithNameGetter simpleWithNameGetter = pojoMapper.mapToPojo(jsonObject, SimpleWithNameGetter.class);
+        assertThat(simpleWithNameGetter.getName()).isEqualTo("Darth");
+
     }
 }

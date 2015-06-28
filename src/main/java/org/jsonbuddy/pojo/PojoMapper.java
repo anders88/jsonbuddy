@@ -3,10 +3,7 @@ package org.jsonbuddy.pojo;
 import org.jsonbuddy.*;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PojoMapper {
@@ -16,6 +13,17 @@ public class PojoMapper {
 
     private PojoMapper() {
 
+    }
+
+    public static PojoMapper create() {
+        return new PojoMapper();
+    }
+
+    private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
+
+    public <T> PojoMapper registerClassBuilder(Class<T> clazz,JsonPojoBuilder<T> jsonPojoBuilder) {
+        pojoBuilders.put(clazz,jsonPojoBuilder);
+        return this;
     }
 
     public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) {
@@ -35,6 +43,11 @@ public class PojoMapper {
             return mapArray((JsonArray) jsonNode,clazz);
         }
         JsonObject jsonObject = (JsonObject) jsonNode;
+        JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
+        if (jsonPojoBuilder != null) {
+            return jsonPojoBuilder.build(jsonObject);
+        }
+
         Object result = clazz.newInstance();
         for (String key : jsonObject.keys()) {
             findField(clazz, jsonObject, result, key);
