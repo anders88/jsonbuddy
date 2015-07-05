@@ -1,13 +1,13 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNullValue;
-import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class JsonGenerator {
@@ -37,6 +37,11 @@ public class JsonGenerator {
             float f = (float) object;
             double d = f;
             return JsonFactory.jsonDouble(d);
+        }
+        if (object instanceof List) {
+            List<?> list = (List<?>) object;
+            Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);
+            return JsonArray.fromStream(nodeStream);
         }
         return handleSpecificClass(object);
     }

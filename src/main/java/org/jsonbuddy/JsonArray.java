@@ -9,12 +9,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JsonArray extends JsonNode {
-    private final List<JsonNode> values = new ArrayList<>();
+    private final List<JsonNode> values;
 
 
     public JsonArray() {
-
+        values = new ArrayList<>();
     }
+
+    private JsonArray(Stream<JsonNode> nodeStream) {
+        values = nodeStream.collect(Collectors.toList());
+    }
+
 
     public Stream<JsonNode> nodeStream() {
         return values.stream();
@@ -48,5 +53,9 @@ public class JsonArray extends JsonNode {
     public JsonArray add(List<String> values) {
         this.values.addAll(values.stream().map(JsonFactory::jsonText).collect(Collectors.toList()));
         return this;
+    }
+
+    public static JsonArray fromStream(Stream<JsonNode> nodeStream) {
+        return new JsonArray(nodeStream);
     }
 }
