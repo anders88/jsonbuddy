@@ -17,6 +17,10 @@ public class JsonFactory {
         return new JsonLong(number);
     }
 
+    public static JsonDouble jsonDouble(double number) {
+        return new JsonDouble(number);
+    }
+
     public static JsonBooleanValue jsonTrue() {
         return new JsonBooleanValue(true);
     }

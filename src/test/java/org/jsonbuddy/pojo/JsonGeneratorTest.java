@@ -22,5 +22,14 @@ public class JsonGeneratorTest {
         assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNullValue());
         assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonText("Darth"));
         assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonLong(42L));
+
     }
+
+    @Test
+    public void shoulHandleFloats() throws Exception {
+        JsonNode jsonNode = JsonGenerator.generate(3.14f);
+        JsonDouble jsonDouble = (JsonDouble) jsonNode;
+        assertThat(new Double(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
+    }
+
 }

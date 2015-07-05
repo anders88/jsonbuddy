@@ -23,12 +23,25 @@ public class JsonGenerator {
             return JsonFactory.jsonText((String) object);
         }
         if ((object instanceof Integer))  {
-            long l = Long.parseLong(object.toString());
+            int i = (int) object;
+            long l = i;
             return JsonFactory.jsonLong(l);
         }
         if (object instanceof Long) {
             return JsonFactory.jsonLong((Long) object);
         }
+        if (object instanceof Double) {
+            return JsonFactory.jsonDouble((Double) object);
+        }
+        if (object instanceof Float) {
+            float f = (float) object;
+            double d = f;
+            return JsonFactory.jsonDouble(d);
+        }
+        return handleSpecificClass(object);
+    }
+
+    private JsonNode handleSpecificClass(Object object) {
         JsonObject jsonObject = JsonFactory.jsonObject();
         Arrays.asList(object.getClass().getFields()).stream()
         .filter(fi -> {
