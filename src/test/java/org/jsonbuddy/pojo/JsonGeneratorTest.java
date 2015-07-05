@@ -1,7 +1,6 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.junit.Test;
 
@@ -16,6 +15,11 @@ public class JsonGeneratorTest {
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
+    }
 
+    @Test
+    public void shouldHandleSimpleValues() throws Exception {
+        assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNullValue());
+        assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonText("Darth"));
     }
 }

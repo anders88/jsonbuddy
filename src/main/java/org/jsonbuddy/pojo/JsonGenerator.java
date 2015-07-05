@@ -2,6 +2,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNullValue;
 import org.jsonbuddy.JsonObject;
 
 import java.lang.reflect.Field;
@@ -15,6 +16,12 @@ public class JsonGenerator {
     }
 
     private JsonNode generateNode(Object object) {
+        if (object == null) {
+            return new JsonNullValue();
+        }
+        if (object instanceof String) {
+            return JsonFactory.jsonText((String) object);
+        }
         JsonObject jsonObject = JsonFactory.jsonObject();
         Arrays.asList(object.getClass().getFields()).stream()
         .filter(fi -> {

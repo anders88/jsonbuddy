@@ -20,4 +20,14 @@ public class JsonNullValue extends JsonSimpleValue {
     public void toJson(PrintWriter printWriter) {
         printWriter.append("null");
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj instanceof JsonNullValue);
+    }
+
+    @Override
+    public int hashCode() {
+        return 1;
+    }
 }
