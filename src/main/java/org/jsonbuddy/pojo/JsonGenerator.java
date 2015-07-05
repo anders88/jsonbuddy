@@ -22,6 +22,13 @@ public class JsonGenerator {
         if (object instanceof String) {
             return JsonFactory.jsonText((String) object);
         }
+        if ((object instanceof Integer))  {
+            long l = Long.parseLong(object.toString());
+            return JsonFactory.jsonLong(l);
+        }
+        if (object instanceof Long) {
+            return JsonFactory.jsonLong((Long) object);
+        }
         JsonObject jsonObject = JsonFactory.jsonObject();
         Arrays.asList(object.getClass().getFields()).stream()
         .filter(fi -> {

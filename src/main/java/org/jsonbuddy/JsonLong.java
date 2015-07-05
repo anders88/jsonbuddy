@@ -32,4 +32,20 @@ public class JsonLong extends JsonSimpleValue {
     public long longValue() {
         return value;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        JsonLong jsonLong = (JsonLong) o;
+
+        return value == jsonLong.value;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return (int) (value ^ (value >>> 32));
+    }
 }

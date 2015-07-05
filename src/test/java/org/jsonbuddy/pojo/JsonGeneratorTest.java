@@ -21,5 +21,6 @@ public class JsonGeneratorTest {
     public void shouldHandleSimpleValues() throws Exception {
         assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNullValue());
         assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonText("Darth"));
+        assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonLong(42L));
     }
 }
