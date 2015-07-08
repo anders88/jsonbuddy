@@ -2,8 +2,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,6 +45,30 @@ public class JsonGenerator {
         return handleSpecificClass(object);
     }
 
+    private static boolean isGetMethod(Method method) {
+        if (!Modifier.isPublic(method.getModifiers())) {
+            return false;
+        }
+        String methodName = method.getName();
+        if (methodName.length() < 4) {
+            return false;
+        }
+        if (!methodName.startsWith("get")) {
+            return false;
+        }
+        if (!Character.isUpperCase(methodName.charAt(3))) {
+            return false;
+        }
+        if (method.getParameterCount() !=0) {
+            return false;
+        }
+        return true;
+    }
+
+    private static String getFieldName(Method getMethod) {
+        return null;
+    }
+
     private JsonNode handleSpecificClass(Object object) {
         JsonObject jsonObject = JsonFactory.jsonObject();
         Arrays.asList(object.getClass().getFields()).stream()
@@ -55,11 +78,22 @@ public class JsonGenerator {
         })
         .forEach(fi -> {
             try {
-                jsonObject.withValue(fi.getName(),fi.get(object).toString());
+                jsonObject.withValue(fi.getName(), fi.get(object).toString());
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         });
+        Arrays.asList(object.getClass().getDeclaredMethods()).stream()
+                .filter(JsonGenerator::isGetMethod)
+                .forEach(method -> {
+                    try {
+                        Object result = method.invoke(object);
+                        JsonNode jsonNode = generateNode(result);
+                        jsonObject.withValue(getFieldName(method),jsonNode);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
         return jsonObject;
     }
 }
