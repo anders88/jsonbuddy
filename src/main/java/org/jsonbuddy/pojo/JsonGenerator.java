@@ -42,6 +42,10 @@ public class JsonGenerator {
             Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);
             return JsonArray.fromStream(nodeStream);
         }
+        if (object instanceof OverridesJsonGenerator) {
+            OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
+            return overridesJsonGenerator.jsonValue();
+        }
         return handleSpecificClass(object);
     }
 

@@ -2,6 +2,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
+import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -74,6 +75,15 @@ public class JsonGeneratorTest {
         assertThat(person).isPresent();
         assertThat(person.get()).isInstanceOf(JsonObject.class);
         assertThat(person.get().requiredString("name")).isEqualTo("Darth Vader");
+
+    }
+
+    @Test
+    public void shouldHandleOverriddenValues() throws Exception {
+        JsonGeneratorOverrides overrides = new JsonGeneratorOverrides();
+        JsonObject generate = (JsonObject) JsonGenerator.generate(overrides);
+
+        assertThat(generate.requiredLong("myOverriddenValue")).isEqualTo(42);
 
     }
 }

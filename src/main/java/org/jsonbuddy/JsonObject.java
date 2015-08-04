@@ -18,6 +18,12 @@ public class JsonObject extends JsonNode {
                 .map(n -> ((JsonSimpleValue) n).stringValue());
     }
 
+    public Optional<Long> longValue(String key) {
+        return Optional.ofNullable(values.get(key))
+                .filter(n -> n instanceof JsonLong)
+                .map(n -> ((JsonLong) n).longValue());
+    }
+
     public Optional<JsonArray> arrayValue(String key) {
         return Optional.ofNullable(values.get(key))
                 .filter(n -> n instanceof JsonArray)
@@ -32,6 +38,17 @@ public class JsonObject extends JsonNode {
     @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
         Optional<String> val = stringValue(key);
+        if (!val.isPresent()) {
+            throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
+        }
+        return val.get();
+    }
+
+
+
+
+    public long requiredLong(String key) {
+        Optional<Long> val = longValue(key);
         if (!val.isPresent()) {
             throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
         }
@@ -57,7 +74,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject withValue(String key, JsonNode jsonNode) {
-        values.put(key,jsonNode);
+        values.put(key, jsonNode);
         return this;
     }
 
@@ -66,7 +83,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject withValue(String key,long value) {
-        return withValue(key,JsonFactory.jsonLong(value));
+        return withValue(key, JsonFactory.jsonLong(value));
     }
 
     public Set<String> keys() {
@@ -74,6 +91,8 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject withValue(String key, List<String> values) {
-        return withValue(key,JsonFactory.jsonArray().add(values));
+        return withValue(key, JsonFactory.jsonArray().add(values));
     }
+
+
 }
