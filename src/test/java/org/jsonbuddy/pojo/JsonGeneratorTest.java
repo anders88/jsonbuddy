@@ -61,7 +61,6 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    @Ignore("work in progress")
     public void shouldHandleClassWithGetter() throws Exception {
         CombinedClassWithSetter combinedClassWithSetter = new CombinedClassWithSetter();
         combinedClassWithSetter.setPerson(new SimpleWithName("Darth Vader"));

@@ -66,7 +66,11 @@ public class JsonGenerator {
     }
 
     private static String getFieldName(Method getMethod) {
-        return null;
+        String methodName = getMethod.getName();
+        String name = "" + methodName.charAt(3);
+        name = name.toLowerCase();
+        name = name + methodName.substring(4);
+        return name;
     }
 
     private JsonNode handleSpecificClass(Object object) {
