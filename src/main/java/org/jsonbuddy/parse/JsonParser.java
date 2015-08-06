@@ -203,7 +203,7 @@ public class JsonParser {
         }
         readNext();
         while (!(finished || until.contains(lastRead))) {
-            if (!Character.isSpaceChar(lastRead)) {
+            if (!Character.isWhitespace(lastRead)) {
                 throw new JsonParseException(errormessage);
             }
             readNext();

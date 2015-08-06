@@ -28,4 +28,8 @@ public class JsonFactory {
     public static JsonBooleanValue jsonFalse() {
         return new JsonBooleanValue(false);
     }
+
+    public static JsonBooleanValue jsonBoolean(boolean value) {
+        return new JsonBooleanValue(value);
+    }
 }

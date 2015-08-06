@@ -16,6 +16,26 @@ public class JsonArray extends JsonNode {
         values = new ArrayList<>();
     }
 
+
+    private JsonArray(List<? extends JsonNode> nodes) {
+        List<JsonNode> myVals = new ArrayList<>();
+        myVals.addAll(nodes);
+        this.values = myVals;
+    }
+
+    public static JsonArray fromNodeList(List<? extends JsonNode> nodes) {
+        return new JsonArray(nodes);
+    }
+
+    public static JsonArray fromStringList(List<String> nodes) {
+        if (nodes == null) {
+            return new JsonArray();
+        }
+        return new JsonArray(nodes.stream().map(JsonTextValue::new).collect(Collectors.toList()));
+    }
+
+
+
     private JsonArray(Stream<JsonNode> nodeStream) {
         values = nodeStream.collect(Collectors.toList());
     }
@@ -57,5 +77,21 @@ public class JsonArray extends JsonNode {
 
     public static JsonArray fromStream(Stream<JsonNode> nodeStream) {
         return new JsonArray(nodeStream);
+    }
+
+    public int size() {
+        return values.size();
+    }
+
+    public <T> T get(int pos,Class<T> jsonClass) {
+        if (pos < 0 || pos >= size()) {
+            throw new JsonValueNotPresentException("Json array does not have a value at position " + pos);
+        }
+        JsonNode jsonNode = values.get(pos);
+        if (!jsonNode.getClass().isAssignableFrom(jsonClass)) {
+            throw new JsonValueNotPresentException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
+
+        }
+        return (T) jsonNode;
     }
 }

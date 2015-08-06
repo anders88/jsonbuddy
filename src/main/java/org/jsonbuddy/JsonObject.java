@@ -86,6 +86,14 @@ public class JsonObject extends JsonNode {
         return withValue(key, JsonFactory.jsonLong(value));
     }
 
+    public JsonObject withValue(String key,boolean value) {
+        return withValue(key, JsonFactory.jsonBoolean(value));
+    }
+
+    public JsonObject withValue(String key,Enum<?> value) {
+        return withValue(key,Optional.of(value).map(Object::toString).orElse(null));
+    }
+
     public Set<String> keys() {
         return values.keySet();
     }

@@ -54,7 +54,7 @@ public class JsonParserTest {
         List<String> children = vader.arrayValue("children").get().nodeStream()
                 .map(n -> ((JsonSimpleValue) n).stringValue())
                 .collect(Collectors.toList());
-        assertThat(children).containsExactly("Luke","Leia");
+        assertThat(children).containsExactly("Luke", "Leia");
 
     }
 
@@ -135,6 +135,16 @@ public class JsonParserTest {
     }
 
 
+    @Test
+    public void shouldHandleLinebreaks() throws Exception {
+        String jsonWithLinebreak = fixQuotes("{\n'name':'Darth',\n'title':'Dark Lord'\n}");
+        JsonNode result = JsonParser.parse(jsonWithLinebreak);
+        assertThat(result).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) result;
+        assertThat(jsonObject.requiredString("name")).isEqualTo("Darth");
+        assertThat(jsonObject.requiredString("title")).isEqualTo("Dark Lord");
+
+    }
 
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
