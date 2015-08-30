@@ -67,6 +67,5 @@ public class JsonBuildTest {
         assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonInstantValue.class);
         Optional<String> timetext = jsonObject.stringValue("time");
         assertThat(timetext).isPresent().contains("2015-08-30T11:21:12.314Z");
-
     }
 }

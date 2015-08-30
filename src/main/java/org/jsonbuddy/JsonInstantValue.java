@@ -26,4 +26,9 @@ public class JsonInstantValue extends JsonSimpleValue {
     public void toJson(PrintWriter printWriter) {
         printWriter.append(stringValue());
     }
+
+    public Instant instantValue() {
+        return value;
+    }
+
 }

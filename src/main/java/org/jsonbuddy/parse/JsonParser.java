@@ -3,8 +3,13 @@ package org.jsonbuddy.parse;
 import org.jsonbuddy.*;
 
 import java.io.*;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class JsonParser {
     public static JsonNode parse(Reader reader) throws JsonParseException {
@@ -20,6 +25,51 @@ public class JsonParser {
     public static JsonNode parse(String input) throws JsonParseException  {
         return parse(new StringReader(input));
     }
+
+    public static JsonObject parseToObject(Reader reader) throws JsonParseException {
+        JsonParser jsonParser = new JsonParser(reader);
+        return toObject(jsonParser.parseValue());
+    }
+
+    private static JsonObject toObject(JsonNode result) {
+        if (!(result instanceof JsonObject)) {
+            throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
+        }
+        return (JsonObject) result;
+    }
+
+
+    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException  {
+        return toArray(parse(new InputStreamReader(inputStream)));
+    }
+
+    public static JsonArray parseToArray(String input) throws JsonParseException  {
+        return toArray(parse(new StringReader(input)));
+    }
+
+
+    public static JsonArray parseToArray(Reader reader) throws JsonParseException {
+        JsonParser jsonParser = new JsonParser(reader);
+        return toArray(jsonParser.parseValue());
+    }
+
+    private static JsonArray toArray(JsonNode result) {
+        if (!(result instanceof JsonArray)) {
+            throw new JsonParseException("Expected json array got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
+        }
+        return (JsonArray) result;
+    }
+
+
+    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException  {
+        return toObject(parse(new InputStreamReader(inputStream)));
+    }
+
+    public static JsonObject parseToObject(String input) throws JsonParseException  {
+        return toObject(parse(new StringReader(input)));
+    }
+
+
 
 
     private Reader reader;
@@ -124,10 +174,14 @@ public class JsonParser {
         return jsonArrayFactory;
     }
 
-    private JsonTextValue parseStringValue() {
+    private JsonSimpleValue parseStringValue() {
         readNext();
         String value = readText();
-        return new JsonTextValue(value);
+        try {
+            return new JsonInstantValue(Instant.parse(value));
+        } catch (DateTimeParseException e) {
+            return new JsonTextValue(value);
+        }
     }
 
     private JsonObject parseObject() {
@@ -212,4 +266,5 @@ public class JsonParser {
             throw new JsonParseException(errormessage);
         }
     }
+
 }

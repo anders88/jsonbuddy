@@ -7,7 +7,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -143,7 +146,17 @@ public class JsonParserTest {
         JsonObject jsonObject = (JsonObject) result;
         assertThat(jsonObject.requiredString("name")).isEqualTo("Darth");
         assertThat(jsonObject.requiredString("title")).isEqualTo("Dark Lord");
+    }
 
+    @Test
+    public void shouldParseToInstant() throws Exception {
+        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'time':'2015-08-30T11:21:12.314Z'}"));
+        Optional<JsonNode> time = jsonObject.value("time");
+        assertThat(time).isPresent().containsInstanceOf(JsonInstantValue.class);
+
+        JsonInstantValue jsonInstantValue = (JsonInstantValue) time.get();
+
+        assertThat(jsonInstantValue.instantValue()).isEqualTo(LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant());
     }
 
     private static String fixQuotes(String content) {
