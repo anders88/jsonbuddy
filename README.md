@@ -1,17 +1,28 @@
 # jsonbuddy
-Java8 json parser. This project is under construction. The api nay change.
+The json parser for Java 8. This project is under construction. The api may change.
 
 # Features
 Parses json to a java object structure. Generates json
 
 # Usage
 ## Parsing json
-Parsing a string to a node
+Parsing a string to a jsonnode
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
 JsonNode node = JsonJsonParser.parse(jsonString);
 String name = node.requiredString("name"); // = Darth Vader
 ```
+You can also parse from an InputString or a reader. If you expect the json you can use the convinience method
+```java
+String jsonString = "{\"name\":\"Darth Vader\"}";
+JsonObject jsonObject = JsonJsonParser.parseToObject(jsonString);
+```
+This will cast an exception if the result is not an object. The same method can be used for json arrays.
+
+## Traversing parsed result
+...
+
+
 ## Generating json
 Generating json as string
 ```java
@@ -19,10 +30,10 @@ JsonObject jsonObject = JsonFactory.jsonObject()
         .withValue("name", "Darth Vader");
 String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
 ```
+You can also send a PrintWriter, and the result will be written to the writer.
 
-# Todo
-The following list is not complete
-- Parse from and to POJOs
+## Json to POJO
+...
 
 # Version history
 
@@ -30,9 +41,9 @@ Version | Description
 ------- | -------------
 0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
 0.2.0   | New api without factories. Errorhandling. Basic testing and tuning
-
+0.3.0   | (Coming soon) Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
 
 # Licence
 Copyright © 2015 Anders Karlsen
 
-Distributed under the Eclipse Public License (http://www.eclipse.org/legal/epl-v10.html)
+Distributed under the Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
