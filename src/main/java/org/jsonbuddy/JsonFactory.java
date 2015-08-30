@@ -1,5 +1,7 @@
 package org.jsonbuddy;
 
+import java.time.Instant;
+
 public class JsonFactory {
     public static JsonObject jsonObject() {
         return new JsonObject();
@@ -31,5 +33,9 @@ public class JsonFactory {
 
     public static JsonBooleanValue jsonBoolean(boolean value) {
         return new JsonBooleanValue(value);
+    }
+
+    public static JsonInstantValue jsonInstance(Instant instant) {
+        return new JsonInstantValue(instant);
     }
 }

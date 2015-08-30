@@ -2,7 +2,12 @@ package org.jsonbuddy;
 
 import org.junit.Test;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +57,16 @@ public class JsonBuildTest {
         JsonArray array = new JsonArray().add("one").add("two");
         List<String> values = array.nodeStream().map(JsonNode::textValue).collect(Collectors.toList());
         assertThat(values).containsExactly("one","two");
+    }
 
+    @Test
+    public void shouldHandleDates() throws Exception {
+        Instant instant = LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant();
+        JsonObject jsonObject = JsonFactory.jsonObject().withInstance("time", instant);
+
+        assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonInstantValue.class);
+        Optional<String> timetext = jsonObject.stringValue("time");
+        assertThat(timetext).isPresent().contains("2015-08-30T11:21:12.314Z");
 
     }
 }
