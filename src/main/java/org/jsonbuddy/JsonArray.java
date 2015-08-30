@@ -94,4 +94,11 @@ public class JsonArray extends JsonNode {
         }
         return (T) jsonNode;
     }
+
+    public Stream<String> stringStream() {
+        return nodeStream()
+                .filter(no -> no instanceof JsonSimpleValue)
+                .map(no -> ((JsonSimpleValue) no).stringValue())
+                ;
+    }
 }

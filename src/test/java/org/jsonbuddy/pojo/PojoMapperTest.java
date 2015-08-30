@@ -29,6 +29,13 @@ public class PojoMapperTest {
     }
 
     @Test
+    public void shouldIgnoreUnmappedValues() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("namex", "Darth Vader");
+        SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
+        assertThat(result.getName()).isNull();
+    }
+
+    @Test
     public void shouldHandleClassWithFinalField() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
         SimpleWithName result = PojoMapper.map(jsonObject, SimpleWithName.class);

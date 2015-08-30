@@ -35,6 +35,10 @@ You can also send a PrintWriter, and the result will be written to the writer.
 ## Json to POJO
 ...
 
+# Todos
+* Strict mode in Pojo mapping
+* Convert numeric strings to numbers in Pojo mapping
+
 # Version history
 
 Version | Description

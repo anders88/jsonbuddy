@@ -3,6 +3,7 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonNode {
@@ -38,22 +39,21 @@ public class JsonObject extends JsonNode {
 
     @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
-        Optional<String> val = stringValue(key);
-        if (!val.isPresent()) {
-            throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
-        }
-        return val.get();
+        return stringValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+    private Supplier<JsonValueNotPresentException> throwKeyNotPresent(String key) {
+        return () -> new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
     }
 
 
-
-
     public long requiredLong(String key) {
-        Optional<Long> val = longValue(key);
-        if (!val.isPresent()) {
-            throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
-        }
-        return val.get();
+        return longValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+
+    public JsonArray requiredArrayValue(String key) {
+        return arrayValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
     @Override

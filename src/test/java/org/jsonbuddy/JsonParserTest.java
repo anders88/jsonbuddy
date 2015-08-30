@@ -54,9 +54,12 @@ public class JsonParserTest {
     public void shouldHandleObjectWithArray() throws Exception {
         StringReader input = new StringReader(fixQuotes("{'name':'Anakin','children':['Luke','Leia']}"));
         JsonObject vader = (JsonObject) JsonParser.parse(input);
-        List<String> children = vader.arrayValue("children").get().nodeStream()
-                .map(n -> ((JsonSimpleValue) n).stringValue())
+        // TODO
+        List<String> children = vader.requiredArrayValue("children").stringStream()
                 .collect(Collectors.toList());
+        //List<String> children = vader.arrayValue("children").get().nodeStream()
+        //        .map(n -> ((JsonSimpleValue) n).stringValue())
+        //        .collect(Collectors.toList());
         assertThat(children).containsExactly("Luke", "Leia");
 
     }
