@@ -6,6 +6,9 @@ import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,6 +93,13 @@ public class PojoMapperTest {
         });
         SimpleWithNameGetter simpleWithNameGetter = pojoMapper.mapToPojo(jsonObject, SimpleWithNameGetter.class);
         assertThat(simpleWithNameGetter.getName()).isEqualTo("Darth");
+    }
 
+    @Test
+    public void shouldHandleClassWithInstant() throws Exception {
+        Instant now = Instant.now();
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("time", now);
+        ClassWithTime classWithTime = PojoMapper.map(jsonObject, ClassWithTime.class);
+        assertThat(classWithTime.getTime()).isEqualTo(now);
     }
 }

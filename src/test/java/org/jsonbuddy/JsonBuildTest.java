@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +61,7 @@ public class JsonBuildTest {
     @Test
     public void shouldHandleDates() throws Exception {
         Instant instant = LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant();
-        JsonObject jsonObject = JsonFactory.jsonObject().withInstance("time", instant);
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("time", instant);
 
         assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonInstantValue.class);
         Optional<String> timetext = jsonObject.stringValue("time");

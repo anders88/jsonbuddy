@@ -104,7 +104,7 @@ public class JsonObject extends JsonNode {
     }
 
 
-    public JsonObject withInstance(String key, Instant instant) {
+    public JsonObject withValue(String key, Instant instant) {
         return withValue(key,JsonFactory.jsonInstance(instant));
     }
 }
