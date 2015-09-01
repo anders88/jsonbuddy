@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -114,6 +115,19 @@ public class PojoMapperTest {
     @Test
     public void shouldMapToPojoFromArray() throws Exception {
         assertThat(PojoMapper.map(JsonFactory.jsonArray(),String.class)).isEmpty();
+    }
+
+    @Test
+    public void shouldHandleEmbeddedJsonElements() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("name", "Darth Vader")
+                .withValue("myObject", JsonFactory.jsonObject().withValue("title", "Dark Lord"))
+                .withValue("myArray", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
+        ClassWithJsonElements classWithJsonElements = PojoMapper.map(jsonObject, ClassWithJsonElements.class);
+
+        assertThat(classWithJsonElements.name).isEqualTo("Darth Vader");
+        assertThat(classWithJsonElements.myObject.requiredString("title")).isEqualTo("Dark Lord");
+        assertThat(classWithJsonElements.myArray.stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
 
     }
 }

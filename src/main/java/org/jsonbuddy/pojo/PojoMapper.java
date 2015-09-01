@@ -69,7 +69,9 @@ public class PojoMapper {
 
         Object result = clazz.newInstance();
         for (String key : jsonObject.keys()) {
-            findField(clazz, jsonObject, result, key);
+            if (findField(clazz, jsonObject, result, key)) {
+                continue;
+            }
             if (findSetter(jsonObject, clazz, result, key)) {
                 continue;
             }
@@ -95,7 +97,12 @@ public class PojoMapper {
             return false;
         }
         JsonNode nodeValue = jsonObject.value(key).get();
-        Object value = mapit(nodeValue, computeType(declaredField,nodeValue));
+        Object value;
+        if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
+            value = nodeValue;
+        } else {
+            value = mapit(nodeValue, computeType(declaredField, nodeValue));
+        }
         declaredField.setAccessible(true);
         declaredField.set(result,value);
         declaredField.setAccessible(false);
@@ -127,7 +134,12 @@ public class PojoMapper {
 
         Method method = setter.get();
         Class<?> setterClass = method.getParameterTypes()[0];
-        Object value = mapit(jsonObject.value(key).get(),setterClass);
+        Object value;
+        if (setterClass.isAssignableFrom(jsonObject.getClass())) {
+            value = jsonObject;
+        } else {
+            value = mapit(jsonObject.value(key).get(),setterClass);
+        }
         method.invoke(instance,value);
         return true;
     }
