@@ -1,6 +1,7 @@
 package org.jsonbuddy.pojo;
 
 
+import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.*;
@@ -108,5 +109,11 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("time", now);
         ClassWithTime classWithTime = PojoMapper.map(jsonObject, ClassWithTime.class);
         assertThat(classWithTime.getTime()).isEqualTo(now);
+    }
+
+    @Test
+    public void shouldMapToPojoFromArray() throws Exception {
+        assertThat(PojoMapper.map(JsonFactory.jsonArray(),String.class)).isEmpty();
+
     }
 }

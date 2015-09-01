@@ -26,6 +26,18 @@ public class JsonObject extends JsonNode {
                 .map(n -> ((JsonLong) n).longValue());
     }
 
+    public Optional<Boolean> booleanValue(String key) {
+        return Optional.ofNullable(values.get(key))
+                .filter(n -> n instanceof JsonLong)
+                .map(n -> ((JsonBooleanValue) n).boolValue());
+    }
+
+    public Optional<JsonObject> objectValue(String key) {
+        return Optional.ofNullable(values.get(key))
+                .filter(n -> n instanceof JsonObject)
+                .map(n -> (JsonObject) n);
+    }
+
     public Optional<JsonArray> arrayValue(String key) {
         return Optional.ofNullable(values.get(key))
                 .filter(n -> n instanceof JsonArray)
@@ -47,12 +59,20 @@ public class JsonObject extends JsonNode {
     }
 
 
-    public long requiredLong(String key) {
+    public long requiredLong(String key) throws JsonValueNotPresentException{
         return longValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
+    public boolean requiredBoolean(String key) throws JsonValueNotPresentException{
+        return booleanValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
 
-    public JsonArray requiredArrayValue(String key) {
+    public JsonObject requiredObject(String key) throws JsonValueNotPresentException{
+        return objectValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+
+    public JsonArray requiredArray(String key) {
         return arrayValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
