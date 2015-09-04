@@ -1,6 +1,7 @@
 package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
+import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
 import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
@@ -78,12 +79,26 @@ public class JsonGeneratorTest {
 
     }
 
+
     @Test
     public void shouldHandleOverriddenValues() throws Exception {
         JsonGeneratorOverrides overrides = new JsonGeneratorOverrides();
         JsonObject generate = (JsonObject) JsonGenerator.generate(overrides);
 
         assertThat(generate.requiredLong("myOverriddenValue")).isEqualTo(42);
+
+    }
+
+    @Test
+    public void shoulHandleEmbeddedJson() throws Exception {
+        ClassWithJsonElements classWithJsonElements = new ClassWithJsonElements("Darth Vader",
+                JsonFactory.jsonObject().withValue("title", "Dark Lord"),
+                JsonFactory.jsonArray().add("Luke").add("Leia"));
+        JsonObject generate = (JsonObject) JsonGenerator.generate(classWithJsonElements);
+
+        assertThat(generate.requiredString("name")).isEqualTo("Darth Vader");
+        assertThat(generate.requiredObject("myObject").requiredString("title")).isEqualTo("Dark Lord");
+        assertThat(generate.requiredArray("myArray").stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
 
     }
 }

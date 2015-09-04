@@ -123,6 +123,12 @@ public class JsonObject extends JsonNode {
         return withValue(key, JsonFactory.jsonArray().add(values));
     }
 
+    public Optional<JsonNode> removeValue(String key) {
+        if (key == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(values.remove(key));
+    }
 
     public JsonObject withValue(String key, Instant instant) {
         return withValue(key,JsonFactory.jsonInstance(instant));

@@ -18,6 +18,9 @@ public class JsonGenerator {
         if (object == null) {
             return new JsonNullValue();
         }
+        if (object instanceof JsonNode) {
+            return (JsonNode) object;
+        }
         if (object instanceof String) {
             return JsonFactory.jsonText((String) object);
         }
@@ -86,7 +89,9 @@ public class JsonGenerator {
         })
         .forEach(fi -> {
             try {
-                jsonObject.withValue(fi.getName(), fi.get(object).toString());
+                Object val = fi.get(object);
+                JsonNode jsonNode = generateNode(val);
+                jsonObject.withValue(fi.getName(), jsonNode);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
