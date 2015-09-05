@@ -2,6 +2,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,15 +68,21 @@ public class PojoMapper {
             return jsonPojoBuilder.build(jsonObject);
         }
 
-        Object result = clazz.newInstance();
-        for (String key : jsonObject.keys()) {
-            if (findField(clazz, jsonObject, result, key)) {
-                continue;
+        Object result;
+        if (clazz.isAnnotationPresent(OverrideMapper.class)) {
+            OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
+            result = annotationsByType[0].using().newInstance().map(jsonObject);
+        } else {
+            result = clazz.newInstance();
+            for (String key : jsonObject.keys()) {
+                if (findField(clazz, jsonObject, result, key)) {
+                    continue;
+                }
+                if (findSetter(jsonObject, clazz, result, key)) {
+                    continue;
+                }
             }
-            if (findSetter(jsonObject, clazz, result, key)) {
-                continue;
-            }
-        };
+        }
         return result;
     }
 

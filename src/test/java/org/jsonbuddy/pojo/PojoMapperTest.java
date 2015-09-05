@@ -130,4 +130,12 @@ public class PojoMapperTest {
         assertThat(classWithJsonElements.myArray.stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
 
     }
+
+    @Test
+    public void shouldHandleClassWithAnnotation() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("name", "Darth Vader");
+        ClassWithAnnotation classWithAnnotation = PojoMapper.map(jsonObject, ClassWithAnnotation.class);
+        assertThat(classWithAnnotation.value).isEqualTo("overridden");
+    }
 }
