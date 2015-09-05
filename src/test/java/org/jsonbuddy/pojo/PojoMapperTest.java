@@ -138,4 +138,14 @@ public class PojoMapperTest {
         ClassWithAnnotation classWithAnnotation = PojoMapper.map(jsonObject, ClassWithAnnotation.class);
         assertThat(classWithAnnotation.value).isEqualTo("overridden");
     }
+
+    @Test
+    public void shouldHandleCombined() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("name", "Darth Vader")
+                .withValue("myHack",JsonFactory.jsonArray().add("Hola"));
+        CombinedClassWithAnnotation combinedClassWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
+        assertThat(combinedClassWithAnnotation.myHack.value).isEqualTo("overridden");
+
+    }
 }

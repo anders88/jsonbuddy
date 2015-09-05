@@ -31,7 +31,7 @@ public class PojoMapper {
 
 
     public <T> PojoMapper registerClassBuilder(Class<T> clazz,JsonPojoBuilder<T> jsonPojoBuilder) {
-        pojoBuilders.put(clazz,jsonPojoBuilder);
+        pojoBuilders.put(clazz, jsonPojoBuilder);
         return this;
     }
 
@@ -105,7 +105,10 @@ public class PojoMapper {
         }
         JsonNode nodeValue = jsonObject.value(key).get();
         Object value;
-        if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
+        Optional<Object> overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
+        if (overriddenValue.isPresent()) {
+            value = overriddenValue.get();
+        } else if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
             value = nodeValue;
         } else {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
@@ -114,6 +117,18 @@ public class PojoMapper {
         declaredField.set(result,value);
         declaredField.setAccessible(false);
         return true;
+    }
+
+    private static Optional<Object> overriddenValue(Class declaredClass,JsonNode nodValue) {
+        if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
+            OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
+            try {
+                Object res = annotationsByType[0].using().newInstance().map(nodValue);
+            } catch (InstantiationException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.empty();
     }
 
     private static Class<?> computeType(Field declaredField, JsonNode nodeValue) {
@@ -142,7 +157,10 @@ public class PojoMapper {
         Method method = setter.get();
         Class<?> setterClass = method.getParameterTypes()[0];
         Object value;
-        if (setterClass.isAssignableFrom(jsonObject.getClass())) {
+        Optional<Object> overriddenValue = overriddenValue(setterClass, jsonObject);
+        if (overriddenValue.isPresent()) {
+            value = overriddenValue.get();
+        } else if (setterClass.isAssignableFrom(jsonObject.getClass())) {
             value = jsonObject;
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);

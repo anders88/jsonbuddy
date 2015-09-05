@@ -1,7 +1,7 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonNode;
 
 public interface PojoClassMapper<T> {
-    T map(JsonObject jsonObject);
+    T map(JsonNode jsonNode);
 }
