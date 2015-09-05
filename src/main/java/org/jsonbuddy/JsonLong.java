@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class JsonLong extends JsonSimpleValue {
 
@@ -29,6 +30,11 @@ public class JsonLong extends JsonSimpleValue {
         printWriter.append(stringValue());
     }
 
+    @Override
+    public JsonLong deepClone() {
+        return this;
+    }
+
     public long longValue() {
         return value;
     }
@@ -36,16 +42,13 @@ public class JsonLong extends JsonSimpleValue {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (!(o instanceof JsonLong)) return false;
         JsonLong jsonLong = (JsonLong) o;
-
-        return value == jsonLong.value;
-
+        return Objects.equals(value, jsonLong.value);
     }
 
     @Override
     public int hashCode() {
-        return (int) (value ^ (value >>> 32));
+        return Objects.hash(value);
     }
 }

@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,5 +67,29 @@ public class JsonBuildTest {
         assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonInstantValue.class);
         Optional<String> timetext = jsonObject.stringValue("time");
         assertThat(timetext).isPresent().contains("2015-08-30T11:21:12.314Z");
+    }
+
+    @Test
+    public void shouldClone() throws Exception {
+        JsonObject orig = JsonFactory.jsonObject()
+                .withValue("name","Darth Vader")
+                .withValue("properties",JsonFactory.jsonObject().withValue("religion","sith"))
+                .withValue("master","Yoda")
+                .withValue("children", JsonFactory.jsonArray().add(Arrays.asList("Luke")));
+
+        JsonObject clone = orig.deepClone();
+
+        assertThat(orig).isEqualTo(clone);
+
+        clone.withValue("name","Anakin Skywalker")
+                .withValue("properties", JsonFactory.jsonObject().withValue("religion", "jedi"))
+                .withValue("children", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
+
+        assertThat(clone.requiredString("master")).isEqualTo("Yoda");
+        assertThat(orig.requiredObject("properties").requiredString("religion")).isEqualTo("sith");
+        assertThat(clone.requiredObject("properties").requiredString("religion")).isEqualTo("jedi");
+        assertThat(clone.requiredArray("children").stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
+        assertThat(orig.requiredArray("children").stringStream().collect(Collectors.toList())).containsExactly("Luke");
+
     }
 }

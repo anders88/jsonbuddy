@@ -25,6 +25,11 @@ public class JsonDouble extends JsonSimpleValue {
         printWriter.append(stringValue());
     }
 
+    @Override
+    public JsonDouble deepClone() {
+        return this;
+    }
+
     public double doubleValue() {
         return value;
     }

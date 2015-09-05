@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.util.Objects;
 
 public class JsonTextValue extends JsonSimpleValue {
     private final String value;
@@ -34,6 +35,11 @@ public class JsonTextValue extends JsonSimpleValue {
         printWriter.append(("\""));
     }
 
+    @Override
+    public JsonTextValue deepClone() {
+        return this;
+    }
+
     private void replace(StringBuilder val, char c, char rep) {
         for (int i=0;i<val.length();i++) {
             if (val.charAt(i) == c) {
@@ -48,16 +54,13 @@ public class JsonTextValue extends JsonSimpleValue {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (!(o instanceof JsonTextValue)) return false;
         JsonTextValue that = (JsonTextValue) o;
-
-        return !(value != null ? !value.equals(that.value) : that.value != null);
-
+        return Objects.equals(value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return value != null ? value.hashCode() : 0;
+        return Objects.hash(value);
     }
 }

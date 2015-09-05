@@ -22,6 +22,11 @@ public class JsonNullValue extends JsonSimpleValue {
     }
 
     @Override
+    public JsonNullValue deepClone() {
+        return this;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof JsonNullValue);
     }

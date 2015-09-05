@@ -3,9 +3,10 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class JsonInstantValue extends JsonSimpleValue {
-    private Instant value;
+    private final Instant value;
 
     public JsonInstantValue(Instant instant) {
         this.value = instant;
@@ -13,7 +14,6 @@ public class JsonInstantValue extends JsonSimpleValue {
 
     @Override
     public String stringValue() {
-        //DateTimeFormatter.ofPattern()
         return value.toString();
     }
 
@@ -27,8 +27,25 @@ public class JsonInstantValue extends JsonSimpleValue {
         printWriter.append(stringValue());
     }
 
+    @Override
+    public JsonInstantValue deepClone() {
+        return this;
+    }
+
     public Instant instantValue() {
         return value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsonInstantValue)) return false;
+        JsonInstantValue that = (JsonInstantValue) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
+    }
 }

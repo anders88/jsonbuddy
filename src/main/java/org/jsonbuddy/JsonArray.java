@@ -1,10 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,6 +56,14 @@ public class JsonArray extends JsonNode {
         printWriter.append("]");
     }
 
+    @Override
+    public JsonArray deepClone() {
+        return new JsonArray(
+                values.stream()
+                .map(JsonNode::deepClone)
+                .collect(Collectors.toList()));
+    }
+
 
     public JsonArray add(JsonNode jsonNode) {
         values.add(jsonNode);
@@ -100,5 +105,18 @@ public class JsonArray extends JsonNode {
                 .filter(no -> no instanceof JsonSimpleValue)
                 .map(no -> ((JsonSimpleValue) no).stringValue())
                 ;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsonArray)) return false;
+        JsonArray jsonArray = (JsonArray) o;
+        return Objects.equals(values, jsonArray.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

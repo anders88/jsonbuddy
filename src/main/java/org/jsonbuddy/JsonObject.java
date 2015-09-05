@@ -7,11 +7,15 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonNode {
-    private final Map<String,JsonNode> values = new HashMap<>();
+    private final Map<String,JsonNode> values;
 
 
     public JsonObject() {
+        this.values = new HashMap<>();
+    }
 
+    private JsonObject(Map<String,JsonNode> values) {
+        this.values = values;
     }
 
     public Optional<String> stringValue(String key) {
@@ -112,7 +116,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject withValue(String key,Enum<?> value) {
-        return withValue(key,Optional.of(value).map(Object::toString).orElse(null));
+        return withValue(key, Optional.of(value).map(Object::toString).orElse(null));
     }
 
     public Set<String> keys() {
@@ -131,6 +135,28 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject withValue(String key, Instant instant) {
-        return withValue(key,JsonFactory.jsonInstance(instant));
+        return withValue(key, JsonFactory.jsonInstance(instant));
+    }
+
+    @Override
+    public JsonObject deepClone() {
+        Map<String, JsonNode> cloned = values.entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().deepClone()));
+        Map<String, JsonNode> newValues = new HashMap<>();
+        newValues.putAll(cloned);
+        return new JsonObject(newValues);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof JsonObject)) return false;
+        JsonObject that = (JsonObject) o;
+        return Objects.equals(values, that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

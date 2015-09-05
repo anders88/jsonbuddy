@@ -47,4 +47,6 @@ public abstract class JsonNode {
     public String toString() {
         return toJson();
     }
+
+    public abstract JsonNode deepClone();
 }
