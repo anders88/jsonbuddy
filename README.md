@@ -5,11 +5,19 @@ The json parser for Java 8. This project is under construction. The api may chan
 Parses json to a java object structure. Generates json
 
 # Usage
+## Usage summary
+Convert from | Convert to|Use
+------------ | ----------|-----
+Text,input stream or reader | JsonNode | JsonParser.parse(input)
+JsonNode | String or writer | jsonNode.toJson(writer) or jsNode.toString()
+JsonNode | POJO | PojoMapper.map(jsonNode,POJO.class)
+POJO     | JsonNode | JsonGenerator.generate(pojo)
+
 ## Parsing json
 Parsing a string to a jsonnode
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
-JsonNode node = JsonJsonParser.parse(jsonString);
+JsonNode node = JsonParser.parse(jsonString);
 String name = node.requiredString("name"); // = Darth Vader
 ```
 You can also parse from an InputString or a reader. If you expect the json you can use the convinience method
