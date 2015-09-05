@@ -1,7 +1,7 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonNode;
 
 public interface JsonPojoBuilder<T> {
-    T build(JsonObject jsonObject);
+    T build(JsonNode jsonObject);
 }

@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OverrideMapper {
-    Class<? extends PojoClassMapper<?>> using();
+    Class<? extends JsonPojoBuilder<?>> using();
 }

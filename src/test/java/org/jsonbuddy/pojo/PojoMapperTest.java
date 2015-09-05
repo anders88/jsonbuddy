@@ -3,6 +3,7 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
@@ -93,10 +94,10 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("secret", "Darth");
         PojoMapper pojoMapper = PojoMapper.create().registerClassBuilder(SimpleWithNameGetter.class, new JsonPojoBuilder<SimpleWithNameGetter>() {
             @Override
-            public SimpleWithNameGetter build(JsonObject jsonObject) {
+            public SimpleWithNameGetter build(JsonNode jsonNode) {
 
                 SimpleWithNameGetter res = new SimpleWithNameGetter();
-                res.setName(jsonObject.value("secret").get().textValue());
+                res.setName(jsonNode.requiredString("secret"));
                 return res;
             }
         });

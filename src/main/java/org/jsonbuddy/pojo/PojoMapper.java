@@ -71,7 +71,7 @@ public class PojoMapper {
         Object result;
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
-            result = annotationsByType[0].using().newInstance().map(jsonObject);
+            result = annotationsByType[0].using().newInstance().build(jsonObject);
         } else {
             result = clazz.newInstance();
             for (String key : jsonObject.keys()) {
@@ -123,7 +123,8 @@ public class PojoMapper {
         if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
             try {
-                Object res = annotationsByType[0].using().newInstance().map(nodValue);
+                Object res = annotationsByType[0].using().newInstance().build(nodValue);
+                return Optional.of(res);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
