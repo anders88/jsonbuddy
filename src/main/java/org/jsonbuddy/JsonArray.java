@@ -107,6 +107,10 @@ public class JsonArray extends JsonNode {
                 ;
     }
 
+    public List<JsonNode> allValues() {
+        return new ArrayList<>(values);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
