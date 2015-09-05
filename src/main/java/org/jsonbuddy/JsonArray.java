@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class JsonArray extends JsonNode {
+public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     private final List<JsonNode> values;
 
 
@@ -107,9 +107,6 @@ public class JsonArray extends JsonNode {
                 ;
     }
 
-    public List<JsonNode> allValues() {
-        return new ArrayList<>(values);
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -122,5 +119,10 @@ public class JsonArray extends JsonNode {
     @Override
     public int hashCode() {
         return Objects.hash(values);
+    }
+
+    @Override
+    public Iterator<JsonNode> iterator() {
+        return new ArrayList<>(values).iterator();
     }
 }
