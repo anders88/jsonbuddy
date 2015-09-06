@@ -5,6 +5,7 @@ import org.jsonbuddy.*;
 import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -44,6 +45,13 @@ public class JsonGenerator {
             List<?> list = (List<?>) object;
             Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);
             return JsonArray.fromStream(nodeStream);
+        }
+        if (object instanceof Map) {
+            Map<String,Object> map = (Map<String, Object>) object;
+            JsonObject jsonObject = JsonFactory.jsonObject();
+            map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey(),generateNode(entry.getValue())));
+
+            return jsonObject;
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;

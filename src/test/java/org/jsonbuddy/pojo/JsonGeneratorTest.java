@@ -1,16 +1,11 @@
 package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
-import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
-import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
-import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
-import org.jsonbuddy.pojo.testclasses.SimpleWithName;
+import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,6 +94,15 @@ public class JsonGeneratorTest {
         assertThat(generate.requiredString("name")).isEqualTo("Darth Vader");
         assertThat(generate.requiredObject("myObject").requiredString("title")).isEqualTo("Dark Lord");
         assertThat(generate.requiredArray("myArray").stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
+    }
+
+    @Test
+    public void shouldMakeMapsIntoObjects() throws Exception {
+        Map<String, String> map = new HashMap<>();
+        map.put("name","Darth Vader");
+        ClassWithMap classWithMap = new ClassWithMap(map);
+        JsonObject generate = (JsonObject) JsonGenerator.generate(classWithMap);
+        assertThat(generate.requiredObject("properties").requiredString("name")).isEqualTo("Darth Vader");
 
     }
 }
