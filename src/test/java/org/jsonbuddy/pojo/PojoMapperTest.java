@@ -157,6 +157,13 @@ public class PojoMapperTest {
 
         assertThat(classWithMap.properties.get("firstname")).isEqualTo("Darth");
         assertThat(classWithMap.properties.get("lastname")).isEqualTo("Vader");
+    }
+
+    @Test
+    public void shouldHandleClassWithPrivateConstructor() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
+        ClassWithPrivateConstructor privateConstr = PojoMapper.map(jsonObject, ClassWithPrivateConstructor.class);
+        assertThat(privateConstr.name).isEqualTo("Darth Vader");
 
     }
 }

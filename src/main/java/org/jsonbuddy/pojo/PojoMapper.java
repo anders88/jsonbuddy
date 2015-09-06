@@ -39,7 +39,7 @@ public class PojoMapper {
         globalPojoBuilders.put(clazz,jsonPojoBuilder);
     }
 
-    public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) {
+    public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) throws CanNotMapException {
         try {
             return (T) mapit(jsonObject,clazz);
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class PojoMapper {
         }
     }
 
-    public  <T> List<T> mapToPojo(JsonArray jsonArray,Class<T> listClazz) {
+    public  <T> List<T> mapToPojo(JsonArray jsonArray,Class<T> listClazz) throws CanNotMapException {
         return jsonArray.nodeStream()
                 .filter(node -> node instanceof JsonObject)
                 .map(node -> mapToPojo((JsonObject) node,listClazz))
@@ -81,7 +81,25 @@ public class PojoMapper {
             result = objectMap;
 
         } else {
-            result = clazz.newInstance();
+            Constructor<?>[] declaredConstructors = Optional.ofNullable(clazz.getDeclaredConstructors()).orElse(new Constructor[0]);
+            result = null;
+            for (Constructor<?> constructor : declaredConstructors) {
+                if (constructor.getParameterCount() == 0) {
+                    boolean accessible = constructor.isAccessible();
+                    if (!accessible) {
+                        constructor.setAccessible(true);
+                    }
+                    result = constructor.newInstance();
+                    if (!accessible) {
+                        constructor.setAccessible(false);
+
+                    }
+                    break;
+                }
+            }
+            if (result == null) {
+                throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
+            }
             for (String key : jsonObject.keys()) {
                 if (findField(clazz, jsonObject, result, key)) {
                     continue;
