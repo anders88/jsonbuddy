@@ -43,7 +43,12 @@ You can also send a PrintWriter, and the result will be written to the writer.
 ## Json to POJO
 ...
 
-# Todos
+# Planned in version 0.4.0
+* Object.withValue with streams as input to add arrays
+* Even more forgiving when dealing with numbers and string (converts as appropriate)
+* Better fetching in nested elements
+
+# Todos later
 * Strict mode in Pojo mapping
 * Converting to Pojo map now only supports Map<String,String>
 
