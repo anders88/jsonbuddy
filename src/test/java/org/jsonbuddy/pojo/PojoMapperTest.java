@@ -164,6 +164,14 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
         ClassWithPrivateConstructor privateConstr = PojoMapper.map(jsonObject, ClassWithPrivateConstructor.class);
         assertThat(privateConstr.name).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldConvertTextToNumberIfNessesary() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("text", "Darth Vader").withValue("number", "42");
+        ClassWithDifferentTypes classWithDifferentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
+
+        assertThat(classWithDifferentTypes.number).isEqualTo(42);
 
     }
 }

@@ -138,11 +138,29 @@ public class PojoMapper {
             value = nodeValue;
         } else {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
+            value = convertIfNessesary(value,declaredField.getType());
         }
+
         declaredField.setAccessible(true);
         declaredField.set(result,value);
         declaredField.setAccessible(false);
         return true;
+    }
+
+    private Object convertIfNessesary(Object value, Class<?> destinationType) {
+        if (value == null) {
+            return null;
+        }
+        if (destinationType.isAssignableFrom(value.getClass())) {
+            return value;
+        }
+        if (destinationType.isAssignableFrom(Integer.class) && (value instanceof String)) {
+            return Integer.parseInt((String) value);
+        }
+        if (destinationType.isAssignableFrom(Long.class) && (value instanceof String)) {
+            return Long.parseLong((String) value);
+        }
+        return value;
     }
 
     private static Optional<Object> overriddenValue(Class declaredClass,JsonNode nodValue) {
@@ -191,6 +209,7 @@ public class PojoMapper {
             value = jsonObject;
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);
+            value = convertIfNessesary(value,setterClass);
         }
         method.invoke(instance,value);
         return true;
