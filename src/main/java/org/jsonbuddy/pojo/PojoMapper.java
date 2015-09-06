@@ -72,6 +72,14 @@ public class PojoMapper {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             result = annotationsByType[0].using().newInstance().build(jsonObject);
+        } else if (clazz.isAssignableFrom(Map.class)) {
+            Map<String,Object> objectMap = new HashMap<>();
+            for (String key : jsonObject.keys()) {
+                // Todo Handle something else than String
+                objectMap.put(key,mapit(jsonObject.value(key).get(),String.class));
+            }
+            result = objectMap;
+
         } else {
             result = clazz.newInstance();
             for (String key : jsonObject.keys()) {
