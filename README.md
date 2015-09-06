@@ -53,7 +53,8 @@ Version | Description
 ------- | -------------
 0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
 0.2.0   | New api without factories. Errorhandling. Basic testing and tuning
-0.3.0   | Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
+0.3.0   | NA - see version 0.3.1
+0.3.1   | Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
 
 # Licence
 Copyright © 2015 Anders Karlsen
