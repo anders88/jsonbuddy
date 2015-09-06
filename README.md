@@ -13,7 +13,7 @@ JsonNode | String or writer | jsonNode.toJson(writer) or jsNode.toString()
 JsonNode | POJO | PojoMapper.map(jsonNode,POJO.class)
 POJO     | JsonNode | JsonGenerator.generate(pojo)
 
-## Parsing json
+## Parsing json (String to JsonNode)
 Parsing a string to a jsonnode
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
@@ -31,7 +31,7 @@ This will cast an exception if the result is not an object. The same method can 
 ...
 
 
-## Generating json
+## Generating json (Jsnode to String)
 Generating json as string
 ```java
 JsonObject jsonObject = JsonFactory.jsonObject()
@@ -45,7 +45,6 @@ You can also send a PrintWriter, and the result will be written to the writer.
 
 # Todos
 * Strict mode in Pojo mapping
-* Convert numeric strings to numbers in Pojo mapping
 * Converting to Pojo map now only supports Map<String,String>
 
 # Version history
@@ -54,7 +53,7 @@ Version | Description
 ------- | -------------
 0.1.0   | Skeleton version. Parses and generates json. No error handling or performance tuning.
 0.2.0   | New api without factories. Errorhandling. Basic testing and tuning
-0.3.0   | (Coming soon) Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
+0.3.0   | Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
 
 # Licence
 Copyright © 2015 Anders Karlsen
