@@ -158,6 +158,13 @@ public class JsonParserTest {
         assertThat(jsonInstantValue.instantValue()).isEqualTo(LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant());
     }
 
+    @Test
+    public void shouldHandleEmptyArray() throws Exception {
+        JsonObject jsonObject = JsonParser.parseToObject("{\"properties\":{\"myEmptyList\":[]}}");
+        assertThat(jsonObject.requiredObject("properties").requiredArray("myEmptyList")).isEmpty();
+
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }

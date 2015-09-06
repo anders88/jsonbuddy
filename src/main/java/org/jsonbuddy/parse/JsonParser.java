@@ -164,6 +164,9 @@ public class JsonParser {
         JsonArray jsonArrayFactory = new JsonArray();
         while (!(finished || lastRead == ']')) {
             readNext();
+            if (lastRead == ']') {
+                break;
+            }
             JsonNode jsonFactory = parseValue();
             jsonArrayFactory.add(jsonFactory);
             readSpaceUntil("Expected , or ] in array", ']', ',');
