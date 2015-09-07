@@ -26,8 +26,30 @@ public class JsonObject extends JsonNode {
 
     public Optional<Long> longValue(String key) {
         return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonLong)
-                .map(n -> ((JsonLong) n).longValue());
+                .filter(JsonObject::isLong)
+                .map(JsonObject::mapToLong);
+    }
+
+    private static boolean isLong(JsonNode jsonNode) {
+        if (jsonNode instanceof JsonLong) {
+            return true;
+        }
+        if (jsonNode instanceof JsonTextValue) {
+            try {
+                Long.parseLong(((JsonTextValue) jsonNode).stringValue());
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static long mapToLong(JsonNode jsonNode) {
+        if (jsonNode instanceof JsonLong) {
+            return ((JsonLong) jsonNode).longValue();
+        }
+        return Long.parseLong(jsonNode.textValue());
     }
 
     public Optional<Boolean> booleanValue(String key) {
