@@ -192,6 +192,7 @@ public class JsonParser {
         while (!(finished || lastRead == '}')) {
             readSpaceUntil("JsonObject not closed. Expected }", '}', '"');
             if (lastRead == '}') {
+                readNext();
                 return jsonObject;
             }
             readNext();
