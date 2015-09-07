@@ -154,6 +154,20 @@ public class PojoMapper {
         if (destinationType.isAssignableFrom(value.getClass())) {
             return value;
         }
+        if (value instanceof Long && Integer.class.equals(destinationType)) {
+            int intval = Integer.parseInt(value.toString());
+            return intval;
+        }
+        if (value instanceof Integer && Long.class.equals(destinationType)) {
+            long longval = (long) value;
+            return longval;
+        }
+        if (Integer.class.equals(destinationType) && (value instanceof String)) {
+            return Integer.parseInt((String) value);
+        }
+        if (Long.class.equals(destinationType) && (value instanceof String)) {
+            return Long.parseLong((String) value);
+        }
         if (destinationType.isAssignableFrom(Integer.class) && (value instanceof String)) {
             return Integer.parseInt((String) value);
         }
@@ -209,7 +223,7 @@ public class PojoMapper {
             value = jsonObject;
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);
-            value = convertIfNessesary(value,setterClass);
+            value = convertIfNessesary(value, setterClass);
         }
         method.invoke(instance,value);
         return true;

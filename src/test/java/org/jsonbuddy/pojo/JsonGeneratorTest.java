@@ -103,6 +103,15 @@ public class JsonGeneratorTest {
         ClassWithMap classWithMap = new ClassWithMap(map);
         JsonObject generate = (JsonObject) JsonGenerator.generate(classWithMap);
         assertThat(generate.requiredObject("properties").requiredString("name")).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleDifferentSimpleTypes() throws Exception {
+        ClassWithDifferentTypes classWithDifferentTypes = new ClassWithDifferentTypes("my text", 42, true);
+        JsonObject generated = (JsonObject) JsonGenerator.generate(classWithDifferentTypes);
+        assertThat(generated.requiredString("text")).isEqualTo("my text");
+        assertThat(generated.requiredLong("number")).isEqualTo(42);
+        assertThat(generated.requiredBoolean("bool")).isTrue();
 
     }
 }

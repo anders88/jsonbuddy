@@ -18,10 +18,6 @@ public class JsonLong extends JsonSimpleValue {
 
     @Override
     public Object javaObjectValue() {
-        if (value <= Integer.MAX_VALUE && value >= Integer.MIN_VALUE){
-            int res = (int) value;
-            return res;
-        }
         return value;
     }
 

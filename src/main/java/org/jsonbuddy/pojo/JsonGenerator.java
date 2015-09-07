@@ -41,6 +41,9 @@ public class JsonGenerator {
             double d = f;
             return JsonFactory.jsonDouble(d);
         }
+        if (object instanceof Boolean) {
+            return JsonFactory.jsonBoolean((Boolean) object);
+        }
         if (object instanceof List) {
             List<?> list = (List<?>) object;
             Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);
