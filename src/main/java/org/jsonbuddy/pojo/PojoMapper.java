@@ -56,6 +56,10 @@ public class PojoMapper {
     }
 
     private Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
+        if (clazz.isAnnotationPresent(OverrideMapper.class)) {
+            OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
+            return annotationsByType[0].using().newInstance().build(jsonNode);
+        }
         if (jsonNode instanceof JsonSimpleValue) {
             return ((JsonSimpleValue) jsonNode).javaObjectValue();
         }
@@ -69,46 +73,34 @@ public class PojoMapper {
         }
 
         Object result;
-        if (clazz.isAnnotationPresent(OverrideMapper.class)) {
-            OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
-            result = annotationsByType[0].using().newInstance().build(jsonObject);
-        } else if (clazz.isAssignableFrom(Map.class)) {
-            Map<String,Object> objectMap = new HashMap<>();
-            for (String key : jsonObject.keys()) {
-                // Todo Handle something else than String
-                objectMap.put(key,mapit(jsonObject.value(key).get(),String.class));
-            }
-            result = objectMap;
+        Constructor<?>[] declaredConstructors = Optional.ofNullable(clazz.getDeclaredConstructors()).orElse(new Constructor[0]);
+        result = null;
+        for (Constructor<?> constructor : declaredConstructors) {
+            if (constructor.getParameterCount() == 0) {
+                boolean accessible = constructor.isAccessible();
+                if (!accessible) {
+                    constructor.setAccessible(true);
+                }
+                result = constructor.newInstance();
+                if (!accessible) {
+                    constructor.setAccessible(false);
 
-        } else {
-            Constructor<?>[] declaredConstructors = Optional.ofNullable(clazz.getDeclaredConstructors()).orElse(new Constructor[0]);
-            result = null;
-            for (Constructor<?> constructor : declaredConstructors) {
-                if (constructor.getParameterCount() == 0) {
-                    boolean accessible = constructor.isAccessible();
-                    if (!accessible) {
-                        constructor.setAccessible(true);
-                    }
-                    result = constructor.newInstance();
-                    if (!accessible) {
-                        constructor.setAccessible(false);
-
-                    }
-                    break;
                 }
-            }
-            if (result == null) {
-                throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
-            }
-            for (String key : jsonObject.keys()) {
-                if (findField(clazz, jsonObject, result, key)) {
-                    continue;
-                }
-                if (findSetter(jsonObject, clazz, result, key)) {
-                    continue;
-                }
+                break;
             }
         }
+        if (result == null) {
+            throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
+        }
+        for (String key : jsonObject.keys()) {
+            if (findField(clazz, jsonObject, result, key)) {
+                continue;
+            }
+            if (findSetter(jsonObject, clazz, result, key)) {
+                continue;
+            }
+        }
+
         return result;
     }
 
@@ -136,6 +128,8 @@ public class PojoMapper {
             value = overriddenValue.get();
         } else if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
             value = nodeValue;
+        } else if (Map.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonObject)) {
+            value = mapAsMap((ParameterizedType) declaredField.getGenericType(),(JsonObject) nodeValue);
         } else {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
             value = convertIfNessesary(value,declaredField.getType());
@@ -145,6 +139,16 @@ public class PojoMapper {
         declaredField.set(result,value);
         declaredField.setAccessible(false);
         return true;
+    }
+
+    private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
+        Class<?> valueclass = Class.forName(genericType.getActualTypeArguments()[1].getTypeName());
+
+        Map<String, Object> result = new HashMap<>();
+        for (String key : nodeValue.keys()) {
+            result.put(key, mapit(nodeValue.value(key).get(), valueclass));
+        }
+        return result;
     }
 
     private Object convertIfNessesary(Object value, Class<?> destinationType) {
@@ -221,6 +225,8 @@ public class PojoMapper {
             value = overriddenValue.get();
         } else if (setterClass.isAssignableFrom(jsonObject.getClass())) {
             value = jsonObject;
+        } else if (Map.class.isAssignableFrom(setterClass) && (jsonObject.objectValue(key).isPresent())) {
+            value = mapAsMap((ParameterizedType) method.getGenericParameterTypes()[0],jsonObject.requiredObject(key));
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);
             value = convertIfNessesary(value, setterClass);
