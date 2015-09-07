@@ -208,6 +208,7 @@ public class JsonParser {
         if (finished) {
             throw new JsonParseException("JsonObject not closed. Expected }");
         }
+        readNext();
         return jsonObject;
     }
 
