@@ -5,6 +5,8 @@ import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -112,6 +114,16 @@ public class JsonGeneratorTest {
         assertThat(generated.requiredString("text")).isEqualTo("my text");
         assertThat(generated.requiredLong("number")).isEqualTo(42);
         assertThat(generated.requiredBoolean("bool")).isTrue();
+    }
+
+    @Test
+    public void shouldHandleClassWithTime() throws Exception {
+        OffsetDateTime dateTime = OffsetDateTime.of(2015, 8, 13, 21, 14, 18, 321, ZoneOffset.UTC);
+        ClassWithTime classWithTime = new ClassWithTime();
+        classWithTime.setTime(dateTime.toInstant());
+
+        JsonObject jsonNode = (JsonObject) JsonGenerator.generate(classWithTime);
+        assertThat(jsonNode.requiredString("time")).isEqualTo("2015-08-13T21:14:18.000000321Z");
 
     }
 }

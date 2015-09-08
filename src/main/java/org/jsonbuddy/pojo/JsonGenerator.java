@@ -3,6 +3,7 @@ package org.jsonbuddy.pojo;
 import org.jsonbuddy.*;
 
 import java.lang.reflect.*;
+import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,9 @@ public class JsonGenerator {
             map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey(),generateNode(entry.getValue())));
 
             return jsonObject;
+        }
+        if (object instanceof Temporal) {
+            return JsonFactory.jsonText(object.toString());
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
