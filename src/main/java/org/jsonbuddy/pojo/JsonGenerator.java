@@ -45,6 +45,9 @@ public class JsonGenerator {
         if (object instanceof Boolean) {
             return JsonFactory.jsonBoolean((Boolean) object);
         }
+        if (object instanceof Enum) {
+            return JsonFactory.jsonText(object.toString());
+        }
         if (object instanceof List) {
             List<?> list = (List<?>) object;
             Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);

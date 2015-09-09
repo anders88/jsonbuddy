@@ -6,6 +6,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class PojoMapper {
 
@@ -177,6 +179,13 @@ public class PojoMapper {
         }
         if (destinationType.isAssignableFrom(Long.class) && (value instanceof String)) {
             return Long.parseLong((String) value);
+        }
+        if (destinationType.isEnum() && (value instanceof String)) {
+            String stringValue = (String) value;
+            Object[] enumConstants = destinationType.getEnumConstants();
+            return Arrays.asList(enumConstants).stream()
+                    .filter(o -> stringValue.equals(o.toString()))
+                    .findAny().get();
         }
         return value;
     }

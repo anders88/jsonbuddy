@@ -193,6 +193,13 @@ public class PojoMapperTest {
                                 .withValue("darth", JsonFactory.jsonObject().withValue("name", "Darth Vader")));
         ClassWithEmbeddedGetSetMap withEmbeddedMap = PojoMapper.map(jsonObject, ClassWithEmbeddedGetSetMap.class);
         assertThat(withEmbeddedMap.getNames().get("darth").name).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleClassWithEnum() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("enumNumber", "TWO");
+        ClassWithEnum classWithEnum = PojoMapper.map(jsonObject, ClassWithEnum.class);
+        assertThat(classWithEnum.enumNumber).isEqualTo(EnumClass.TWO);
 
     }
 }

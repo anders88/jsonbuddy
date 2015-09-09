@@ -124,6 +124,13 @@ public class JsonGeneratorTest {
 
         JsonObject jsonNode = (JsonObject) JsonGenerator.generate(classWithTime);
         assertThat(jsonNode.requiredString("time")).isEqualTo("2015-08-13T21:14:18.000000321Z");
+    }
+
+    @Test
+    public void shouldHandleClassWithEnum() throws Exception {
+        ClassWithEnum classWithEnum = new ClassWithEnum();
+        JsonObject jso = (JsonObject) JsonGenerator.generate(classWithEnum);
+        assertThat(jso.requiredString("enumNumber")).isEqualTo("ONE");
 
     }
 }
