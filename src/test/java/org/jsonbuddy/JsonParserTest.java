@@ -169,6 +169,11 @@ public class JsonParserTest {
     public void shouldHandleNestedObjectFollowedByAnotherProperty() throws Exception {
         JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'objone':{'color':'blue'},'name':'Darth Vader'}"));
         assertThat(jsonObject.requiredString("name")).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleLineshifts() throws Exception {
+        JsonParser.parseToObject(fixQuotes("{'tablevalues':\n['one','two']}"));
 
     }
 

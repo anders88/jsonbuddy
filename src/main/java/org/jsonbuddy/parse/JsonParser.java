@@ -115,7 +115,7 @@ public class JsonParser {
             if (lastRead == '-' || Character.isDigit(lastRead)) {
                 return parseNumberValue();
             }
-            if (!Character.isSpaceChar(lastRead)) {
+            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t')) {
                 throw new JsonParseException("Unexpected charachter " + lastRead);
             }
             readNext();
