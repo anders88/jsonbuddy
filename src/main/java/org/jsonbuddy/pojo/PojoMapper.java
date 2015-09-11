@@ -125,9 +125,9 @@ public class PojoMapper {
         }
         JsonNode nodeValue = jsonObject.value(key).get();
         Object value;
-        Optional<Object> overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
-        if (overriddenValue.isPresent()) {
-            value = overriddenValue.get();
+        OverriddenVal overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
+        if (overriddenValue.ovverridden) {
+            value = overriddenValue.value;
         } else if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
             value = nodeValue;
         } else if (Map.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonObject)) {
@@ -190,17 +190,27 @@ public class PojoMapper {
         return value;
     }
 
-    private static Optional<Object> overriddenValue(Class declaredClass,JsonNode nodValue) {
+    private static class OverriddenVal {
+        private boolean ovverridden;
+        private Object value;
+
+        public OverriddenVal(boolean ovverridden, Object value) {
+            this.ovverridden = ovverridden;
+            this.value = value;
+        }
+    }
+
+    private static OverriddenVal overriddenValue(Class declaredClass,JsonNode nodValue) {
         if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
             try {
                 Object res = annotationsByType[0].using().newInstance().build(nodValue);
-                return Optional.of(res);
+                return new OverriddenVal(true,res);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         }
-        return Optional.empty();
+        return new OverriddenVal(false,null);
     }
 
     private static Class<?> computeType(Field declaredField, JsonNode nodeValue) {
@@ -229,9 +239,9 @@ public class PojoMapper {
         Method method = setter.get();
         Class<?> setterClass = method.getParameterTypes()[0];
         Object value;
-        Optional<Object> overriddenValue = overriddenValue(setterClass, jsonObject);
-        if (overriddenValue.isPresent()) {
-            value = overriddenValue.get();
+        OverriddenVal overriddenValue = overriddenValue(setterClass, jsonObject);
+        if (overriddenValue.ovverridden) {
+            value = overriddenValue.value;
         } else if (setterClass.isAssignableFrom(jsonObject.getClass())) {
             value = jsonObject;
         } else if (Map.class.isAssignableFrom(setterClass) && (jsonObject.objectValue(key).isPresent())) {

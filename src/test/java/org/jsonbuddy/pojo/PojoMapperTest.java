@@ -141,6 +141,23 @@ public class PojoMapperTest {
     }
 
     @Test
+    public void shouldHandleClassWithOverriddenNull() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("name", "Darth Vader")
+                .withValue("myHack",JsonFactory.jsonObject().withValue("wont matter","nope"));
+        PojoMapperOverride.returnNull = true;
+        CombinedClassWithAnnotation classWithAnnotation;
+        try {
+            classWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
+        } finally {
+            PojoMapperOverride.returnNull = false;
+
+        }
+        assertThat(classWithAnnotation.myHack).isNull();
+
+    }
+
+    @Test
     public void shouldHandleCombined() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
                 .withValue("name", "Darth Vader")
