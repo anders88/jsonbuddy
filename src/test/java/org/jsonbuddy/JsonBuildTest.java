@@ -92,4 +92,13 @@ public class JsonBuildTest {
         assertThat(orig.requiredArray("children").stringStream().collect(Collectors.toList())).containsExactly("Luke");
 
     }
+
+    @Test
+    public void shouldHandleNullAsStringValue() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("nullValue", new JsonNullValue());
+
+        assertThat(jsonObject.value("nullValue")).isPresent();
+        assertThat(jsonObject.requiredString("nullValue")).isNull();
+
+    }
 }
