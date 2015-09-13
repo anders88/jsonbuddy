@@ -1,6 +1,7 @@
 package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
+import org.jsonbuddy.parse.JsonParseException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -144,7 +145,13 @@ public class PojoMapper {
     }
 
     private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
-        Class<?> valueclass = Class.forName(genericType.getActualTypeArguments()[1].getTypeName());
+        Class<?> valueclass;
+        String typeName = genericType.getActualTypeArguments()[1].getTypeName();
+        try {
+            valueclass = Class.forName(typeName);
+        } catch (ClassNotFoundException e) {
+            throw new JsonParseException("Could not find class " + typeName) ;
+        }
 
         Map<String, Object> result = new HashMap<>();
         for (String key : nodeValue.keys()) {
