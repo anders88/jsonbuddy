@@ -147,6 +147,10 @@ public class PojoMapper {
     private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
         Class<?> valueclass;
         String typeName = genericType.getActualTypeArguments()[1].getTypeName();
+        int genericStart = typeName.indexOf("<");
+        if (genericStart != -1) {
+            typeName = typeName.substring(genericStart+1,typeName.indexOf(">"));
+        }
         try {
             valueclass = Class.forName(typeName);
         } catch (ClassNotFoundException e) {

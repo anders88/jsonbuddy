@@ -217,6 +217,15 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().withValue("enumNumber", "TWO");
         ClassWithEnum classWithEnum = PojoMapper.map(jsonObject, ClassWithEnum.class);
         assertThat(classWithEnum.enumNumber).isEqualTo(EnumClass.TWO);
+    }
+
+    @Test
+    public void shouldHandleClassWithMapWithList() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .withValue("parentAndChildren",
+                        JsonFactory.jsonObject().withValue("Darth", JsonFactory.jsonArray().add("Luke").add("Leia")));
+        ClassWithMapWithList withList = PojoMapper.map(jsonObject, ClassWithMapWithList.class);
+        assertThat(withList.parentAndChildren.get("Darth")).containsExactly("Luke","Leia");
 
     }
 }
