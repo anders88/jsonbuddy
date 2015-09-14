@@ -5,6 +5,7 @@ import org.jsonbuddy.*;
 import java.lang.reflect.*;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,17 +49,17 @@ public class JsonGenerator {
         if (object instanceof Enum) {
             return JsonFactory.jsonText(object.toString());
         }
-        if (object instanceof List) {
-            List<?> list = (List<?>) object;
-            Stream<JsonNode> nodeStream = list.stream().map(this::generateNode);
-            return JsonArray.fromStream(nodeStream);
-        }
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
             map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey().toString(),generateNode(entry.getValue())));
 
             return jsonObject;
+        }
+        if (object instanceof Collection) {
+            Collection<?> collection = (Collection<?>) object;
+            Stream<JsonNode> nodeStream = collection.stream().map(this::generateNode);
+            return JsonArray.fromStream(nodeStream);
         }
         if (object instanceof Temporal) {
             return JsonFactory.jsonText(object.toString());
