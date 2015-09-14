@@ -54,9 +54,9 @@ public class JsonGenerator {
             return JsonArray.fromStream(nodeStream);
         }
         if (object instanceof Map) {
-            Map<String,Object> map = (Map<String, Object>) object;
+            Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
-            map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey(),generateNode(entry.getValue())));
+            map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey().toString(),generateNode(entry.getValue())));
 
             return jsonObject;
         }

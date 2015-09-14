@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -228,4 +229,6 @@ public class PojoMapperTest {
         assertThat(withList.parentAndChildren.get("Darth")).containsExactly("Luke","Leia");
 
     }
+
+
 }

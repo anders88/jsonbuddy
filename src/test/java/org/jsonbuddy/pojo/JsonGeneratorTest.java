@@ -95,13 +95,13 @@ public class JsonGeneratorTest {
 
         assertThat(generate.requiredString("name")).isEqualTo("Darth Vader");
         assertThat(generate.requiredObject("myObject").requiredString("title")).isEqualTo("Dark Lord");
-        assertThat(generate.requiredArray("myArray").stringStream().collect(Collectors.toList())).containsExactly("Luke","Leia");
+        assertThat(generate.requiredArray("myArray").stringStream().collect(Collectors.toList())).containsExactly("Luke", "Leia");
     }
 
     @Test
     public void shouldMakeMapsIntoObjects() throws Exception {
         Map<String, String> map = new HashMap<>();
-        map.put("name","Darth Vader");
+        map.put("name", "Darth Vader");
         ClassWithMap classWithMap = new ClassWithMap(map);
         JsonObject generate = (JsonObject) JsonGenerator.generate(classWithMap);
         assertThat(generate.requiredObject("properties").requiredString("name")).isEqualTo("Darth Vader");
@@ -131,6 +131,17 @@ public class JsonGeneratorTest {
         ClassWithEnum classWithEnum = new ClassWithEnum();
         JsonObject jso = (JsonObject) JsonGenerator.generate(classWithEnum);
         assertThat(jso.requiredString("enumNumber")).isEqualTo("ONE");
+
+    }
+
+    @Test
+    public void shouldHandleMapWithKeyOtherThanString() throws Exception {
+        Map<Long,String> myLongMap = new HashMap<>();
+        myLongMap.put(42L, "Meaning of life");
+        JsonNode generated = JsonGenerator.generate(myLongMap);
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        assertThat(jsonObject.requiredString("42")).isEqualTo("Meaning of life");
 
     }
 }
