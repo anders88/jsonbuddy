@@ -24,11 +24,20 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return new JsonArray(nodes);
     }
 
+    public static JsonArray fromNodeSteam(Stream<? extends JsonNode> nodes) {
+        return new JsonArray(nodes.collect(Collectors.toList()));
+    }
+
+
     public static JsonArray fromStringList(List<String> nodes) {
         if (nodes == null) {
             return new JsonArray();
         }
         return new JsonArray(nodes.stream().map(JsonTextValue::new).collect(Collectors.toList()));
+    }
+
+    public static JsonArray fromStringStream(Stream<String> nodes) {
+        return new JsonArray(nodes.map(JsonTextValue::new).collect(Collectors.toList()));
     }
 
 

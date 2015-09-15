@@ -132,6 +132,10 @@ public class JsonObject extends JsonNode {
         return withValue(key,JsonFactory.jsonText(value));
     }
 
+    public JsonObject withValue(String key,double value) {
+        return withValue(key,JsonFactory.jsonDouble(value));
+    }
+
     public JsonObject withValue(String key,long value) {
         return withValue(key, JsonFactory.jsonLong(value));
     }
