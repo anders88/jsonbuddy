@@ -43,13 +43,12 @@ You can also send a PrintWriter, and the result will be written to the writer.
 ## Json to POJO
 ...
 
-# Planned in version 0.4.0
-* Object.withValue with streams as input to add arrays
-* Even more forgiving when dealing with numbers and string (converts as appropriate)
-* Better fetching in nested elements
 
-# Todos later
+# Todos
 * Strict mode in Pojo mapping
+* Better fetching in nested elements
+* BigDecimal support
+
 
 # Version history
 
@@ -59,6 +58,7 @@ Version | Description
 0.2.0   | New api without factories. Errorhandling. Basic testing and tuning
 0.3.0   | NA - see version 0.3.1
 0.3.1   | Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
+0.4.0   | Bugfixes and more convinience methods. 
 
 # Licence
 Copyright © 2015 Anders Karlsen
