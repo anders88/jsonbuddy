@@ -2,6 +2,7 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,6 +42,13 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     }
 
 
+    public <T> List<T> mapValues(Function<JsonObject,T> mapFunc) {
+        return values.stream()
+                .filter(jn -> (jn instanceof JsonObject))
+                .map(jn -> (JsonObject) jn)
+                .map(mapFunc)
+                .collect(Collectors.toList());
+    }
 
     private JsonArray(Stream<JsonNode> nodeStream) {
         values = nodeStream.collect(Collectors.toList());
