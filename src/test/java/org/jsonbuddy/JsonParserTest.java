@@ -122,9 +122,9 @@ public class JsonParserTest {
         validateException("['Luke'", "Expected , or ] in array");
         validateException("{'name':'Luke}", "JsonObject not closed. Expected }");
         validateException("{'name'}", "Expected value for objectkey name");
-        validateException("{'name' 'Darth'","Expected value for objectkey name");
-        validateException("[1 2]","Expected , or ] in array");
-        validateException("{'dummy':2gh}","Illegal value 2g");
+        validateException("{'name' 'Darth'", "Expected value for objectkey name");
+        validateException("[1 2]", "Expected , or ] in array");
+        validateException("{'dummy':2gh}", "Illegal value '2g'");
     }
 
     private void validateException(String json, String errormessage) {
@@ -175,6 +175,13 @@ public class JsonParserTest {
     public void shouldHandleLineshifts() throws Exception {
         JsonParser.parseToObject(fixQuotes("{'tablevalues':\n['one','two']}"));
 
+    }
+
+    @Test
+    public void shouldHandleSpesialCharsAfterNumbers() throws Exception {
+        String val = "{\"id\":4326\r}";
+        JsonObject jsonObject = JsonParser.parseToObject(val);
+        assertThat(jsonObject.requiredLong("id")).isEqualTo(4326);
     }
 
     private static String fixQuotes(String content) {

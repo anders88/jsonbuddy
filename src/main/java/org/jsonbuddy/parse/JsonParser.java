@@ -115,8 +115,8 @@ public class JsonParser {
             if (lastRead == '-' || Character.isDigit(lastRead)) {
                 return parseNumberValue();
             }
-            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t')) {
-                throw new JsonParseException("Unexpected charachter " + lastRead);
+            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t' || lastRead != '\r')) {
+                throw new JsonParseException("Unexpected charachter '" + lastRead + "'");
             }
             readNext();
         }
@@ -132,8 +132,8 @@ public class JsonParser {
             val.append(lastRead);
             readNext();
         }
-        if (!(Character.isSpaceChar(lastRead) || "}],".contains("" + lastRead))) {
-            throw new JsonParseException("Illegal value " + val + lastRead);
+        if ((!(Character.isSpaceChar(lastRead) || "}],".contains("" + lastRead))) && (!"\n\r\t".contains("" + lastRead))) {
+            throw new JsonParseException("Illegal value '" + val + lastRead + "'");
         }
         if (isDouble) {
             return new JsonDouble(Double.parseDouble(val.toString()));
