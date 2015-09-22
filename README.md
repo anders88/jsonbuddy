@@ -59,6 +59,7 @@ Version | Description
 0.3.0   | NA - see version 0.3.1
 0.3.1   | Converting to POJO. Support of java.time.Instant. Convenience methods and bugfixes.
 0.4.0   | Bugfixes and more convinience methods. 
+0.4.1   | Bugfix. Handling spaces after numbers
 
 # Licence
 Copyright © 2015 Anders Karlsen
