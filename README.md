@@ -5,6 +5,16 @@ The json parser for Java 8. This project is under construction. The api may chan
 Parses json to a java object structure. Generates json
 
 # Usage
+# Maven
+Jsononbuddy is on maven central. Add to your pom
+```xml
+<dependency>
+	<groupId>org.jsonbuddy</groupId>
+	<artifactId>jsonbuddy</artifactId>
+	<version>0.4.1</version>
+</dependency>
+```
+
 ## Usage summary
 Convert from | Convert to|Use
 ------------ | ----------|-----
