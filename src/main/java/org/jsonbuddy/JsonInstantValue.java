@@ -24,7 +24,9 @@ public class JsonInstantValue extends JsonSimpleValue {
 
     @Override
     public void toJson(PrintWriter printWriter) {
+        printWriter.append("\"");
         printWriter.append(stringValue());
+        printWriter.append("\"");
     }
 
     @Override

@@ -96,6 +96,32 @@ public class JsonObject extends JsonNode {
         return booleanValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
+    public Instant requiredInstant(String key) {
+        JsonSimpleValue val = value(key)
+                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
+                        .map(no -> (JsonSimpleValue) no)
+                        .orElseThrow(throwKeyNotPresent(key));
+        if (val instanceof JsonInstantValue) {
+            return ((JsonInstantValue) val).instantValue();
+        }
+        String text = val.textValue();
+        return Instant.parse(text);
+    }
+
+    public Optional<Instant> instantValue(String key) {
+        Optional<JsonSimpleValue> val = value(key)
+                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
+                .map(no -> (JsonSimpleValue) no);
+        if (!val.isPresent()) {
+            return Optional.empty();
+        }
+        if (val.get() instanceof JsonInstantValue) {
+            return Optional.of(((JsonInstantValue) val.get()).instantValue());
+        }
+        String text = val.get().textValue();
+        return Optional.of(Instant.parse(text));
+    }
+
     public JsonObject requiredObject(String key) throws JsonValueNotPresentException{
         return objectValue(key).orElseThrow(throwKeyNotPresent(key));
     }
@@ -188,4 +214,6 @@ public class JsonObject extends JsonNode {
     public int hashCode() {
         return Objects.hash(values);
     }
+
+
 }

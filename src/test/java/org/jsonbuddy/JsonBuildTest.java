@@ -101,4 +101,13 @@ public class JsonBuildTest {
         assertThat(jsonObject.requiredString("nullValue")).isNull();
 
     }
+
+    @Test
+    public void shouldGiveStringFormattetAsInstantAsInstant() throws Exception {
+        Instant now = Instant.now();
+        JsonObject jsonObject = JsonFactory.jsonObject().withValue("now", JsonFactory.jsonText(now.toString()));
+        assertThat(jsonObject.requiredInstant("now")).isEqualTo(now);
+
+
+    }
 }
