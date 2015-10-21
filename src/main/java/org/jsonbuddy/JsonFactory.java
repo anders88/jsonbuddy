@@ -35,7 +35,7 @@ public class JsonFactory {
         return new JsonBoolean(value);
     }
 
-    public static JsonInstantValue jsonInstance(Instant instant) {
-        return new JsonInstantValue(instant);
+    public static JsonString jsonInstance(Instant instant) {
+        return new JsonString(instant.toString());
     }
 }

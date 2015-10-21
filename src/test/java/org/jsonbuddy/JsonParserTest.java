@@ -151,9 +151,9 @@ public class JsonParserTest {
     public void shouldParseToInstant() throws Exception {
         JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'time':'2015-08-30T11:21:12.314Z'}"));
         Optional<JsonNode> time = jsonObject.value("time");
-        assertThat(time).isPresent().containsInstanceOf(JsonInstantValue.class);
+        assertThat(time).isPresent().containsInstanceOf(JsonString.class);
 
-        JsonInstantValue jsonInstantValue = (JsonInstantValue) time.get();
+        JsonString jsonInstantValue = (JsonString) time.get();
 
         assertThat(jsonInstantValue.instantValue()).isEqualTo(LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant());
     }

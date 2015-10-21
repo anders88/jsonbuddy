@@ -98,25 +98,19 @@ public class JsonObject extends JsonNode {
 
     public Instant requiredInstant(String key) {
         JsonValue val = value(key)
-                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonString)))
+                .filter(no -> (no instanceof JsonString))
                         .map(no -> (JsonValue) no)
                         .orElseThrow(throwKeyNotPresent(key));
-        if (val instanceof JsonInstantValue) {
-            return ((JsonInstantValue) val).instantValue();
-        }
         String text = val.textValue();
         return Instant.parse(text);
     }
 
     public Optional<Instant> instantValue(String key) {
         Optional<JsonValue> val = value(key)
-                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonString)))
+                .filter(no -> (no instanceof JsonString))
                 .map(no -> (JsonValue) no);
         if (!val.isPresent()) {
             return Optional.empty();
-        }
-        if (val.get() instanceof JsonInstantValue) {
-            return Optional.of(((JsonInstantValue) val.get()).instantValue());
         }
         String text = val.get().textValue();
         return Optional.of(Instant.parse(text));

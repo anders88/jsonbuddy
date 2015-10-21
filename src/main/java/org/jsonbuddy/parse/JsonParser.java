@@ -178,11 +178,7 @@ public class JsonParser {
     private JsonValue parseStringValue() {
         readNext();
         String value = readText();
-        try {
-            return new JsonInstantValue(Instant.parse(value));
-        } catch (DateTimeParseException e) {
-            return new JsonString(value);
-        }
+        return new JsonString(value);
     }
 
     private JsonObject parseObject() {

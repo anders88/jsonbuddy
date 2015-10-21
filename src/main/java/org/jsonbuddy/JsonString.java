@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.Objects;
 
 public class JsonString extends JsonValue {
@@ -62,5 +63,9 @@ public class JsonString extends JsonValue {
     @Override
     public int hashCode() {
         return Objects.hash(value);
+    }
+
+    public Instant instantValue() {
+        return Instant.parse(value);
     }
 }

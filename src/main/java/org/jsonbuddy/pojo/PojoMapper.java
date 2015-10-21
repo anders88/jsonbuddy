@@ -4,6 +4,7 @@ import org.jsonbuddy.*;
 import org.jsonbuddy.parse.JsonParseException;
 
 import java.lang.reflect.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,11 +130,13 @@ public class PojoMapper {
         } else if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
             value = nodeValue;
         } else if (Map.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonObject)) {
-            value = mapAsMap((ParameterizedType) declaredField.getGenericType(),(JsonObject) nodeValue);
+            value = mapAsMap((ParameterizedType) declaredField.getGenericType(), (JsonObject) nodeValue);
         } else {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
             value = convertIfNessesary(value,declaredField.getType());
         }
+
+
 
         declaredField.setAccessible(true);
         declaredField.set(result,value);
@@ -167,6 +170,9 @@ public class PojoMapper {
         }
         if (destinationType.isAssignableFrom(value.getClass())) {
             return value;
+        }
+        if (value instanceof String && Instant.class.isAssignableFrom(destinationType)) {
+            return Instant.parse(value.toString());
         }
         if (value instanceof Long && Integer.class.equals(destinationType)) {
             int intval = Integer.parseInt(value.toString());

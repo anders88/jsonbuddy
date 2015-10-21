@@ -64,7 +64,7 @@ public class JsonBuildTest {
         Instant instant = LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant();
         JsonObject jsonObject = JsonFactory.jsonObject().put("time", instant);
 
-        assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonInstantValue.class);
+        assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonString.class);
         Optional<String> timetext = jsonObject.stringValue("time");
         assertThat(timetext).isPresent().contains("2015-08-30T11:21:12.314Z");
     }
