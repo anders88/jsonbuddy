@@ -34,11 +34,11 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         if (nodes == null) {
             return new JsonArray();
         }
-        return new JsonArray(nodes.stream().map(JsonTextValue::new).collect(Collectors.toList()));
+        return new JsonArray(nodes.stream().map(JsonString::new).collect(Collectors.toList()));
     }
 
     public static JsonArray fromStringStream(Stream<String> nodes) {
-        return new JsonArray(nodes.map(JsonTextValue::new).collect(Collectors.toList()));
+        return new JsonArray(nodes.map(JsonString::new).collect(Collectors.toList()));
     }
 
 
@@ -88,7 +88,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     }
 
     public JsonArray add(String text) {
-        values.add(new JsonTextValue(text));
+        values.add(new JsonString(text));
         return this;
     }
 

@@ -181,7 +181,7 @@ public class JsonParser {
         try {
             return new JsonInstantValue(Instant.parse(value));
         } catch (DateTimeParseException e) {
-            return new JsonTextValue(value);
+            return new JsonString(value);
         }
     }
 

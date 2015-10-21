@@ -17,7 +17,7 @@ public class JsonBuildTest {
 
     @Test
     public void shouldCreateValue() throws Exception {
-        JsonValue jsonValue = new JsonTextValue("Darth Vader");
+        JsonValue jsonValue = new JsonString("Darth Vader");
         assertThat(jsonValue.stringValue()).isEqualTo("Darth Vader");
 
     }
@@ -25,7 +25,7 @@ public class JsonBuildTest {
     @Test
     public void shouldCreateObjectWithValue() throws Exception {
         JsonObject jsonObject = new JsonObject()
-                .put("name", new JsonTextValue("Darth Vader"));
+                .put("name", new JsonString("Darth Vader"));
 
         assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
         assertThat(jsonObject.stringValue("xxx").isPresent()).isFalse();

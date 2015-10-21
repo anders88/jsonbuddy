@@ -11,8 +11,8 @@ public class JsonFactory {
         return new JsonArray();
     }
 
-    public static JsonTextValue jsonText(String text) {
-        return new JsonTextValue(text);
+    public static JsonString jsonText(String text) {
+        return new JsonString(text);
     }
 
     public static JsonLong jsonLong(long number) {

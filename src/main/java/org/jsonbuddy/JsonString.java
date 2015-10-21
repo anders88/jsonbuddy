@@ -3,10 +3,10 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class JsonTextValue extends JsonValue {
+public class JsonString extends JsonValue {
     private final String value;
 
-    public JsonTextValue(String value) {
+    public JsonString(String value) {
         this.value = value;
     }
 
@@ -36,7 +36,7 @@ public class JsonTextValue extends JsonValue {
     }
 
     @Override
-    public JsonTextValue deepClone() {
+    public JsonString deepClone() {
         return this;
     }
 
@@ -54,8 +54,8 @@ public class JsonTextValue extends JsonValue {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JsonTextValue)) return false;
-        JsonTextValue that = (JsonTextValue) o;
+        if (!(o instanceof JsonString)) return false;
+        JsonString that = (JsonString) o;
         return Objects.equals(value, that.value);
     }
 

@@ -34,9 +34,9 @@ public class JsonObject extends JsonNode {
         if (jsonNode instanceof JsonLong) {
             return true;
         }
-        if (jsonNode instanceof JsonTextValue) {
+        if (jsonNode instanceof JsonString) {
             try {
-                Long.parseLong(((JsonTextValue) jsonNode).stringValue());
+                Long.parseLong(((JsonString) jsonNode).stringValue());
                 return true;
             } catch (NumberFormatException e) {
                 return false;
@@ -98,7 +98,7 @@ public class JsonObject extends JsonNode {
 
     public Instant requiredInstant(String key) {
         JsonValue val = value(key)
-                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
+                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonString)))
                         .map(no -> (JsonValue) no)
                         .orElseThrow(throwKeyNotPresent(key));
         if (val instanceof JsonInstantValue) {
@@ -110,7 +110,7 @@ public class JsonObject extends JsonNode {
 
     public Optional<Instant> instantValue(String key) {
         Optional<JsonValue> val = value(key)
-                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
+                .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonString)))
                 .map(no -> (JsonValue) no);
         if (!val.isPresent()) {
             return Optional.empty();
