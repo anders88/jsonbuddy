@@ -1,52 +1,13 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.pojo.JsonNumber;
+
 import java.io.PrintWriter;
 
-public class JsonDouble extends JsonValue {
-    private final double value;
+public class JsonDouble extends JsonNumber {
 
     public JsonDouble(double value) {
-        this.value = value;
+        super(value);
     }
 
-    @Override
-    public String stringValue() {
-        return Double.toString(value);
-    }
-
-    @Override
-    public Object javaObjectValue() {
-        return value;
-    }
-
-    @Override
-    public void toJson(PrintWriter printWriter) {
-        printWriter.append(stringValue());
-    }
-
-    @Override
-    public JsonDouble deepClone() {
-        return this;
-    }
-
-    public double doubleValue() {
-        return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        JsonDouble that = (JsonDouble) o;
-
-        return Double.compare(that.value, value) == 0;
-
-    }
-
-    @Override
-    public int hashCode() {
-        long temp = Double.doubleToLongBits(value);
-        return (int) (temp ^ (temp >>> 32));
-    }
 }
