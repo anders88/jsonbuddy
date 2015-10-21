@@ -3,7 +3,7 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class JsonBooleanValue extends JsonSimpleValue {
+public class JsonBooleanValue extends JsonValue {
     private final boolean value;
 
     public JsonBooleanValue(boolean value) {

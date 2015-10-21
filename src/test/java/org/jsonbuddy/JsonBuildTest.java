@@ -17,8 +17,8 @@ public class JsonBuildTest {
 
     @Test
     public void shouldCreateValue() throws Exception {
-        JsonSimpleValue jsonSimpleValue = new JsonTextValue("Darth Vader");
-        assertThat(jsonSimpleValue.stringValue()).isEqualTo("Darth Vader");
+        JsonValue jsonValue = new JsonTextValue("Darth Vader");
+        assertThat(jsonValue.stringValue()).isEqualTo("Darth Vader");
 
     }
 
@@ -38,7 +38,7 @@ public class JsonBuildTest {
                 .add("Darth")
                 .add("Luke");
         assertThat(jsonArray.nodeStream()
-                .map(an -> ((JsonSimpleValue) an).stringValue())
+                .map(an -> ((JsonValue) an).stringValue())
                 .collect(Collectors.toList())).containsExactly("Darth","Luke");
     }
 
@@ -72,16 +72,16 @@ public class JsonBuildTest {
     @Test
     public void shouldClone() throws Exception {
         JsonObject orig = JsonFactory.jsonObject()
-                .put("name","Darth Vader")
-                .put("properties",JsonFactory.jsonObject().put("religion","sith"))
-                .put("master","Yoda")
+                .put("name", "Darth Vader")
+                .put("properties", JsonFactory.jsonObject().put("religion", "sith"))
+                .put("master", "Yoda")
                 .put("children", JsonFactory.jsonArray().add(Arrays.asList("Luke")));
 
         JsonObject clone = orig.deepClone();
 
         assertThat(orig).isEqualTo(clone);
 
-        clone.put("name","Anakin Skywalker")
+        clone.put("name", "Anakin Skywalker")
                 .put("properties", JsonFactory.jsonObject().put("religion", "jedi"))
                 .put("children", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
 

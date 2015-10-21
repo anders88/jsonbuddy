@@ -1,9 +1,8 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
-import java.text.NumberFormat;
 
-public class JsonDouble extends JsonSimpleValue {
+public class JsonDouble extends JsonValue {
     private final double value;
 
     public JsonDouble(double value) {

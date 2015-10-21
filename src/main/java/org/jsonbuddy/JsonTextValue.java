@@ -3,7 +3,7 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class JsonTextValue extends JsonSimpleValue {
+public class JsonTextValue extends JsonValue {
     private final String value;
 
     public JsonTextValue(String value) {

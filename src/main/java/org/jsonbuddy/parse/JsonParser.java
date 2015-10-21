@@ -4,9 +4,7 @@ import org.jsonbuddy.*;
 
 import java.io.*;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -124,7 +122,7 @@ public class JsonParser {
     }
 
 
-    private JsonSimpleValue parseNumberValue() {
+    private JsonValue parseNumberValue() {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
         while (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead)) {
@@ -177,7 +175,7 @@ public class JsonParser {
         return jsonArrayFactory;
     }
 
-    private JsonSimpleValue parseStringValue() {
+    private JsonValue parseStringValue() {
         readNext();
         String value = readText();
         try {

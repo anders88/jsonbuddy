@@ -2,7 +2,7 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 
-public class JsonNullValue extends JsonSimpleValue {
+public class JsonNullValue extends JsonValue {
     public JsonNullValue() {
     }
 

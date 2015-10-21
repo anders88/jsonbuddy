@@ -2,10 +2,9 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-public class JsonInstantValue extends JsonSimpleValue {
+public class JsonInstantValue extends JsonValue {
     private final Instant value;
 
     public JsonInstantValue(Instant instant) {

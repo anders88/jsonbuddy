@@ -3,12 +3,9 @@ package org.jsonbuddy.pojo;
 import org.jsonbuddy.*;
 import org.jsonbuddy.parse.JsonParseException;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class PojoMapper {
 
@@ -63,8 +60,8 @@ public class PojoMapper {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             return annotationsByType[0].using().newInstance().build(jsonNode);
         }
-        if (jsonNode instanceof JsonSimpleValue) {
-            return ((JsonSimpleValue) jsonNode).javaObjectValue();
+        if (jsonNode instanceof JsonValue) {
+            return ((JsonValue) jsonNode).javaObjectValue();
         }
         if (jsonNode instanceof JsonArray) {
             return mapArray((JsonArray) jsonNode,clazz);

@@ -20,8 +20,8 @@ public class JsonObject extends JsonNode {
 
     public Optional<String> stringValue(String key) {
         return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonSimpleValue)
-                .map(n -> ((JsonSimpleValue) n).stringValue());
+                .filter(n -> n instanceof JsonValue)
+                .map(n -> ((JsonValue) n).stringValue());
     }
 
     public Optional<Long> longValue(String key) {
@@ -97,9 +97,9 @@ public class JsonObject extends JsonNode {
     }
 
     public Instant requiredInstant(String key) {
-        JsonSimpleValue val = value(key)
+        JsonValue val = value(key)
                 .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
-                        .map(no -> (JsonSimpleValue) no)
+                        .map(no -> (JsonValue) no)
                         .orElseThrow(throwKeyNotPresent(key));
         if (val instanceof JsonInstantValue) {
             return ((JsonInstantValue) val).instantValue();
@@ -109,9 +109,9 @@ public class JsonObject extends JsonNode {
     }
 
     public Optional<Instant> instantValue(String key) {
-        Optional<JsonSimpleValue> val = value(key)
+        Optional<JsonValue> val = value(key)
                 .filter(no -> ((no instanceof JsonInstantValue) || (no instanceof JsonTextValue)))
-                .map(no -> (JsonSimpleValue) no);
+                .map(no -> (JsonValue) no);
         if (!val.isPresent()) {
             return Optional.empty();
         }
@@ -155,11 +155,11 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject put(String key,String value) {
-        return put(key,JsonFactory.jsonText(value));
+        return put(key, JsonFactory.jsonText(value));
     }
 
     public JsonObject put(String key,double value) {
-        return put(key,JsonFactory.jsonDouble(value));
+        return put(key, JsonFactory.jsonDouble(value));
     }
 
     public JsonObject put(String key,long value) {

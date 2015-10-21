@@ -1,6 +1,6 @@
 package org.jsonbuddy;
 
-public abstract class JsonSimpleValue extends JsonNode {
+public abstract class JsonValue extends JsonNode {
 
     public abstract String stringValue();
 

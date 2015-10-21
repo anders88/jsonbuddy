@@ -3,7 +3,7 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class JsonLong extends JsonSimpleValue {
+public class JsonLong extends JsonValue {
 
     private final long value;
 

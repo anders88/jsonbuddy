@@ -119,8 +119,8 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     public Stream<String> stringStream() {
         return nodeStream()
-                .filter(no -> no instanceof JsonSimpleValue)
-                .map(no -> ((JsonSimpleValue) no).stringValue())
+                .filter(no -> no instanceof JsonValue)
+                .map(no -> ((JsonValue) no).stringValue())
                 ;
     }
 
