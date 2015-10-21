@@ -1,6 +1,7 @@
 package org.jsonbuddy.parse;
 
 import org.jsonbuddy.*;
+import org.jsonbuddy.pojo.JsonNumber;
 
 import java.io.*;
 import java.time.Instant;
@@ -134,7 +135,7 @@ public class JsonParser {
             throw new JsonParseException("Illegal value '" + val + lastRead + "'");
         }
         if (isDouble) {
-            return new JsonDouble(Double.parseDouble(val.toString()));
+            return new JsonNumber(Double.parseDouble(val.toString()));
         }
         return new JsonLong(Long.parseLong(val.toString()));
     }

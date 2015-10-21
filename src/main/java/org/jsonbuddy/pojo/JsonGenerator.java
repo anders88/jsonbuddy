@@ -33,12 +33,12 @@ public class JsonGenerator {
             return JsonFactory.jsonLong((Long) object);
         }
         if (object instanceof Double) {
-            return JsonFactory.jsonDouble((Double) object);
+            return JsonFactory.jsonNumber((Double) object);
         }
         if (object instanceof Float) {
             float f = (float) object;
             double d = f;
-            return JsonFactory.jsonDouble(d);
+            return JsonFactory.jsonNumber(d);
         }
         if (object instanceof Boolean) {
             return JsonFactory.jsonBoolean((Boolean) object);

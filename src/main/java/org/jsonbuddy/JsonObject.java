@@ -153,7 +153,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject put(String key,double value) {
-        return put(key, JsonFactory.jsonDouble(value));
+        return put(key, JsonFactory.jsonNumber(value));
     }
 
     public JsonObject put(String key,long value) {

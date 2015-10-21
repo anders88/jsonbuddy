@@ -1,5 +1,7 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.pojo.JsonNumber;
+
 import java.time.Instant;
 
 public class JsonFactory {
@@ -19,8 +21,8 @@ public class JsonFactory {
         return new JsonLong(number);
     }
 
-    public static JsonDouble jsonDouble(double number) {
-        return new JsonDouble(number);
+    public static JsonNumber jsonNumber(double number) {
+        return new JsonNumber(number);
     }
 
     public static JsonBoolean jsonTrue() {

@@ -3,6 +3,7 @@ package org.jsonbuddy;
 
 import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
+import org.jsonbuddy.pojo.JsonNumber;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -103,8 +104,8 @@ public class JsonParserTest {
     public void shouldHandleComplexNumbers() throws Exception {
         JsonObject jsonObject = JsonParser.parse(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}")).as(JsonObject.class);
         assertThat(jsonObject.value("a").get().as(JsonLong.class).longValue()).isEqualTo(-1);
-        assertThat(jsonObject.value("b").get().as(JsonDouble.class).doubleValue()).isEqualTo(3.14d);
-        assertThat(jsonObject.value("c").get().as(JsonDouble.class).doubleValue()).isEqualTo(2500d);
+        assertThat(jsonObject.value("b").get().as(JsonNumber.class).doubleValue()).isEqualTo(3.14d);
+        assertThat(jsonObject.value("c").get().as(JsonNumber.class).doubleValue()).isEqualTo(2500d);
 
     }
 

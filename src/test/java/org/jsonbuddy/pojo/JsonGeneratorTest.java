@@ -33,7 +33,7 @@ public class JsonGeneratorTest {
     @Test
     public void shoulHandleFloats() throws Exception {
         JsonNode jsonNode = JsonGenerator.generate(3.14f);
-        JsonDouble jsonDouble = (JsonDouble) jsonNode;
+        JsonNumber jsonDouble = (JsonNumber) jsonNode;
         assertThat(new Double(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
     }
 
