@@ -1,5 +1,7 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.pojo.JsonNumber;
+
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.*;
@@ -31,7 +33,7 @@ public class JsonObject extends JsonNode {
     }
 
     private static boolean isLong(JsonNode jsonNode) {
-        if (jsonNode instanceof JsonLong) {
+        if (jsonNode instanceof JsonNumber) {
             return true;
         }
         if (jsonNode instanceof JsonString) {
@@ -46,8 +48,8 @@ public class JsonObject extends JsonNode {
     }
 
     private static long mapToLong(JsonNode jsonNode) {
-        if (jsonNode instanceof JsonLong) {
-            return ((JsonLong) jsonNode).longValue();
+        if (jsonNode instanceof JsonNumber) {
+            return ((JsonNumber) jsonNode).longValue();
         }
         return Long.parseLong(jsonNode.textValue());
     }
@@ -157,7 +159,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject put(String key,long value) {
-        return put(key, JsonFactory.jsonLong(value));
+        return put(key, JsonFactory.jsonNumber(value));
     }
 
     public JsonObject put(String key,boolean value) {

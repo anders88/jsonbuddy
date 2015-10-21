@@ -17,13 +17,10 @@ public class JsonFactory {
         return new JsonString(text);
     }
 
-    public static JsonLong jsonLong(long number) {
-        return new JsonLong(number);
-    }
-
-    public static JsonNumber jsonNumber(double number) {
+    public static JsonNumber jsonNumber(Number number) {
         return new JsonNumber(number);
     }
+
 
     public static JsonBoolean jsonTrue() {
         return new JsonBoolean(true);

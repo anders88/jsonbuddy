@@ -27,10 +27,10 @@ public class JsonGenerator {
         if ((object instanceof Integer))  {
             int i = (int) object;
             long l = i;
-            return JsonFactory.jsonLong(l);
+            return JsonFactory.jsonNumber(l);
         }
         if (object instanceof Long) {
-            return JsonFactory.jsonLong((Long) object);
+            return JsonFactory.jsonNumber((Long) object);
         }
         if (object instanceof Double) {
             return JsonFactory.jsonNumber((Double) object);

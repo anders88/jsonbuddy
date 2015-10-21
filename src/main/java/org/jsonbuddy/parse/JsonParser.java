@@ -137,7 +137,7 @@ public class JsonParser {
         if (isDouble) {
             return new JsonNumber(Double.parseDouble(val.toString()));
         }
-        return new JsonLong(Long.parseLong(val.toString()));
+        return new JsonNumber(Long.parseLong(val.toString()));
     }
 
 
