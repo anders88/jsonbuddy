@@ -12,9 +12,9 @@ public class JsonArrayTest {
     @Test
     public void shouldMapValues() throws Exception {
         JsonArray jsonArray = JsonArray.fromNodeList(Arrays.asList(
-                JsonFactory.jsonObject().withValue("name", "Darth"),
-                JsonFactory.jsonObject().withValue("name", "Luke"),
-                JsonFactory.jsonObject().withValue("name", "Leia")
+                JsonFactory.jsonObject().put("name", "Darth"),
+                JsonFactory.jsonObject().put("name", "Luke"),
+                JsonFactory.jsonObject().put("name", "Leia")
         ));
         List<String> names = jsonArray.mapValues(jo -> jo.requiredString("name"));
         assertThat(names).containsExactly("Darth","Luke","Leia");

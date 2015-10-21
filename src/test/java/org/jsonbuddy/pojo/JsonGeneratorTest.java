@@ -89,7 +89,7 @@ public class JsonGeneratorTest {
     @Test
     public void shoulHandleEmbeddedJson() throws Exception {
         ClassWithJsonElements classWithJsonElements = new ClassWithJsonElements("Darth Vader",
-                JsonFactory.jsonObject().withValue("title", "Dark Lord"),
+                JsonFactory.jsonObject().put("title", "Dark Lord"),
                 JsonFactory.jsonArray().add("Luke").add("Leia"));
         JsonObject generate = (JsonObject) JsonGenerator.generate(classWithJsonElements);
 

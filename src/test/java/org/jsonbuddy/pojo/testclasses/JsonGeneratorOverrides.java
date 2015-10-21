@@ -7,6 +7,6 @@ import org.jsonbuddy.pojo.OverridesJsonGenerator;
 public class JsonGeneratorOverrides implements OverridesJsonGenerator {
     @Override
     public JsonNode jsonValue() {
-        return JsonFactory.jsonObject().withValue("myOverriddenValue",42);
+        return JsonFactory.jsonObject().put("myOverriddenValue",42);
     }
 }

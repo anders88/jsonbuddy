@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ToJsonTest {
     @Test
     public void shouldConvertObject() throws Exception {
-        JsonObject jsonObject = new JsonObject().withValue("name", new JsonTextValue("Darth Vader"));
+        JsonObject jsonObject = new JsonObject().put("name", new JsonTextValue("Darth Vader"));
 
         assertThat(jsonObject.toJson()).isEqualTo(fixQuotes("{'name':'Darth Vader'}"));
     }
@@ -21,7 +21,7 @@ public class ToJsonTest {
 
     @Test
     public void shouldHandleSpecialCharacters() throws Exception {
-        JsonObject jsonObject = new JsonObject().withValue("atext", new JsonTextValue("o\"ne\ntwo"));
+        JsonObject jsonObject = new JsonObject().put("atext", new JsonTextValue("o\"ne\ntwo"));
         assertThat(jsonObject.toJson()).isEqualTo(fixQuotes("{'atext':'o\\\"ne\\ntwo'}"));
     }
 

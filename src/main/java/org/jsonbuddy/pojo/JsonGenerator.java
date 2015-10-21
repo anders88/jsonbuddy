@@ -52,7 +52,7 @@ public class JsonGenerator {
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
-            map.entrySet().stream().forEach(entry -> jsonObject.withValue(entry.getKey().toString(),generateNode(entry.getValue())));
+            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(),generateNode(entry.getValue())));
 
             return jsonObject;
         }
@@ -110,7 +110,7 @@ public class JsonGenerator {
             try {
                 Object val = fi.get(object);
                 JsonNode jsonNode = generateNode(val);
-                jsonObject.withValue(fi.getName(), jsonNode);
+                jsonObject.put(fi.getName(), jsonNode);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -121,7 +121,7 @@ public class JsonGenerator {
                     try {
                         Object result = method.invoke(object);
                         JsonNode jsonNode = generateNode(result);
-                        jsonObject.withValue(getFieldName(method),jsonNode);
+                        jsonObject.put(getFieldName(method),jsonNode);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
                     }

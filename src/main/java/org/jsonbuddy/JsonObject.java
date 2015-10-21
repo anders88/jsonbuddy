@@ -149,37 +149,37 @@ public class JsonObject extends JsonNode {
         printWriter.append("}");
     }
 
-    public JsonObject withValue(String key, JsonNode jsonNode) {
+    public JsonObject put(String key, JsonNode jsonNode) {
         values.put(key, jsonNode);
         return this;
     }
 
-    public JsonObject withValue(String key,String value) {
-        return withValue(key,JsonFactory.jsonText(value));
+    public JsonObject put(String key,String value) {
+        return put(key,JsonFactory.jsonText(value));
     }
 
-    public JsonObject withValue(String key,double value) {
-        return withValue(key,JsonFactory.jsonDouble(value));
+    public JsonObject put(String key,double value) {
+        return put(key,JsonFactory.jsonDouble(value));
     }
 
-    public JsonObject withValue(String key,long value) {
-        return withValue(key, JsonFactory.jsonLong(value));
+    public JsonObject put(String key,long value) {
+        return put(key, JsonFactory.jsonLong(value));
     }
 
-    public JsonObject withValue(String key,boolean value) {
-        return withValue(key, JsonFactory.jsonBoolean(value));
+    public JsonObject put(String key,boolean value) {
+        return put(key, JsonFactory.jsonBoolean(value));
     }
 
-    public JsonObject withValue(String key,Enum<?> value) {
-        return withValue(key, Optional.of(value).map(Object::toString).orElse(null));
+    public JsonObject put(String key,Enum<?> value) {
+        return put(key, Optional.of(value).map(Object::toString).orElse(null));
     }
 
     public Set<String> keys() {
         return values.keySet();
     }
 
-    public JsonObject withValue(String key, List<String> values) {
-        return withValue(key, JsonFactory.jsonArray().add(values));
+    public JsonObject put(String key, List<String> values) {
+        return put(key, JsonFactory.jsonArray().add(values));
     }
 
     public Optional<JsonNode> removeValue(String key) {
@@ -189,8 +189,8 @@ public class JsonObject extends JsonNode {
         return Optional.ofNullable(values.remove(key));
     }
 
-    public JsonObject withValue(String key, Instant instant) {
-        return withValue(key, JsonFactory.jsonInstance(instant));
+    public JsonObject put(String key, Instant instant) {
+        return put(key, JsonFactory.jsonInstance(instant));
     }
 
     @Override

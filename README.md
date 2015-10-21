@@ -45,7 +45,7 @@ This will cast an exception if the result is not an object. The same method can 
 Generating json as string
 ```java
 JsonObject jsonObject = JsonFactory.jsonObject()
-        .withValue("name", "Darth Vader");
+        .put("name", "Darth Vader");
 String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
 ```
 You can also send a PrintWriter, and the result will be written to the writer.

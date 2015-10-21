@@ -27,21 +27,21 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithSimpleValueGetter() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getName()).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldIgnoreUnmappedValues() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("namex", "Darth Vader");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("namex", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getName()).isNull();
     }
 
     @Test
     public void shouldHandleClassWithFinalField() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "Darth Vader");
         SimpleWithName result = PojoMapper.map(jsonObject, SimpleWithName.class);
         assertThat(result.name).isEqualTo("Darth Vader");
     }
@@ -49,8 +49,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleCombinedClass() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("person", JsonFactory.jsonObject().withValue("name", "Darth Vader"))
-                .withValue("occupation", "Dark Lord of Sith");
+                .put("person", JsonFactory.jsonObject().put("name", "Darth Vader"))
+                .put("occupation", "Dark Lord of Sith");
         CombinedClass combinedClass = PojoMapper.map(jsonObject, CombinedClass.class);
 
         assertThat(combinedClass.occupation).isEqualTo("Dark Lord of Sith");
@@ -60,8 +60,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleCombinedClassWithGetterSetter() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("person", JsonFactory.jsonObject().withValue("name", "Darth Vader"))
-                .withValue("occupation", "Dark Lord of Sith");
+                .put("person", JsonFactory.jsonObject().put("name", "Darth Vader"))
+                .put("occupation", "Dark Lord of Sith");
         CombinedClassWithSetter combinedClassWithSetter = PojoMapper.map(jsonObject, CombinedClassWithSetter.class);
 
         assertThat(combinedClassWithSetter.getPerson().name).isEqualTo("Darth Vader");
@@ -72,9 +72,9 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleDifferentTypes() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("text", "the meaning")
-                .withValue("number", 42)
-                .withValue("bool", JsonFactory.jsonTrue());
+                .put("text", "the meaning")
+                .put("number", 42)
+                .put("bool", JsonFactory.jsonTrue());
         ClassWithDifferentTypes differentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
         assertThat(differentTypes.text).isEqualTo("the meaning");
         assertThat(differentTypes.number).isEqualTo(42);
@@ -84,15 +84,15 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleLists() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("name", "Darth")
-                .withValue("children", Arrays.asList("Luke", "Leia"));
+                .put("name", "Darth")
+                .put("children", Arrays.asList("Luke", "Leia"));
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
         assertThat(classWithList.children).containsExactly("Luke", "Leia");
     }
 
     @Test
     public void shouldUseOwnMapper() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("secret", "Darth");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("secret", "Darth");
         PojoMapper pojoMapper = PojoMapper.create().registerClassBuilder(SimpleWithNameGetter.class, new JsonPojoBuilder<SimpleWithNameGetter>() {
             @Override
             public SimpleWithNameGetter build(JsonNode jsonNode) {
@@ -109,7 +109,7 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithInstant() throws Exception {
         Instant now = Instant.now();
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("time", now);
+        JsonObject jsonObject = JsonFactory.jsonObject().put("time", now);
         ClassWithTime classWithTime = PojoMapper.map(jsonObject, ClassWithTime.class);
         assertThat(classWithTime.getTime()).isEqualTo(now);
     }
@@ -122,9 +122,9 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleEmbeddedJsonElements() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("name", "Darth Vader")
-                .withValue("myObject", JsonFactory.jsonObject().withValue("title", "Dark Lord"))
-                .withValue("myArray", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
+                .put("name", "Darth Vader")
+                .put("myObject", JsonFactory.jsonObject().put("title", "Dark Lord"))
+                .put("myArray", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
         ClassWithJsonElements classWithJsonElements = PojoMapper.map(jsonObject, ClassWithJsonElements.class);
 
         assertThat(classWithJsonElements.name).isEqualTo("Darth Vader");
@@ -136,7 +136,7 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithAnnotation() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("name", "Darth Vader");
+                .put("name", "Darth Vader");
         ClassWithAnnotation classWithAnnotation = PojoMapper.map(jsonObject, ClassWithAnnotation.class);
         assertThat(classWithAnnotation.value).isEqualTo("overridden");
     }
@@ -144,8 +144,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithOverriddenNull() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("name", "Darth Vader")
-                .withValue("myHack",JsonFactory.jsonObject().withValue("wont matter","nope"));
+                .put("name", "Darth Vader")
+                .put("myHack",JsonFactory.jsonObject().put("wont matter","nope"));
         PojoMapperOverride.returnNull = true;
         CombinedClassWithAnnotation classWithAnnotation;
         try {
@@ -161,8 +161,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleCombined() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("name", "Darth Vader")
-                .withValue("myHack",JsonFactory.jsonArray().add("Hola"));
+                .put("name", "Darth Vader")
+                .put("myHack",JsonFactory.jsonArray().add("Hola"));
         CombinedClassWithAnnotation combinedClassWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
         assertThat(combinedClassWithAnnotation.myHack.value).isEqualTo("overridden");
     }
@@ -170,7 +170,7 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithMap() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("properties", JsonFactory.jsonObject().withValue("firstname", "Darth").withValue("lastname", "Vader"));
+                .put("properties", JsonFactory.jsonObject().put("firstname", "Darth").put("lastname", "Vader"));
         ClassWithMap classWithMap = PojoMapper.map(jsonObject, ClassWithMap.class);
 
         assertThat(classWithMap.properties.get("firstname")).isEqualTo("Darth");
@@ -179,14 +179,14 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithPrivateConstructor() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("name", "Darth Vader");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "Darth Vader");
         ClassWithPrivateConstructor privateConstr = PojoMapper.map(jsonObject, ClassWithPrivateConstructor.class);
         assertThat(privateConstr.name).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldConvertTextToNumberIfNessesary() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("text", "Darth Vader").withValue("number", "42");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("text", "Darth Vader").put("number", "42");
         ClassWithDifferentTypes classWithDifferentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
         assertThat(classWithDifferentTypes.number).isEqualTo(42);
 
@@ -195,9 +195,9 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithEmbeddedMap() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("names",
+                .put("names",
                         JsonFactory.jsonObject()
-                                .withValue("darth", JsonFactory.jsonObject().withValue("name", "Darth Vader")));
+                                .put("darth", JsonFactory.jsonObject().put("name", "Darth Vader")));
         ClassWithEmbeddedMap withEmbeddedMap = PojoMapper.map(jsonObject, ClassWithEmbeddedMap.class);
         assertThat(withEmbeddedMap.names.get("darth").name).isEqualTo("Darth Vader");
 
@@ -206,16 +206,16 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithGetSetEmbeddedMap() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("names",
+                .put("names",
                         JsonFactory.jsonObject()
-                                .withValue("darth", JsonFactory.jsonObject().withValue("name", "Darth Vader")));
+                                .put("darth", JsonFactory.jsonObject().put("name", "Darth Vader")));
         ClassWithEmbeddedGetSetMap withEmbeddedMap = PojoMapper.map(jsonObject, ClassWithEmbeddedGetSetMap.class);
         assertThat(withEmbeddedMap.getNames().get("darth").name).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldHandleClassWithEnum() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().withValue("enumNumber", "TWO");
+        JsonObject jsonObject = JsonFactory.jsonObject().put("enumNumber", "TWO");
         ClassWithEnum classWithEnum = PojoMapper.map(jsonObject, ClassWithEnum.class);
         assertThat(classWithEnum.enumNumber).isEqualTo(EnumClass.TWO);
     }
@@ -223,8 +223,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithMapWithList() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
-                .withValue("parentAndChildren",
-                        JsonFactory.jsonObject().withValue("Darth", JsonFactory.jsonArray().add("Luke").add("Leia")));
+                .put("parentAndChildren",
+                        JsonFactory.jsonObject().put("Darth", JsonFactory.jsonArray().add("Luke").add("Leia")));
         ClassWithMapWithList withList = PojoMapper.map(jsonObject, ClassWithMapWithList.class);
         assertThat(withList.parentAndChildren.get("Darth")).containsExactly("Luke","Leia");
 

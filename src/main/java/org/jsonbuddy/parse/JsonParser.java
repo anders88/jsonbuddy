@@ -203,7 +203,7 @@ public class JsonParser {
                 throw new JsonParseException("Expected value for key " + key);
             }
             JsonNode value = parseValue();
-            jsonObject.withValue(key, value);
+            jsonObject.put(key, value);
             readSpaceUntil("JsonObject not closed. Expected }", ',', '}');
         }
         if (finished) {
