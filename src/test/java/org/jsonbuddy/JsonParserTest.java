@@ -78,8 +78,8 @@ public class JsonParserTest {
         JsonObject jsonObject = (JsonObject) JsonParser.parse(fixQuotes("{'boolVal':false}"));
         JsonNode boolVal = jsonObject.value("boolVal").get();
 
-        assertThat(boolVal).isInstanceOf(JsonBooleanValue.class);
-        assertThat(((JsonBooleanValue) boolVal).boolValue()).isFalse();
+        assertThat(boolVal).isInstanceOf(JsonBoolean.class);
+        assertThat(((JsonBoolean) boolVal).boolValue()).isFalse();
     }
 
     @Test

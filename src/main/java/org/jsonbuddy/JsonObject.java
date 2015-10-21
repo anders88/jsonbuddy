@@ -54,8 +54,8 @@ public class JsonObject extends JsonNode {
 
     public Optional<Boolean> booleanValue(String key) {
         return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonBooleanValue)
-                .map(n -> ((JsonBooleanValue) n).boolValue());
+                .filter(n -> n instanceof JsonBoolean)
+                .map(n -> ((JsonBoolean) n).boolValue());
     }
 
     public Optional<JsonObject> objectValue(String key) {

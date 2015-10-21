@@ -3,10 +3,10 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.util.Objects;
 
-public class JsonBooleanValue extends JsonValue {
+public class JsonBoolean extends JsonValue {
     private final boolean value;
 
-    public JsonBooleanValue(boolean value) {
+    public JsonBoolean(boolean value) {
         this.value = value;
     }
 
@@ -30,15 +30,15 @@ public class JsonBooleanValue extends JsonValue {
     }
 
     @Override
-    public JsonBooleanValue deepClone() {
+    public JsonBoolean deepClone() {
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof JsonBooleanValue)) return false;
-        JsonBooleanValue that = (JsonBooleanValue) o;
+        if (!(o instanceof JsonBoolean)) return false;
+        JsonBoolean that = (JsonBoolean) o;
         return Objects.equals(value, that.value);
     }
 

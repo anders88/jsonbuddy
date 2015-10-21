@@ -145,11 +145,11 @@ public class JsonParser {
         return new JsonNull();
     }
 
-    private JsonBooleanValue parseBooleanValue() {
+    private JsonBoolean parseBooleanValue() {
         boolean isTrue = (lastRead == 't');
         String expect = isTrue ? "true" : "false";
         expectValue(expect);
-        return new JsonBooleanValue(isTrue);
+        return new JsonBoolean(isTrue);
     }
 
     private void expectValue(String value) {

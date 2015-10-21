@@ -23,16 +23,16 @@ public class JsonFactory {
         return new JsonDouble(number);
     }
 
-    public static JsonBooleanValue jsonTrue() {
-        return new JsonBooleanValue(true);
+    public static JsonBoolean jsonTrue() {
+        return new JsonBoolean(true);
     }
 
-    public static JsonBooleanValue jsonFalse() {
-        return new JsonBooleanValue(false);
+    public static JsonBoolean jsonFalse() {
+        return new JsonBoolean(false);
     }
 
-    public static JsonBooleanValue jsonBoolean(boolean value) {
-        return new JsonBooleanValue(value);
+    public static JsonBoolean jsonBoolean(boolean value) {
+        return new JsonBoolean(value);
     }
 
     public static JsonInstantValue jsonInstance(Instant instant) {
