@@ -6,11 +6,8 @@ import java.lang.reflect.*;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class JsonGenerator {
     public static JsonNode generate(Object object) {
@@ -19,7 +16,7 @@ public class JsonGenerator {
 
     private JsonNode generateNode(Object object) {
         if (object == null) {
-            return new JsonNullValue();
+            return new JsonNull();
         }
         if (object instanceof JsonNode) {
             return (JsonNode) object;
@@ -52,7 +49,7 @@ public class JsonGenerator {
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
-            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(),generateNode(entry.getValue())));
+            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue())));
 
             return jsonObject;
         }
@@ -121,7 +118,7 @@ public class JsonGenerator {
                     try {
                         Object result = method.invoke(object);
                         JsonNode jsonNode = generateNode(result);
-                        jsonObject.put(getFieldName(method),jsonNode);
+                        jsonObject.put(getFieldName(method), jsonNode);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
                     }

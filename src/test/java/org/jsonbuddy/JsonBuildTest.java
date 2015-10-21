@@ -95,7 +95,7 @@ public class JsonBuildTest {
 
     @Test
     public void shouldHandleNullAsStringValue() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("nullValue", new JsonNullValue());
+        JsonObject jsonObject = JsonFactory.jsonObject().put("nullValue", new JsonNull());
 
         assertThat(jsonObject.value("nullValue")).isPresent();
         assertThat(jsonObject.requiredString("nullValue")).isNull();

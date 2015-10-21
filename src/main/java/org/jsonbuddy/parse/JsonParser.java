@@ -140,9 +140,9 @@ public class JsonParser {
     }
 
 
-    private JsonNullValue parseNullValue() {
+    private JsonNull parseNullValue() {
         expectValue("null");
-        return new JsonNullValue();
+        return new JsonNull();
     }
 
     private JsonBooleanValue parseBooleanValue() {

@@ -2,7 +2,6 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.*;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.OffsetDateTime;
@@ -25,7 +24,7 @@ public class JsonGeneratorTest {
 
     @Test
     public void shouldHandleSimpleValues() throws Exception {
-        assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNullValue());
+        assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNull());
         assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonText("Darth"));
         assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonLong(42L));
 

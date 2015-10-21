@@ -77,7 +77,7 @@ public class JsonObject extends JsonNode {
 
     @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
-        if (value(key).isPresent() && value(key).get().equals(new JsonNullValue())) {
+        if (value(key).isPresent() && value(key).get().equals(new JsonNull())) {
             return null;
         }
         return stringValue(key).orElseThrow(throwKeyNotPresent(key));

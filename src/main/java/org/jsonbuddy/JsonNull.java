@@ -2,8 +2,8 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 
-public class JsonNullValue extends JsonValue {
-    public JsonNullValue() {
+public class JsonNull extends JsonValue {
+    public JsonNull() {
     }
 
     @Override
@@ -22,13 +22,13 @@ public class JsonNullValue extends JsonValue {
     }
 
     @Override
-    public JsonNullValue deepClone() {
+    public JsonNull deepClone() {
         return this;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof JsonNullValue);
+        return (obj instanceof JsonNull);
     }
 
     @Override
