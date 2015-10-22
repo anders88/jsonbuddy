@@ -105,11 +105,6 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return this;
     }
 
-<<<<<<< 8e66fcf8dbd7f970e2dcbc346144dfa3ff926a4e
-=======
-
-
->>>>>>> Cleanup of duplicate methods
     public int size() {
         return values.size();
     }
