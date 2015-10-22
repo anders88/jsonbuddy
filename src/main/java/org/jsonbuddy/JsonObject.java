@@ -26,6 +26,28 @@ public class JsonObject extends JsonNode {
                 .map(n -> ((JsonValue) n).stringValue());
     }
 
+    public Optional<Double> doubleValue(String key) {
+        JsonNode val = values.get(key);
+        if (val == null) {
+            return Optional.empty();
+        }
+        if (val instanceof JsonNumber) {
+            return Optional.of(((JsonNumber) val).doubleValue());
+        }
+        if (val instanceof JsonString) {
+            try {
+                return Optional.of(Double.parseDouble(((JsonString) val).stringValue()));
+            } catch (NumberFormatException e) {
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
+    }
+
+    public double requiredDouble(String key) throws JsonValueNotPresentException {
+        return doubleValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
     public Optional<Long> longValue(String key) {
         return Optional.ofNullable(values.get(key))
                 .filter(JsonObject::isLong)
