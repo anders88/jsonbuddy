@@ -3,7 +3,6 @@ package org.jsonbuddy;
 
 import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
-import org.jsonbuddy.pojo.JsonNumber;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

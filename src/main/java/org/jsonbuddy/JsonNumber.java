@@ -1,7 +1,4 @@
-package org.jsonbuddy.pojo;
-
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonValue;
+package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.util.Objects;

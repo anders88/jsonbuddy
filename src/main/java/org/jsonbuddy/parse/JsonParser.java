@@ -1,7 +1,7 @@
 package org.jsonbuddy.parse;
 
 import org.jsonbuddy.*;
-import org.jsonbuddy.pojo.JsonNumber;
+import org.jsonbuddy.JsonNumber;
 
 import java.io.*;
 import java.util.Arrays;

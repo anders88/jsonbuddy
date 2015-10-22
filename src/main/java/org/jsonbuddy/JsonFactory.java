@@ -1,7 +1,5 @@
 package org.jsonbuddy;
 
-import org.jsonbuddy.pojo.JsonNumber;
-
 import java.time.Instant;
 
 public class JsonFactory {
