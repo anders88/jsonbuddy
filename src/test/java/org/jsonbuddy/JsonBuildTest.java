@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -37,9 +36,7 @@ public class JsonBuildTest {
         JsonArray jsonArray = new JsonArray()
                 .add("Darth")
                 .add("Luke");
-        assertThat(jsonArray.nodeStream()
-                .map(an -> ((JsonValue) an).stringValue())
-                .collect(Collectors.toList())).containsExactly("Darth","Luke");
+        assertThat(jsonArray.strings()).containsExactly("Darth","Luke");
     }
 
     @Test
@@ -55,8 +52,7 @@ public class JsonBuildTest {
     @Test
     public void shouldHandleTextValue() throws Exception {
         JsonArray array = new JsonArray().add("one").add("two");
-        List<String> values = array.nodeStream().map(JsonNode::textValue).collect(Collectors.toList());
-        assertThat(values).containsExactly("one","two");
+        assertThat(array.strings()).containsExactly("one","two");
     }
 
     @Test
@@ -75,7 +71,7 @@ public class JsonBuildTest {
                 .put("name", "Darth Vader")
                 .put("properties", JsonFactory.jsonObject().put("religion", "sith"))
                 .put("master", "Yoda")
-                .put("children", JsonFactory.jsonArray().add(Arrays.asList("Luke")));
+                .put("children", JsonFactory.jsonArray().addAll(Arrays.asList("Luke")));
 
         JsonObject clone = orig.deepClone();
 
@@ -83,7 +79,7 @@ public class JsonBuildTest {
 
         clone.put("name", "Anakin Skywalker")
                 .put("properties", JsonFactory.jsonObject().put("religion", "jedi"))
-                .put("children", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
+                .put("children", JsonFactory.jsonArray().addAll(Arrays.asList("Luke", "Leia")));
 
         assertThat(clone.requiredString("master")).isEqualTo("Yoda");
         assertThat(orig.requiredObject("properties").requiredString("religion")).isEqualTo("sith");

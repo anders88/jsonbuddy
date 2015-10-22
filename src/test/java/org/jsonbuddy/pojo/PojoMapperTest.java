@@ -120,7 +120,7 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject()
                 .put("name", "Darth Vader")
                 .put("myObject", JsonFactory.jsonObject().put("title", "Dark Lord"))
-                .put("myArray", JsonFactory.jsonArray().add(Arrays.asList("Luke", "Leia")));
+                .put("myArray", JsonFactory.jsonArray().addAll(Arrays.asList("Luke", "Leia")));
         ClassWithJsonElements classWithJsonElements = PojoMapper.map(jsonObject, ClassWithJsonElements.class);
 
         assertThat(classWithJsonElements.name).isEqualTo("Darth Vader");

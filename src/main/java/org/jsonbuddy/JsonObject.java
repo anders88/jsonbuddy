@@ -175,7 +175,7 @@ public class JsonObject extends JsonNode {
     }
 
     public JsonObject put(String key, List<String> values) {
-        return put(key, JsonFactory.jsonArray().add(values));
+        return put(key, JsonFactory.jsonArray().addAll(values));
     }
 
     public Optional<JsonNode> removeValue(String key) {

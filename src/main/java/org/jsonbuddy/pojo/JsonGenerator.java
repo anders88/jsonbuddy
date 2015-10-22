@@ -7,7 +7,6 @@ import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
 
 public class JsonGenerator {
     public static JsonNode generate(Object object) {
@@ -54,9 +53,7 @@ public class JsonGenerator {
             return jsonObject;
         }
         if (object instanceof Collection) {
-            Collection<?> collection = (Collection<?>) object;
-            Stream<JsonNode> nodeStream = collection.stream().map(this::generateNode);
-            return JsonArray.fromStream(nodeStream);
+            return JsonArray.map((Collection<?>) object, this::generateNode);
         }
         if (object instanceof Temporal) {
             return JsonFactory.jsonText(object.toString());

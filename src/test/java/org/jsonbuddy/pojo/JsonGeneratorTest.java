@@ -44,7 +44,7 @@ public class JsonGeneratorTest {
         JsonNode generate = JsonGenerator.generate(stringlist);
         assertThat(generate).isInstanceOf(JsonArray.class);
         JsonArray array = (JsonArray) generate;
-        assertThat(array.nodeStream().map(JsonNode::textValue).collect(Collectors.toList())).isEqualTo(stringlist);
+        assertThat(array.strings()).isEqualTo(stringlist);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class JsonGeneratorTest {
         List<SimpleWithName> simpleWithNames = Arrays.asList(new SimpleWithName("Darth"), new SimpleWithName("Anakin"));
         JsonArray array = (JsonArray) JsonGenerator.generate(simpleWithNames);
 
-        List<JsonObject> objects = array.nodeStream().map(no -> (JsonObject) no).collect(Collectors.toList());
+        List<JsonObject> objects = array.objects(o -> o);
 
         assertThat(objects.get(0).stringValue("name").get()).isEqualTo("Darth");
         assertThat(objects.get(1).stringValue("name").get()).isEqualTo("Anakin");

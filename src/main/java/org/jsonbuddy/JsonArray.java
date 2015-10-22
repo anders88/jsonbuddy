@@ -7,28 +7,24 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JsonArray extends JsonNode implements Iterable<JsonNode> {
-    private final List<JsonNode> values;
 
+    private final List<JsonNode> values;
 
     public JsonArray() {
         values = new ArrayList<>();
     }
 
-
     private JsonArray(List<? extends JsonNode> nodes) {
-        List<JsonNode> myVals = new ArrayList<>();
-        myVals.addAll(nodes);
-        this.values = myVals;
+        this.values = new ArrayList<>(nodes);
     }
 
     public static JsonArray fromNodeList(List<? extends JsonNode> nodes) {
         return new JsonArray(nodes);
     }
 
-    public static JsonArray fromNodeSteam(Stream<? extends JsonNode> nodes) {
+    public static JsonArray fromNodeStream(Stream<? extends JsonNode> nodes) {
         return new JsonArray(nodes.collect(Collectors.toList()));
     }
-
 
     public static JsonArray fromStringList(List<String> nodes) {
         if (nodes == null) {
@@ -40,23 +36,35 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     public static JsonArray fromStringStream(Stream<String> nodes) {
         return new JsonArray(nodes.map(JsonString::new).collect(Collectors.toList()));
     }
+    
+    public static <T> JsonArray map(Collection<T> values, Function<T, JsonNode> f) {
+        return fromNodeStream(values.stream().map(o -> f.apply(o)));
+    }
 
-
-    public <T> List<T> mapValues(Function<JsonObject,T> mapFunc) {
-        return values.stream()
+    public <T> List<T> objects(Function<JsonObject,T> mapFunc) {
+        return nodeStream()
                 .filter(jn -> (jn instanceof JsonObject))
                 .map(jn -> (JsonObject) jn)
                 .map(mapFunc)
                 .collect(Collectors.toList());
     }
 
-    private JsonArray(Stream<JsonNode> nodeStream) {
-        values = nodeStream.collect(Collectors.toList());
+    public List<String> strings() {
+        return stringStream().collect(Collectors.toList());
     }
-
-
+    
+    public <T> List<T> mapNodes(Function<JsonNode,T> mapFunc) {
+        return nodeStream().map(mapFunc).collect(Collectors.toList());
+    }
+    
     public Stream<JsonNode> nodeStream() {
         return values.stream();
+    }
+
+    public Stream<String> stringStream() {
+        return nodeStream()
+                .filter(no -> no instanceof JsonValue)
+                .map(no -> ((JsonValue) no).stringValue());
     }
 
     @Override
@@ -92,13 +100,9 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return this;
     }
 
-    public JsonArray add(List<String> values) {
+    public JsonArray addAll(List<String> values) {
         this.values.addAll(values.stream().map(JsonFactory::jsonText).collect(Collectors.toList()));
         return this;
-    }
-
-    public static JsonArray fromStream(Stream<JsonNode> nodeStream) {
-        return new JsonArray(nodeStream);
     }
 
     public int size() {
@@ -116,14 +120,6 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         }
         return (T) jsonNode;
     }
-
-    public Stream<String> stringStream() {
-        return nodeStream()
-                .filter(no -> no instanceof JsonValue)
-                .map(no -> ((JsonValue) no).stringValue())
-                ;
-    }
-
 
     @Override
     public boolean equals(Object o) {

@@ -44,11 +44,8 @@ public class JsonParserTest {
     public void shouldHandleArrays() throws Exception {
         StringReader input = new StringReader(fixQuotes("['one','two','three']"));
         JsonArray array = (JsonArray) JsonParser.parse(input);
-        assertThat(array.nodeStream()
-                .map(n -> ((JsonValue) n).stringValue())
-                .collect(Collectors.toList()))
+        assertThat(array.strings())
                 .containsExactly("one", "two", "three");
-
     }
 
     @Test

@@ -50,10 +50,7 @@ public class PojoMapper {
     }
 
     public  <T> List<T> mapToPojo(JsonArray jsonArray,Class<T> listClazz) throws CanNotMapException {
-        return jsonArray.nodeStream()
-                .filter(node -> node instanceof JsonObject)
-                .map(node -> mapToPojo((JsonObject) node,listClazz))
-                .collect(Collectors.toList());
+        return jsonArray.objects(node -> mapToPojo((JsonObject) node,listClazz));
     }
 
     private Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {

@@ -15,7 +15,7 @@ public class JsonArrayTest {
                 JsonFactory.jsonObject().put("name", "Luke"),
                 JsonFactory.jsonObject().put("name", "Leia")
         ));
-        List<String> names = jsonArray.mapValues(jo -> jo.requiredString("name"));
+        List<String> names = jsonArray.objects(jo -> jo.requiredString("name"));
         assertThat(names).containsExactly("Darth","Luke","Leia");
 
     }
