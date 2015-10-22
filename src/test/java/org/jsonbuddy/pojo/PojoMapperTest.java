@@ -1,7 +1,6 @@
 package org.jsonbuddy.pojo;
 
 
-import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonObject;
@@ -9,10 +8,7 @@ import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;

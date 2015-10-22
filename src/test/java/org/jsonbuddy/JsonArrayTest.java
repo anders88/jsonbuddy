@@ -1,6 +1,5 @@
 package org.jsonbuddy;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.util.Arrays;

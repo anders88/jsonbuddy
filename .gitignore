@@ -1,3 +1,6 @@
 .idea/
 jsonbuddy.iml
 target/
+/.settings/
+/.classpath
+/.project

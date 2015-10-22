@@ -214,7 +214,7 @@ public class PojoMapper {
         }
     }
 
-    private static OverriddenVal overriddenValue(Class declaredClass,JsonNode nodValue) {
+    private static OverriddenVal overriddenValue(Class<?> declaredClass,JsonNode nodValue) {
         if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
             try {
