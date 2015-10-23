@@ -45,7 +45,7 @@ public class JsonBuildTest {
             JsonFactory.jsonObject().requiredString("cake");
             fail("Expected exception");
         } catch (JsonValueNotPresentException e) {
-            assertThat(e.getMessage()).isEqualTo("Required key 'cake' does not exsist");
+            assertThat(e.getMessage()).isEqualTo("Required key 'cake' does not exist");
         }
     }
 

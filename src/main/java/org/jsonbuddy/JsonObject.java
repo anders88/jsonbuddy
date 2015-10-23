@@ -2,13 +2,18 @@ package org.jsonbuddy;
 
 import java.io.PrintWriter;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonNode {
-    private final Map<String,JsonNode> values;
 
+    private final Map<String,JsonNode> values;
 
     public JsonObject() {
         this.values = new HashMap<>();
@@ -19,82 +24,7 @@ public class JsonObject extends JsonNode {
     }
 
     public Optional<String> stringValue(String key) {
-        return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonValue)
-                .map(n -> ((JsonValue) n).stringValue());
-    }
-
-    public Optional<Double> doubleValue(String key) {
-        JsonNode val = values.get(key);
-        if (val == null) {
-            return Optional.empty();
-        }
-        if (val instanceof JsonNumber) {
-            return Optional.of(((JsonNumber) val).doubleValue());
-        }
-        if (val instanceof JsonString) {
-            try {
-                return Optional.of(Double.parseDouble(((JsonString) val).stringValue()));
-            } catch (NumberFormatException e) {
-                return Optional.empty();
-            }
-        }
-        return Optional.empty();
-    }
-
-    public double requiredDouble(String key) throws JsonValueNotPresentException {
-        return doubleValue(key).orElseThrow(throwKeyNotPresent(key));
-    }
-
-    public Optional<Long> longValue(String key) {
-        return Optional.ofNullable(values.get(key))
-                .filter(JsonObject::isLong)
-                .map(JsonObject::mapToLong);
-    }
-
-    private static boolean isLong(JsonNode jsonNode) {
-        if (jsonNode instanceof JsonNumber) {
-            return true;
-        }
-        if (jsonNode instanceof JsonString) {
-            try {
-                Long.parseLong(((JsonString) jsonNode).stringValue());
-                return true;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    private static long mapToLong(JsonNode jsonNode) {
-        if (jsonNode instanceof JsonNumber) {
-            return ((JsonNumber) jsonNode).longValue();
-        }
-        return Long.parseLong(jsonNode.textValue());
-    }
-
-    public Optional<Boolean> booleanValue(String key) {
-        return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonBoolean)
-                .map(n -> ((JsonBoolean) n).boolValue());
-    }
-
-    public Optional<JsonObject> objectValue(String key) {
-        return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonObject)
-                .map(n -> (JsonObject) n);
-    }
-
-    public Optional<JsonArray> arrayValue(String key) {
-        return Optional.ofNullable(values.get(key))
-                .filter(n -> n instanceof JsonArray)
-                .map(n -> (JsonArray) n);
-
-    }
-
-    public Optional<JsonNode> value(String key) {
-        return Optional.ofNullable(values.get(key));
+        return get(key, JsonString.class).map(JsonString::stringValue);
     }
 
     @Override
@@ -105,26 +35,51 @@ public class JsonObject extends JsonNode {
         return stringValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
-    private Supplier<JsonValueNotPresentException> throwKeyNotPresent(String key) {
-        return () -> new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
+    public Optional<Double> doubleValue(String key) {
+        return numberValue(key).map(JsonNumber::doubleValue);
     }
 
+    public double requiredDouble(String key) throws JsonValueNotPresentException {
+        return doubleValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+    public Optional<Long> longValue(String key) {
+        return numberValue(key).map(JsonNumber::longValue);
+    }
 
     public long requiredLong(String key) throws JsonValueNotPresentException{
         return longValue(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+    public Optional<JsonNumber> numberValue(String key) {
+        JsonNode node = values.get(key);
+        if (node instanceof JsonValue) {
+            try {
+                return Optional.of(new JsonNumber(((JsonValue)node)));
+            } catch (NumberFormatException e) {
+                throw new JsonValueNotPresentException(key + " is not numeric");
+            }
+        } else if (node == null) {
+            return Optional.empty();
+        } else {
+            throw new JsonValueNotPresentException(key + " is not numeric");
+        }
+    }
+
+    public Optional<Boolean> booleanValue(String key) {
+        return get(key, JsonBoolean.class).map(JsonBoolean::boolValue);
     }
 
     public boolean requiredBoolean(String key) throws JsonValueNotPresentException{
         return booleanValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
-    public Instant requiredInstant(String key) {
-        JsonValue val = value(key)
-                .filter(no -> (no instanceof JsonString))
-                        .map(no -> (JsonValue) no)
-                        .orElseThrow(throwKeyNotPresent(key));
-        String text = val.textValue();
-        return Instant.parse(text);
+    public Optional<JsonObject> objectValue(String key) {
+        return get(key, JsonObject.class);
+    }
+
+    public JsonObject requiredObject(String key) throws JsonValueNotPresentException{
+        return objectValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
     public Optional<Instant> instantValue(String key) {
@@ -138,10 +93,32 @@ public class JsonObject extends JsonNode {
         return Optional.of(Instant.parse(text));
     }
 
-    public JsonObject requiredObject(String key) throws JsonValueNotPresentException{
-        return objectValue(key).orElseThrow(throwKeyNotPresent(key));
+    public Instant requiredInstant(String key) {
+        JsonValue val = value(key)
+                .filter(no -> (no instanceof JsonString))
+                        .map(no -> (JsonValue) no)
+                        .orElseThrow(throwKeyNotPresent(key));
+        String text = val.textValue();
+        return Instant.parse(text);
     }
 
+    public Optional<JsonArray> arrayValue(String key) {
+        return get(key, JsonArray.class);
+    }
+
+    public Optional<JsonNode> value(String key) {
+        return Optional.ofNullable(values.get(key));
+    }
+
+    public <T extends JsonNode> Optional<T> get(String key, Class<T> t) {
+        return value(key)
+                .filter(node -> node.getClass().isAssignableFrom(t))
+                .map(node -> (T) node);
+    }
+
+    private Supplier<JsonValueNotPresentException> throwKeyNotPresent(String key) {
+        return () -> new JsonValueNotPresentException(String.format("Required key '%s' does not exist",key));
+    }
 
     public JsonArray requiredArray(String key) {
         return arrayValue(key).orElseThrow(throwKeyNotPresent(key));
@@ -190,23 +167,23 @@ public class JsonObject extends JsonNode {
         return put(key, Optional.of(value).map(Object::toString).orElse(null));
     }
 
-    public Set<String> keys() {
-        return values.keySet();
+    public JsonObject put(String key, Instant instant) {
+        return put(key, JsonFactory.jsonInstance(instant));
     }
 
     public JsonObject put(String key, List<String> values) {
         return put(key, JsonFactory.jsonArray().addAll(values));
     }
 
-    public Optional<JsonNode> removeValue(String key) {
+    public Set<String> keys() {
+        return values.keySet();
+    }
+
+    public Optional<JsonNode> remove(String key) {
         if (key == null) {
             return Optional.empty();
         }
         return Optional.ofNullable(values.remove(key));
-    }
-
-    public JsonObject put(String key, Instant instant) {
-        return put(key, JsonFactory.jsonInstance(instant));
     }
 
     @Override

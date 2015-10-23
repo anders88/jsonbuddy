@@ -4,8 +4,16 @@ import java.io.PrintWriter;
 import java.util.Objects;
 
 public class JsonNumber extends JsonValue {
+
     final private Number value;
 
+    public JsonNumber(JsonValue value) {
+        if (value instanceof JsonNumber) {
+            this.value = ((JsonNumber)value).value;
+        } else {
+            this.value = Double.parseDouble(value.stringValue());
+        }
+    }
 
     public JsonNumber(Number value) {
         if (value == null) {
