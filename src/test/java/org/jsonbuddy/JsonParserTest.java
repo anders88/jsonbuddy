@@ -101,6 +101,9 @@ public class JsonParserTest {
         assertThat(theMeaning).isInstanceOf(JsonNumber.class);
         JsonNumber intVal = (JsonNumber) theMeaning;
         assertThat(intVal.intValue()).isEqualTo(42);
+        assertThat(intVal.shortValue()).isEqualTo((short)42);
+        assertThat(intVal.floatValue()).isEqualTo(42.0f);
+        assertThat(intVal.byteValue()).isEqualTo((byte)42);
     }
 
     @Test

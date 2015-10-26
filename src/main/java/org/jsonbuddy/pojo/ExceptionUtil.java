@@ -1,7 +1,7 @@
-package org.jsonbuddy;
+package org.jsonbuddy.pojo;
 
-public class ExceptionUtil {
-    public static RuntimeException soften(Exception e) {
+class ExceptionUtil {
+    static RuntimeException soften(Exception e) {
         return softenHelper(e);
     }
 

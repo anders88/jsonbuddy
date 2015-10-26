@@ -44,6 +44,20 @@ public class JsonArrayTest {
     }
 
     @Test
+    public void shouldSupportNullList() throws Exception {
+        assertThat(JsonArray.fromStringList(null)).isEmpty();
+    }
+
+    @Test
+    public void shouldMapNodes() throws Exception {
+        JsonArray array = new JsonArray()
+                .add(new JsonObject().put("a", "foo"))
+                .add(new JsonObject().put("a", "foobar"));
+        assertThat(array.mapNodes(n -> n.as(JsonObject.class).requiredString("a").length()))
+            .containsExactly(3, 6);
+    }
+
+    @Test
     public void shouldThrowOnMissingValues() throws Exception {
         assertThatThrownBy(() -> new JsonArray().get(43, JsonString.class))
             .hasMessageContaining("does not have a value at position 43");

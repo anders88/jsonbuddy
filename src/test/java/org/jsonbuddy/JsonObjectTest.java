@@ -5,6 +5,7 @@ import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
 import java.time.Instant;
 import java.util.Arrays;
 
+import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
 public class JsonObjectTest {
@@ -50,7 +51,8 @@ public class JsonObjectTest {
                 .put("node", new JsonArray())
                 .put("array", Arrays.asList("a", "b"))
                 .put("long", 123)
-                .put("string", "string");
+                .put("string", "string")
+                .put("null", new JsonNull());
         JsonObject copy = new JsonObject()
                 .put("bool", true)
                 .put("double", 0.0)
@@ -59,10 +61,13 @@ public class JsonObjectTest {
                 .put("node", new JsonArray())
                 .put("array", Arrays.asList("a", "b"))
                 .put("long", 123)
-                .put("string", "string");
+                .put("string", "string")
+                .put("null", new JsonNull());
 
         assertThat(object).isEqualTo(copy);
         assertThat(object.hashCode()).isEqualTo(copy.hashCode());
+        assertThat(object.deepClone()).isEqualTo(copy);
+        assertThat(JsonParser.parseToObject(object.toJson())).isEqualTo(object);
     }
 
     @Test
