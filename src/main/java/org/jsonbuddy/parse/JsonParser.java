@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class JsonParser {
+
     public static JsonNode parse(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return jsonParser.parseValue();
     }
-
 
     public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
         return parse(new InputStreamReader(inputStream));
@@ -21,6 +21,14 @@ public class JsonParser {
 
     public static JsonNode parse(String input) throws JsonParseException  {
         return parse(new StringReader(input));
+    }
+
+    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException  {
+        return parseToObject(new InputStreamReader(inputStream));
+    }
+
+    public static JsonObject parseToObject(String input) throws JsonParseException  {
+        return parseToObject(new StringReader(input));
     }
 
     public static JsonObject parseToObject(Reader reader) throws JsonParseException {
@@ -35,15 +43,13 @@ public class JsonParser {
         return (JsonObject) result;
     }
 
-
     public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException  {
-        return toArray(parse(new InputStreamReader(inputStream)));
+        return parseToArray(new InputStreamReader(inputStream));
     }
 
     public static JsonArray parseToArray(String input) throws JsonParseException  {
-        return toArray(parse(new StringReader(input)));
+        return parseToArray(new StringReader(input));
     }
-
 
     public static JsonArray parseToArray(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
@@ -56,17 +62,6 @@ public class JsonParser {
         }
         return (JsonArray) result;
     }
-
-
-    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException  {
-        return toObject(parse(new InputStreamReader(inputStream)));
-    }
-
-    public static JsonObject parseToObject(String input) throws JsonParseException  {
-        return toObject(parse(new StringReader(input)));
-    }
-
-
 
 
     private Reader reader;
@@ -144,7 +139,7 @@ public class JsonParser {
         return new JsonNull();
     }
 
-    private JsonBoolean parseBooleanValue() {
+    private JsonValue parseBooleanValue() {
         boolean isTrue = (lastRead == 't');
         String expect = isTrue ? "true" : "false";
         expectValue(expect);
@@ -177,7 +172,7 @@ public class JsonParser {
     private JsonValue parseStringValue() {
         readNext();
         String value = readText();
-        return new JsonString(value);
+        return JsonFactory.jsonText(value);
     }
 
     private JsonObject parseObject() {

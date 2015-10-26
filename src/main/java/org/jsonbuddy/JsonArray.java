@@ -26,6 +26,10 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return new JsonArray(nodes.collect(Collectors.toList()));
     }
 
+    public static JsonArray fromStrings(String... strings) {
+        return fromStringList(Arrays.asList(strings));
+    }
+
     public static JsonArray fromStringList(List<String> nodes) {
         if (nodes == null) {
             return new JsonArray();
@@ -36,7 +40,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     public static JsonArray fromStringStream(Stream<String> nodes) {
         return new JsonArray(nodes.map(JsonString::new).collect(Collectors.toList()));
     }
-    
+
     public static <T> JsonArray map(Collection<T> values, Function<T, JsonNode> f) {
         return fromNodeStream(values.stream().map(o -> f.apply(o)));
     }
@@ -52,11 +56,11 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     public List<String> strings() {
         return stringStream().collect(Collectors.toList());
     }
-    
+
     public <T> List<T> mapNodes(Function<JsonNode,T> mapFunc) {
         return nodeStream().map(mapFunc).collect(Collectors.toList());
     }
-    
+
     public Stream<JsonNode> nodeStream() {
         return values.stream();
     }
@@ -114,7 +118,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
             throw new JsonValueNotPresentException("Json array does not have a value at position " + pos);
         }
         JsonNode jsonNode = values.get(pos);
-        if (!jsonNode.getClass().isAssignableFrom(jsonClass)) {
+        if (!jsonClass.isAssignableFrom(jsonNode.getClass())) {
             throw new JsonValueNotPresentException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
 
         }

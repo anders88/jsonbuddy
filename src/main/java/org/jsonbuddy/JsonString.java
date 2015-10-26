@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 public class JsonString extends JsonValue {
+
     private final String value;
 
     public JsonString(String value) {

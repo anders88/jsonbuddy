@@ -28,7 +28,6 @@ public abstract class JsonNode {
         return (T) this;
     }
 
-
     /**
      * Read the value of an attribute from a JsonObject
      * @param key The given key
@@ -36,10 +35,10 @@ public abstract class JsonNode {
      * @throws JsonValueNotPresentException If this object is not a Json object, or if a value with the given key does not exist.
      */
     public String requiredString(String key) throws JsonValueNotPresentException {
-        throw new JsonValueNotPresentException(String.format("Required key '%s' does not exsist",key));
+        throw new JsonValueNotPresentException(String.format("Not supported for class %s",getClass().getSimpleName()));
     }
 
-    public String textValue() throws JsonValueNotPresentException {
+    public String stringValue() throws JsonValueNotPresentException {
         throw new JsonValueNotPresentException(String.format("Not supported for class %s",getClass().getSimpleName()));
     }
 

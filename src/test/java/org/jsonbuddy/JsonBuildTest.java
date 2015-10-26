@@ -9,8 +9,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 public class JsonBuildTest {
 
@@ -94,8 +93,8 @@ public class JsonBuildTest {
         JsonObject jsonObject = JsonFactory.jsonObject().put("nullValue", new JsonNull());
 
         assertThat(jsonObject.value("nullValue")).isPresent();
-        assertThat(jsonObject.requiredString("nullValue")).isNull();
-
+        assertThatThrownBy(() -> jsonObject.requiredString("nullValue"))
+            .hasMessageContaining("nullValue");
     }
 
     @Test

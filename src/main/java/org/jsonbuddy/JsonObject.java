@@ -24,14 +24,11 @@ public class JsonObject extends JsonNode {
     }
 
     public Optional<String> stringValue(String key) {
-        return get(key, JsonString.class).map(JsonString::stringValue);
+        return get(key, JsonValue.class).map(JsonValue::stringValue);
     }
 
     @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
-        if (value(key).isPresent() && value(key).get().equals(new JsonNull())) {
-            return null;
-        }
         return stringValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
@@ -89,17 +86,12 @@ public class JsonObject extends JsonNode {
         if (!val.isPresent()) {
             return Optional.empty();
         }
-        String text = val.get().textValue();
+        String text = val.get().stringValue();
         return Optional.of(Instant.parse(text));
     }
 
     public Instant requiredInstant(String key) {
-        JsonValue val = value(key)
-                .filter(no -> (no instanceof JsonString))
-                        .map(no -> (JsonValue) no)
-                        .orElseThrow(throwKeyNotPresent(key));
-        String text = val.textValue();
-        return Instant.parse(text);
+        return instantValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
     public Optional<JsonArray> arrayValue(String key) {
@@ -112,7 +104,7 @@ public class JsonObject extends JsonNode {
 
     public <T extends JsonNode> Optional<T> get(String key, Class<T> t) {
         return value(key)
-                .filter(node -> node.getClass().isAssignableFrom(t))
+                .filter(node -> t.isAssignableFrom(node.getClass()))
                 .map(node -> (T) node);
     }
 

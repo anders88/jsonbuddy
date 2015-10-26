@@ -1,16 +1,99 @@
 package org.jsonbuddy;
 
-import org.assertj.core.api.Assertions;
+import static org.assertj.core.api.StrictAssertions.assertThat;
+import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import java.time.Instant;
+import java.util.Arrays;
+
 import org.junit.Test;
 
-import static org.assertj.core.api.StrictAssertions.assertThat;
-
 public class JsonObjectTest {
+
     @Test
     public void shouldGiveStringAsDouble() throws Exception {
         JsonObject obj = JsonFactory.jsonObject().put("pi", "3.14");
-        double pi = obj.requiredDouble("pi");
-        assertThat(pi).isEqualTo(3.14d);
+        assertThat(obj.requiredDouble("pi")).isEqualTo(3.14d);
+        assertThat(obj.requiredLong("pi")).isEqualTo(3);
+    }
 
+    @Test
+    public void instantValues() throws Exception {
+        Instant instant = Instant.now();
+        assertThat(new JsonObject().put("instant", instant).requiredInstant("instant"))
+            .isEqualTo(instant);
+    }
+
+    @Test
+    public void requiredDoubleThrowsOnNonNumeric() throws Exception {
+        assertThatThrownBy(() -> new JsonObject().put("nan", "test").requiredDouble("nan"))
+            .hasMessageContaining("nan is not numeric");
+        assertThatThrownBy(() -> new JsonObject().put("obj", new JsonObject()).requiredDouble("obj"))
+            .hasMessageContaining("obj is not numeric");
+    }
+
+    @Test
+    public void shouldRemove() throws Exception {
+        JsonObject o = new JsonObject().put("string", "value");
+        o.remove("string");
+        assertThat(o.stringValue("string")).isEmpty();
+    }
+
+
+    @Test
+    public void shouldSupportAllValueTypes() throws Exception {
+        Instant instant = Instant.now();
+        JsonObject object = new JsonObject()
+                .put("bool", true)
+                .put("double", 0.0)
+                .put("enum", Thread.State.WAITING)
+                .put("instant", instant)
+                .put("node", new JsonArray())
+                .put("array", Arrays.asList("a", "b"))
+                .put("long", 123)
+                .put("string", "string");
+        JsonObject copy = new JsonObject()
+                .put("bool", true)
+                .put("double", 0.0)
+                .put("enum", Thread.State.WAITING)
+                .put("instant", instant)
+                .put("node", new JsonArray())
+                .put("array", Arrays.asList("a", "b"))
+                .put("long", 123)
+                .put("string", "string");
+
+        assertThat(object).isEqualTo(copy);
+        assertThat(object.hashCode()).isEqualTo(copy.hashCode());
+    }
+
+    @Test
+    public void missingNumeric() throws Exception {
+        assertThat(new JsonObject().doubleValue("missing")).isEmpty();
+    }
+
+    @Test
+    public void shouldGiveValuesAsString() throws Exception {
+        assertThat(new JsonObject().put("pi", "3.14").stringValue("pi").get())
+            .isEqualTo("3.14");
+        assertThat(new JsonObject().put("pi", "3.14").requiredString("pi"))
+            .isEqualTo("3.14");
+        assertThat(new JsonObject().put("number", 42.5).stringValue("number").get())
+            .isEqualTo("42.5");
+        assertThat(new JsonObject().put("number", 42.5).requiredString("number"))
+            .isEqualTo("42.5");
+
+        assertThat(new JsonObject().put("nullValue", (String)null).stringValue("nullValue")).isEmpty();
+        assertThatThrownBy(() -> new JsonObject().put("nullValue", (String)null).requiredString("nullValue"))
+            .isInstanceOf(JsonValueNotPresentException.class)
+            .hasMessageContaining("nullValue");
+
+        assertThat(new JsonObject().put("nullValue", new JsonNull()).stringValue("nullValue")).isEmpty();
+        assertThatThrownBy(() -> new JsonObject().put("nullValue", new JsonNull()).requiredString("nullValue"))
+            .isInstanceOf(JsonValueNotPresentException.class)
+            .hasMessageContaining("nullValue");
+
+        assertThat(new JsonObject().stringValue("noSuchKey")).isEmpty();
+        assertThatThrownBy(() -> new JsonObject().requiredString("noSuchKey"))
+            .isInstanceOf(JsonValueNotPresentException.class)
+            .hasMessageContaining("noSuchKey");
     }
 }
