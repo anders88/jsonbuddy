@@ -1,7 +1,6 @@
 package org.jsonbuddy;
 
 
-import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
@@ -14,7 +13,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
 
 public class JsonParserTest {
@@ -61,7 +59,6 @@ public class JsonParserTest {
         List<String> children = vader.requiredArray("children").stringStream()
                 .collect(Collectors.toList());
         assertThat(children).containsExactly("Luke", "Leia");
-
     }
 
     @Test
@@ -74,7 +71,6 @@ public class JsonParserTest {
     public void shouldHandleString() throws Exception {
         JsonObject obj = (JsonObject) JsonParser.parse("{}");
         assertThat(obj).isNotNull();
-
     }
 
     @Test
@@ -112,13 +108,12 @@ public class JsonParserTest {
         assertThat(jsonObject.value("a").get().as(JsonNumber.class).longValue()).isEqualTo(-1);
         assertThat(jsonObject.value("b").get().as(JsonNumber.class).doubleValue()).isEqualTo(3.14d);
         assertThat(jsonObject.value("c").get().as(JsonNumber.class).doubleValue()).isEqualTo(2500d);
-
     }
 
     @Test
     public void shouldHandleSpecialCharacters() throws Exception {
         String input = fixQuotes("{'aval':'quote:\\\" backslash\\\\ /slash \\f bell\\b tab\\t newline\\nrest'}");
-        JsonObject val = JsonParser.parse(input).as(JsonObject.class);
+        JsonObject val = JsonParser.parseToObject(input);
 
         assertThat(val.stringValue("aval").get()).isEqualTo("quote:\" backslash\\ /slash \f bell\b tab\t newline\nrest");
     }
@@ -127,22 +122,27 @@ public class JsonParserTest {
     public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
         validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
         validateException("['Luke'", "Expected , or ] in array");
-        validateException("{'name':'Luke}", "JsonObject not closed. Expected }");
         validateException("{'name'}", "Expected value for objectkey name");
         validateException("{'name' 'Darth'", "Expected value for objectkey name");
         validateException("[1 2]", "Expected , or ] in array");
         validateException("{'dummy':2gh}", "Illegal value '2g'");
+
+        validateException("{'name':'Luke}",
+                "JsonObject not closed. Expected }"); // Should be "string not closed"
+        validateException("{'name':'Luke",
+                "JsonObject not closed. Expected }"); // Should be "string not closed"
+        validateException("{'name':Luke}",
+                "JsonObject not closed. Expected }"); // Should be "unquoted string"
+        // Creates a JsonNull!
+        //validateException("unquoted", "Unquoted string");
+        // Creates a new JsonBoolean(false)
+        //validateException("foo", "Unquoted string");
     }
 
     private void validateException(String json, String errormessage) {
-        try {
-            JsonParser.parse(fixQuotes(json));
-            fail("Expected exception");
-        } catch (JsonParseException e) {
-            assertThat(e.getMessage()).isEqualTo(errormessage);
-        }
+        assertThatThrownBy(() -> JsonParser.parse(fixQuotes(json)))
+            .hasMessage(errormessage);
     }
-
 
     @Test
     public void shouldHandleLinebreaks() throws Exception {
@@ -180,29 +180,13 @@ public class JsonParserTest {
     @Test
     public void shouldHandleLineshifts() throws Exception {
         JsonParser.parseToObject(fixQuotes("{'tablevalues':\n['one','two']}"));
-
     }
 
     @Test
-    public void shouldHandleSpesialCharsAfterNumbers() throws Exception {
+    public void shouldHandleSpecialCharsAfterNumbers() throws Exception {
         String val = "{\"id\":4326\r}";
         JsonObject jsonObject = JsonParser.parseToObject(val);
         assertThat(jsonObject.requiredLong("id")).isEqualTo(4326);
-    }
-
-    @Test
-    public void shouldHandleUnterminatedObjects() throws Exception {
-//        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("unquoted")))
-//            .hasMessageContaining("Unquoted string");
-//        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("[unquoted]")))
-//            .hasMessageContaining("Unquoted string");
-        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("{'foo': 'ba")))
-            .hasMessageContaining("JsonObject not closed");
-        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("{'foo': 'ba}")))
-            .hasMessageContaining("JsonObject not closed");
-            //.hasMessageContaining("JsonObject not closed. Expected \"");
-        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("{'foo': 'ba'")))
-            .hasMessageContaining("JsonObject not closed");
     }
 
     private static String fixQuotes(String content) {
