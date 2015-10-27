@@ -95,6 +95,18 @@ public class JsonObjectTest {
         assertThatThrownBy(() -> new JsonObject().put("nullValue", new JsonNull()).requiredString("nullValue"))
             .isInstanceOf(JsonValueNotPresentException.class)
             .hasMessageContaining("nullValue");
+    }
+
+    @Test
+    public void shouldReturnANumberAsString() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("anumber", 42);
+        assertThat(jsonObject.stringValue("anumber")).isPresent().contains("42");
+    }
+
+    @Test
+    public void booleanShouldReturnAsString() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("abool", true);
+        assertThat(jsonObject.stringValue("abool")).isPresent().contains("true");
 
         assertThat(new JsonObject().stringValue("noSuchKey")).isEmpty();
         assertThatThrownBy(() -> new JsonObject().requiredString("noSuchKey"))
