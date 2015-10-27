@@ -132,11 +132,9 @@ public class JsonParserTest {
         validateException("{'name':'Luke",
                 "JsonObject not closed. Expected }"); // Should be "string not closed"
         validateException("{'name':Luke}",
-                "JsonObject not closed. Expected }"); // Should be "unquoted string"
-        // Creates a JsonNull!
-        //validateException("unquoted", "Unquoted string");
-        // Creates a new JsonBoolean(false)
-        //validateException("foo", "Unquoted string");
+                "Unexpected charachter 'L'"); // Should be "unquoted string"
+        validateException("unquoted", "Unexpected charachter 'u'");
+        validateException("foo", "Unexpected value foo");
     }
 
     private void validateException(String json, String errormessage) {

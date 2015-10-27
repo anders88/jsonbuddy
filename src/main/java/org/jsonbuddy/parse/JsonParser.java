@@ -107,7 +107,7 @@ public class JsonParser {
             if (lastRead == '-' || Character.isDigit(lastRead)) {
                 return parseNumberValue();
             }
-            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t' || lastRead != '\r')) {
+            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t' || lastRead == '\r')) {
                 throw new JsonParseException("Unexpected charachter '" + lastRead + "'");
             }
             readNext();
@@ -147,8 +147,13 @@ public class JsonParser {
     }
 
     private void expectValue(String value) {
-        for (int i=0;i<value.length();i++) {
+        StringBuilder res = new StringBuilder();
+        for (int i=0;i<value.length() && !finished;i++) {
+            res.append(lastRead);
             readNext();
+        }
+        if (!res.toString().equals(value)) {
+            throw new JsonParseException(String.format("Unexpected value %s",res.toString()));
         }
     }
 
