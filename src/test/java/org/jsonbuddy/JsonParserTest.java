@@ -99,7 +99,7 @@ public class JsonParserTest {
         assertThat(intVal.intValue()).isEqualTo(42);
         assertThat(intVal.shortValue()).isEqualTo((short)42);
         assertThat(intVal.floatValue()).isEqualTo(42.0f);
-        assertThat(intVal.byteValue()).isEqualTo((byte)42);
+        assertThat(intVal.byteValue()).isEqualTo((byte) 42);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class JsonParserTest {
 
         JsonString jsonInstantValue = (JsonString) time.get();
 
-        assertThat(jsonInstantValue.instantValue()).isEqualTo(LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant());
+        assertThat(jsonInstantValue.instantValue()).isEqualTo(LocalDateTime.of(2015, 8, 30, 13, 21, 12, 314000000).atOffset(ZoneOffset.ofHours(2)).toInstant());
     }
 
     @Test
@@ -191,6 +191,14 @@ public class JsonParserTest {
     public void shouldHandleEmptyString() throws Exception {
         JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'emptyString':''}"));
         assertThat(jsonObject.requiredString("emptyString")).isEqualTo("");
+    }
+
+    @Test
+    public void shouldHandleNestedArrays() throws Exception {
+        String json = "{\"coordinates\":[[9.0, 80.0]]}";
+        JsonObject jsonObject = JsonParser.parseToObject(json);
+        assertThat(jsonObject).isNotNull();
+
     }
 
     private static String fixQuotes(String content) {

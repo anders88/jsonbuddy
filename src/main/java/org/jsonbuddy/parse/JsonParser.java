@@ -158,20 +158,22 @@ public class JsonParser {
     }
 
     private JsonArray parseArray() {
-        JsonArray jsonArrayFactory = new JsonArray();
+        JsonArray jsonArray = new JsonArray();
         while (!(finished || lastRead == ']')) {
             readNext();
             if (lastRead == ']') {
                 break;
             }
-            JsonNode jsonFactory = parseValue();
-            jsonArrayFactory.add(jsonFactory);
+            JsonNode jsonArrayValue = parseValue();
+            jsonArray.add(jsonArrayValue);
             readSpaceUntil("Expected , or ] in array", ']', ',');
         }
         if (finished) {
             throw new JsonParseException("Expected , or ] in array");
+        } else {
+            readNext();
         }
-        return jsonArrayFactory;
+        return jsonArray;
     }
 
     private JsonValue parseStringValue() {
