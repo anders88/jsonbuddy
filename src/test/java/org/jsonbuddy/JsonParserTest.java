@@ -187,6 +187,12 @@ public class JsonParserTest {
         assertThat(jsonObject.requiredLong("id")).isEqualTo(4326);
     }
 
+    @Test
+    public void shouldHandleEmptyString() throws Exception {
+        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'emptyString':''}"));
+        assertThat(jsonObject.requiredString("emptyString")).isEqualTo("");
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }
