@@ -11,7 +11,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.5.0</version>
+	<version>0.5.1</version>
 </dependency>
 ```
 
@@ -72,6 +72,7 @@ Version | Description
 0.4.1   | Bugfix. Handling spaces after numbers
 0.4.2   | Bugfix. Json Instant sends as string
 0.5.0   | Renamed method to make naming more consequent. Now uses put instad of withValue. We use jsonString, JsonNumber (who can hold all kinds of numbers integers and numbers with decimals). JsonBoolean and JsonNull. SimpleValue are now called JsonValue.
+0.5.1   | Bugfix. Parsing nested tables
 
 # Licence
 Copyright © 2015 Anders Karlsen
