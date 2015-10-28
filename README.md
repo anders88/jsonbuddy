@@ -11,7 +11,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.4.2</version>
+	<version>0.5.0</version>
 </dependency>
 ```
 
