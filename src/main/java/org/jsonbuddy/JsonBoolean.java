@@ -16,7 +16,7 @@ public class JsonBoolean extends JsonValue {
     }
 
     @Override
-    public Object javaObjectValue() {
+    public Boolean javaObjectValue() {
         return value;
     }
 
@@ -25,7 +25,7 @@ public class JsonBoolean extends JsonValue {
         printWriter.append(stringValue());
     }
 
-    public boolean boolValue() {
+    public boolean booleanValue() {
         return value;
     }
 

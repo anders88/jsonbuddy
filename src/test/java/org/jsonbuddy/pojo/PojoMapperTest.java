@@ -70,10 +70,12 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject()
                 .put("text", "the meaning")
                 .put("number", 42)
-                .put("bool", JsonFactory.jsonTrue());
+                .put("bool", JsonFactory.jsonTrue())
+                .put("falseBool", JsonFactory.jsonFalse());
         ClassWithDifferentTypes differentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
         assertThat(differentTypes.text).isEqualTo("the meaning");
         assertThat(differentTypes.number).isEqualTo(42);
+        assertThat(differentTypes.bool).isTrue();
         assertThat(differentTypes.bool).isTrue();
     }
 
@@ -92,9 +94,8 @@ public class PojoMapperTest {
         PojoMapper pojoMapper = PojoMapper.create().registerClassBuilder(SimpleWithNameGetter.class, new JsonPojoBuilder<SimpleWithNameGetter>() {
             @Override
             public SimpleWithNameGetter build(JsonNode jsonNode) {
-
                 SimpleWithNameGetter res = new SimpleWithNameGetter();
-                res.setName(jsonNode.requiredString("secret"));
+                res.setName(((JsonObject)jsonNode).requiredString("secret"));
                 return res;
             }
         });

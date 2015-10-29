@@ -100,7 +100,7 @@ public class JsonBuildTest {
     @Test
     public void shouldGiveStringFormattetAsInstantAsInstant() throws Exception {
         Instant now = Instant.now();
-        JsonObject jsonObject = JsonFactory.jsonObject().put("now", JsonFactory.jsonText(now.toString()));
+        JsonObject jsonObject = JsonFactory.jsonObject().put("now", JsonFactory.jsonString(now.toString()));
         assertThat(jsonObject.requiredInstant("now")).isEqualTo(now);
 
 

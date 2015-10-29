@@ -179,7 +179,7 @@ public class JsonParser {
     private JsonValue parseStringValue() {
         readNext();
         String value = readText();
-        return JsonFactory.jsonText(value);
+        return JsonFactory.jsonString(value);
     }
 
     private JsonObject parseObject() {

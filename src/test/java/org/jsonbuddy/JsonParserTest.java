@@ -79,7 +79,7 @@ public class JsonParserTest {
         JsonNode boolVal = jsonObject.value("boolVal").get();
 
         assertThat(boolVal).isInstanceOf(JsonBoolean.class);
-        assertThat(((JsonBoolean) boolVal).boolValue()).isFalse();
+        assertThat(((JsonBoolean) boolVal).booleanValue()).isFalse();
     }
 
     @Test
@@ -92,11 +92,12 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleInteger() throws Exception {
-        JsonObject jsonObject = JsonParser.parse(fixQuotes("{'theMeaning':42}")).as(JsonObject.class);
+        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'theMeaning':42}"));
         JsonNode theMeaning = jsonObject.value("theMeaning").get();
         assertThat(theMeaning).isInstanceOf(JsonNumber.class);
         JsonNumber intVal = (JsonNumber) theMeaning;
         assertThat(intVal.intValue()).isEqualTo(42);
+        assertThat(intVal.longValue()).isEqualTo(42);
         assertThat(intVal.shortValue()).isEqualTo((short)42);
         assertThat(intVal.floatValue()).isEqualTo(42.0f);
         assertThat(intVal.byteValue()).isEqualTo((byte) 42);
@@ -104,10 +105,10 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleComplexNumbers() throws Exception {
-        JsonObject jsonObject = JsonParser.parse(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}")).as(JsonObject.class);
-        assertThat(jsonObject.value("a").get().as(JsonNumber.class).longValue()).isEqualTo(-1);
-        assertThat(jsonObject.value("b").get().as(JsonNumber.class).doubleValue()).isEqualTo(3.14d);
-        assertThat(jsonObject.value("c").get().as(JsonNumber.class).doubleValue()).isEqualTo(2500d);
+        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}"));
+        assertThat(jsonObject.requiredLong("a")).isEqualTo(-1);
+        assertThat(jsonObject.requiredDouble("b")).isEqualTo(3.14d);
+        assertThat(jsonObject.requiredDouble("c")).isEqualTo(2500d);
     }
 
     @Test

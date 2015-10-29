@@ -1,7 +1,12 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,11 +51,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     }
 
     public <T> List<T> objects(Function<JsonObject,T> mapFunc) {
-        return nodeStream()
-                .filter(jn -> (jn instanceof JsonObject))
-                .map(jn -> (JsonObject) jn)
-                .map(mapFunc)
-                .collect(Collectors.toList());
+        return mapNodes(n -> mapFunc.apply(((JsonObject)n)));
     }
 
     public List<String> strings() {
@@ -93,19 +94,13 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
                 .collect(Collectors.toList()));
     }
 
-
-    public JsonArray add(JsonNode jsonNode) {
-        values.add(jsonNode);
-        return this;
-    }
-
-    public JsonArray add(String text) {
-        values.add(new JsonString(text));
+    public JsonArray add(Object o) {
+        values.add(JsonFactory.jsonNode(o));
         return this;
     }
 
     public JsonArray addAll(List<String> values) {
-        this.values.addAll(values.stream().map(JsonFactory::jsonText).collect(Collectors.toList()));
+        this.values.addAll(values.stream().map(JsonFactory::jsonString).collect(Collectors.toList()));
         return this;
     }
 
@@ -113,16 +108,60 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return values.size();
     }
 
-    public <T> T get(int pos,Class<T> jsonClass) {
+    public JsonArray requiredArray(int pos) {
+        return get(pos, JsonArray.class);
+    }
+
+    public JsonObject requiredObject(int pos) {
+        return get(pos, JsonObject.class);
+    }
+
+    public long requiredLong(int position) {
+        return requiredNumber(position).longValue();
+    }
+
+    public double requiredDouble(int position) {
+        return requiredNumber(position).doubleValue();
+    }
+
+    public boolean requiredBoolean(int position) {
+        if (get(position) instanceof JsonBoolean) {
+            return ((JsonBoolean)get(position)).booleanValue();
+        } else if (get(position) instanceof JsonValue) {
+            return Boolean.parseBoolean(((JsonValue)get(position)).stringValue());
+        } else {
+            throw new JsonValueNotPresentException(position + " is not boolean");
+        }
+    }
+
+    private Number requiredNumber(int position) {
+        if (get(position) instanceof JsonNumber) {
+            return ((JsonNumber)get(position)).javaObjectValue();
+        } else if (get(position) instanceof JsonValue) {
+            try {
+                return Double.parseDouble(((JsonValue)get(position)).stringValue());
+            } catch (NumberFormatException e) {
+                throw new JsonValueNotPresentException(position + " is not numeric");
+            }
+        } else {
+            throw new JsonValueNotPresentException(position + " is not numeric");
+        }
+    }
+
+    public <T> T get(int pos, Class<T> jsonClass) {
+        JsonNode jsonNode = get(pos);
+        if (!jsonClass.isAssignableFrom(jsonNode.getClass())) {
+            throw new JsonValueNotPresentException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
+        }
+        return (T) jsonNode;
+    }
+
+    private JsonNode get(int pos) {
         if (pos < 0 || pos >= size()) {
             throw new JsonValueNotPresentException("Json array does not have a value at position " + pos);
         }
         JsonNode jsonNode = values.get(pos);
-        if (!jsonClass.isAssignableFrom(jsonNode.getClass())) {
-            throw new JsonValueNotPresentException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
-
-        }
-        return (T) jsonNode;
+        return jsonNode;
     }
 
     @Override
@@ -142,4 +181,25 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     public Iterator<JsonNode> iterator() {
         return new ArrayList<>(values).iterator();
     }
+
+    public boolean isEmpty() {
+        return values.isEmpty();
+    }
+
+    public JsonNode remove(int i) {
+        return values.remove(i);
+    }
+
+    public void clear() {
+        values.clear();
+    }
+
+    public void set(int i, Object o) {
+        values.set(i, JsonFactory.jsonNode(o));
+    }
+
+    public JsonArray subList(int fromIndex, int toIndex) {
+        return new JsonArray(values.subList(fromIndex, toIndex));
+    }
+
 }

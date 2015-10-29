@@ -25,7 +25,7 @@ public class JsonGeneratorTest {
     @Test
     public void shouldHandleSimpleValues() throws Exception {
         assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNull());
-        assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonText("Darth"));
+        assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonString("Darth"));
         assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonNumber(42L));
 
     }
@@ -67,7 +67,7 @@ public class JsonGeneratorTest {
         JsonObject jsonObject = (JsonObject) JsonGenerator.generate(combinedClassWithSetter);
 
         assertThat(jsonObject.stringValue("occupation").get()).isEqualTo("Dark Lord");
-        Optional<JsonNode> person = jsonObject.value("person");
+        Optional<JsonObject> person = jsonObject.objectValue("person");
 
         assertThat(person).isPresent();
         assertThat(person.get()).isInstanceOf(JsonObject.class);
@@ -108,7 +108,7 @@ public class JsonGeneratorTest {
 
     @Test
     public void shouldHandleDifferentSimpleTypes() throws Exception {
-        ClassWithDifferentTypes classWithDifferentTypes = new ClassWithDifferentTypes("my text", 42, true);
+        ClassWithDifferentTypes classWithDifferentTypes = new ClassWithDifferentTypes("my text", 42, true, false);
         JsonObject generated = (JsonObject) JsonGenerator.generate(classWithDifferentTypes);
         assertThat(generated.requiredString("text")).isEqualTo("my text");
         assertThat(generated.requiredLong("number")).isEqualTo(42);

@@ -3,7 +3,6 @@ package org.jsonbuddy;
 import java.io.PrintWriter;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,13 +26,12 @@ public class JsonObject extends JsonNode {
         return get(key, JsonValue.class).map(JsonValue::stringValue);
     }
 
-    @Override
     public String requiredString(String key) throws JsonValueNotPresentException {
         return stringValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
     public Optional<Double> doubleValue(String key) {
-        return numberValue(key).map(JsonNumber::doubleValue);
+        return numberValue(key).map(Number::doubleValue);
     }
 
     public double requiredDouble(String key) throws JsonValueNotPresentException {
@@ -41,30 +39,45 @@ public class JsonObject extends JsonNode {
     }
 
     public Optional<Long> longValue(String key) {
-        return numberValue(key).map(JsonNumber::longValue);
+        return numberValue(key).map(Number::longValue);
     }
 
     public long requiredLong(String key) throws JsonValueNotPresentException{
         return longValue(key).orElseThrow(throwKeyNotPresent(key));
     }
 
-    public Optional<JsonNumber> numberValue(String key) {
+    public Optional<Number> numberValue(String key) {
         JsonNode node = values.get(key);
+        if (node == null || node instanceof JsonNull) {
+            return Optional.empty();
+        }
+        if (node instanceof JsonNumber) {
+            return Optional.of(((JsonNumber)node).javaObjectValue());
+        }
         if (node instanceof JsonValue) {
             try {
-                return Optional.of(new JsonNumber(((JsonValue)node)));
+                return Optional.of(Double.parseDouble(node.stringValue()));
             } catch (NumberFormatException e) {
                 throw new JsonValueNotPresentException(key + " is not numeric");
             }
-        } else if (node == null) {
-            return Optional.empty();
         } else {
             throw new JsonValueNotPresentException(key + " is not numeric");
         }
     }
 
     public Optional<Boolean> booleanValue(String key) {
-        return get(key, JsonBoolean.class).map(JsonBoolean::boolValue);
+        JsonNode node = values.get(key);
+        if (node == null || node instanceof JsonNull) {
+            return Optional.empty();
+        }
+        if (node instanceof JsonBoolean) {
+            return Optional.of(((JsonBoolean)node).booleanValue());
+        }
+        if (node instanceof JsonValue) {
+            return Optional.of(Boolean.parseBoolean(node.stringValue()));
+        } else {
+            throw new JsonValueNotPresentException(key + " is not boolean");
+        }
     }
 
     public boolean requiredBoolean(String key) throws JsonValueNotPresentException{
@@ -134,37 +147,9 @@ public class JsonObject extends JsonNode {
         printWriter.append("}");
     }
 
-    public JsonObject put(String key, JsonNode jsonNode) {
-        values.put(key, jsonNode);
+    public JsonObject put(String key, Object value) {
+        values.put(key, JsonFactory.jsonNode(value));
         return this;
-    }
-
-    public JsonObject put(String key,String value) {
-        return put(key, JsonFactory.jsonText(value));
-    }
-
-    public JsonObject put(String key,double value) {
-        return put(key, JsonFactory.jsonNumber(value));
-    }
-
-    public JsonObject put(String key,long value) {
-        return put(key, JsonFactory.jsonNumber(value));
-    }
-
-    public JsonObject put(String key,boolean value) {
-        return put(key, JsonFactory.jsonBoolean(value));
-    }
-
-    public JsonObject put(String key,Enum<?> value) {
-        return put(key, Optional.of(value).map(Object::toString).orElse(null));
-    }
-
-    public JsonObject put(String key, Instant instant) {
-        return put(key, JsonFactory.jsonInstance(instant));
-    }
-
-    public JsonObject put(String key, List<String> values) {
-        return put(key, JsonFactory.jsonArray().addAll(values));
     }
 
     public Set<String> keys() {
@@ -200,5 +185,19 @@ public class JsonObject extends JsonNode {
         return Objects.hash(values);
     }
 
+    public int size() {
+        return values.size();
+    }
 
+    public boolean isEmpty() {
+        return values.isEmpty();
+    }
+
+    public void clear() {
+        values.clear();
+    }
+
+    public boolean containsKey(String key) {
+        return values.containsKey(key);
+    }
 }

@@ -7,14 +7,6 @@ public class JsonNumber extends JsonValue {
 
     final private Number value;
 
-    public JsonNumber(JsonValue value) {
-        if (value instanceof JsonNumber) {
-            this.value = ((JsonNumber)value).value;
-        } else {
-            this.value = Double.parseDouble(value.stringValue());
-        }
-    }
-
     public JsonNumber(Number value) {
         if (value == null) {
             throw new NullPointerException("Use JsonNull with null");
@@ -28,7 +20,7 @@ public class JsonNumber extends JsonValue {
     }
 
     @Override
-    public Object javaObjectValue() {
+    public Number javaObjectValue() {
         return value;
     }
 

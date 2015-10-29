@@ -21,7 +21,7 @@ public class JsonGenerator {
             return (JsonNode) object;
         }
         if (object instanceof String) {
-            return JsonFactory.jsonText((String) object);
+            return JsonFactory.jsonString((String) object);
         }
         if ((object instanceof Integer))  {
             int i = (int) object;
@@ -43,7 +43,7 @@ public class JsonGenerator {
             return JsonFactory.jsonBoolean((Boolean) object);
         }
         if (object instanceof Enum) {
-            return JsonFactory.jsonText(object.toString());
+            return JsonFactory.jsonString(object.toString());
         }
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
@@ -56,7 +56,7 @@ public class JsonGenerator {
             return JsonArray.map((Collection<?>) object, this::generateNode);
         }
         if (object instanceof Temporal) {
-            return JsonFactory.jsonText(object.toString());
+            return JsonFactory.jsonString(object.toString());
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
