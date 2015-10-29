@@ -1,12 +1,22 @@
 package org.jsonbuddy.parse;
 
-import org.jsonbuddy.*;
-import org.jsonbuddy.JsonNumber;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonBoolean;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonNumber;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
 
 public class JsonParser {
 
@@ -107,8 +117,8 @@ public class JsonParser {
             if (lastRead == '-' || Character.isDigit(lastRead)) {
                 return parseNumberValue();
             }
-            if (!(Character.isSpaceChar(lastRead) || lastRead == '\n' || lastRead == '\t' || lastRead == '\r')) {
-                throw new JsonParseException("Unexpected charachter '" + lastRead + "'");
+            if (!(Character.isWhitespace(lastRead))) {
+                throw new JsonParseException("Unexpected character '" + lastRead + "'");
             }
             readNext();
         }
@@ -119,12 +129,12 @@ public class JsonParser {
     private JsonValue parseNumberValue() {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
-        while (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead)) {
+        while (!finished && (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead))) {
             isDouble = isDouble || ".eE".contains("" + lastRead);
             val.append(lastRead);
             readNext();
         }
-        if ((!(Character.isSpaceChar(lastRead) || "}],".contains("" + lastRead))) && (!"\n\r\t".contains("" + lastRead))) {
+        if (!finished && (!(Character.isSpaceChar(lastRead) || "}],".contains("" + lastRead))) && (!"\n\r\t".contains("" + lastRead))) {
             throw new JsonParseException("Illegal value '" + val + lastRead + "'");
         }
         if (isDouble) {
@@ -214,8 +224,7 @@ public class JsonParser {
             if (lastRead == '\\') {
                 readNext();
                 if (finished) {
-                    // Todo this is error
-                    break;
+                    throw new JsonParseException("JsonString not closed. Ended in escape sequence");
                 }
                 switch (lastRead) {
                     case '"':
@@ -246,6 +255,9 @@ public class JsonParser {
                 res.append(lastRead);
             }
             readNext();
+        }
+        if (finished) {
+            throw new JsonParseException("JsonString not closed. Expected \"");
         }
         return res.toString();
     }

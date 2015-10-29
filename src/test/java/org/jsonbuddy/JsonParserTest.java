@@ -101,6 +101,9 @@ public class JsonParserTest {
         assertThat(intVal.shortValue()).isEqualTo((short)42);
         assertThat(intVal.floatValue()).isEqualTo(42.0f);
         assertThat(intVal.byteValue()).isEqualTo((byte) 42);
+
+        JsonNode jsonNode = JsonParser.parse("42");
+        assertThat(jsonNode).isEqualTo(new JsonNumber(42L));
     }
 
     @Test
@@ -113,7 +116,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleSpecialCharacters() throws Exception {
-        String input = fixQuotes("{'aval':'quote:\\\" backslash\\\\ /slash \\f bell\\b tab\\t newline\\nrest'}");
+        String input = fixQuotes("{'aval':'quote:\\\" backslash\\\\ \\/slash \\f bell\\b tab\\t newline\\nrest'}");
         JsonObject val = JsonParser.parseToObject(input);
 
         assertThat(val.stringValue("aval").get()).isEqualTo("quote:\" backslash\\ /slash \f bell\b tab\t newline\nrest");
@@ -122,19 +125,21 @@ public class JsonParserTest {
     @Test
     public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
         validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
+        validateException("{'name':'Darth Vader' :", "JsonObject not closed. Expected }");
         validateException("['Luke'", "Expected , or ] in array");
         validateException("{'name'}", "Expected value for objectkey name");
         validateException("{'name' 'Darth'", "Expected value for objectkey name");
         validateException("[1 2]", "Expected , or ] in array");
+        validateException("[1, 2", "Expected , or ] in array");
+        validateException("[1, 2 :", "Expected , or ] in array");
         validateException("{'dummy':2gh}", "Illegal value '2g'");
 
-        validateException("{'name':'Luke}",
-                "JsonObject not closed. Expected }"); // Should be "string not closed"
-        validateException("{'name':'Luke",
-                "JsonObject not closed. Expected }"); // Should be "string not closed"
-        validateException("{'name':Luke}",
-                "Unexpected charachter 'L'"); // Should be "unquoted string"
-        validateException("unquoted", "Unexpected charachter 'u'");
+        validateException("{'name':'Luke}", "JsonString not closed. Expected \"");
+        validateException("{'name':'Luke", "JsonString not closed. Expected \"");
+        validateException("{'name':Luke}", "Unexpected character 'L'");
+        validateException("{'foo':", "Expected value for key foo");
+        validateException("'aborted escape \\", "JsonString not closed. Ended in escape sequence");
+        validateException("unquoted", "Unexpected character 'u'");
         validateException("foo", "Unexpected value foo");
     }
 
