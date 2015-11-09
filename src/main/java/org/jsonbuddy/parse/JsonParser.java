@@ -33,10 +33,6 @@ public class JsonParser {
         return parse(new StringReader(input));
     }
 
-    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException  {
-        return parseToObject(new InputStreamReader(inputStream));
-    }
-
     public static JsonObject parseToObject(String input) throws JsonParseException  {
         return parseToObject(new StringReader(input));
     }
@@ -51,10 +47,6 @@ public class JsonParser {
             throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
         }
         return (JsonObject) result;
-    }
-
-    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException  {
-        return parseToArray(new InputStreamReader(inputStream));
     }
 
     public static JsonArray parseToArray(String input) throws JsonParseException  {

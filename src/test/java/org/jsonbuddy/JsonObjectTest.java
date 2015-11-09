@@ -46,12 +46,14 @@ public class JsonObjectTest {
 
     @Test
     public void shouldRemove() throws Exception {
-        JsonObject o = new JsonObject().put("string", "value");
-        o.remove("string");
-        assertThat(o.stringValue("string")).isEmpty();
+        JsonObject o = new JsonObject().put("key", "value");
+        assertThat(o.remove("key")).contains(new JsonString("value"));
+        assertThat(o.stringValue("key")).isEmpty();
         assertThat(o.keys()).isEmpty();
         assertThat(o.size()).isZero();
         assertThat(o.isEmpty()).isTrue();
+
+        assertThat(o.remove(null)).isEmpty();
     }
 
     @Test

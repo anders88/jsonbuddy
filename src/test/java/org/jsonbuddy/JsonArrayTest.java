@@ -38,6 +38,23 @@ public class JsonArrayTest {
     }
 
     @Test
+    public void shouldReturnValuesAsString() throws Exception {
+        JsonArray a = new JsonArray()
+                .add("test")
+                .add(null)
+                .add(Thread.State.WAITING)
+                .add(123)
+                .add(false)
+                .add(3.14);
+        assertThat(a.requiredString(0)).isEqualTo("test");
+        assertThat(a.requiredString(1)).isNull();
+        assertThat(a.requiredString(2)).isEqualTo("WAITING");
+        assertThat(a.requiredString(3)).isEqualTo("123");
+        assertThat(a.requiredString(4)).isEqualTo("false");
+        assertThat(a.requiredString(5)).isEqualTo("3.14");
+    }
+
+    @Test
     public void shouldHandleComplexValues() {
         JsonArray a = new JsonArray()
                 .add(new JsonObject())
