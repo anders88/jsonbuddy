@@ -50,11 +50,11 @@ public class JsonObject extends JsonNode {
 
     /**
      * Returns the value at the argument position as a String or an empty
-     * Optional if the key is not present or the value is a JsonArray or JsonObject.
+     * Optional if the key is not present.
      *
-     * TODO Throw JsonConversionException if it's not a fitting value?
+     * @throws JsonConversionException if the value is a JsonArray or JsonObject.
      */
-    public Optional<String> stringValue(String key) {
+    public Optional<String> stringValue(String key) throws JsonConversionException {
         return get(key, JsonValue.class).map(JsonValue::stringValue);
     }
 
@@ -165,11 +165,11 @@ public class JsonObject extends JsonNode {
 
     /**
      * Returns the value at the argument position as a JsonObject or an empty
-     * Optional if the key is not present or not a JsonObject.
+     * Optional if the key is not present.
      *
-     * TODO Throw JsonConversionException if it's not a JsonObject?
+     *  @throws JsonConversionException if the value is not a JsonObject
      */
-    public Optional<JsonObject> objectValue(String key) {
+    public Optional<JsonObject> objectValue(String key) throws JsonConversionException {
         return get(key, JsonObject.class);
     }
 
@@ -189,14 +189,7 @@ public class JsonObject extends JsonNode {
      * @throws DateTimeParseException if the text cannot be parsed as an Instant
      */
     public Optional<Instant> instantValue(String key) {
-        Optional<JsonValue> val = value(key)
-                .filter(no -> (no instanceof JsonString))
-                .map(no -> (JsonValue) no);
-        if (!val.isPresent()) {
-            return Optional.empty();
-        }
-        String text = val.get().stringValue();
-        return Optional.of(Instant.parse(text));
+        return stringValue(key).map(s -> Instant.parse(s));
     }
 
     /**
@@ -211,11 +204,11 @@ public class JsonObject extends JsonNode {
 
     /**
      * Returns the value at the argument position as a JsonArray or an empty
-     * Optional if the key is not present or not a JsonArray.
+     * Optional if the key is not present.
      *
-     * TODO Throw JsonConversionException if it's not a JsonArray?
+     *  @throws JsonConversionException if the value is not a JsonArray
      */
-    public Optional<JsonArray> arrayValue(String key) {
+    public Optional<JsonArray> arrayValue(String key) throws JsonConversionException {
         return get(key, JsonArray.class);
     }
 
@@ -238,14 +231,16 @@ public class JsonObject extends JsonNode {
 
     /**
      * Returns the value at the argument position as or an empty Optional
-     * if the key is not present or not of the specified type.
+     * if the key is not present.
      *
-     * TODO throw exception if the value isn't matching?
+     * @throws JsonConversionException if the value is not of the specified type
      */
-    public <T extends JsonNode> Optional<T> get(String key, Class<T> t) {
-        return value(key)
-                .filter(node -> t.isAssignableFrom(node.getClass()))
-                .map(node -> (T) node);
+    public <T extends JsonNode> Optional<T> get(String key, Class<T> t) throws JsonConversionException {
+        Optional<JsonNode> value = value(key);
+        if (value.isPresent() && !t.isAssignableFrom(value.get().getClass())) {
+            throw new JsonConversionException("Can't convert " + key + " to " + t);
+        }
+        return value.map(node -> (T) node);
     }
 
     private Supplier<JsonValueNotPresentException> throwKeyNotPresent(String key) {

@@ -131,10 +131,19 @@ public class JsonObjectTest {
         JsonObject jsonObject = JsonFactory.jsonObject().put("abool", true);
         assertThat(jsonObject.stringValue("abool")).isPresent().contains("true");
 
+        assertThatThrownBy(() -> new JsonObject().put("a", new JsonArray()).stringValue("a"))
+            .isInstanceOf(JsonConversionException.class);
+
         assertThat(new JsonObject().stringValue("noSuchKey")).isEmpty();
         assertThatThrownBy(() -> new JsonObject().requiredString("noSuchKey"))
             .isInstanceOf(JsonValueNotPresentException.class)
             .hasMessageContaining("noSuchKey");
+    }
+
+    @Test
+    public void shouldThrowOnTypeMismatch() throws Exception {
+        assertThatThrownBy(() -> new JsonObject().put("a", "a").objectValue("a"))
+            .isInstanceOf(JsonConversionException.class);
     }
 
     @Test
