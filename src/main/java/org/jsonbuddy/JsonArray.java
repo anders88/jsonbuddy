@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,9 +28,9 @@ import java.util.stream.Stream;
  * are JsonObjects and call the supplied function on them. Similarly,
  * the method <code>strings()</code> will return a List of all the elements as strings.
  */
-public class JsonArray extends JsonNode implements Iterable<JsonNode> {
+public class JsonArray implements Iterable<Object> {
 
-    private final List<JsonNode> values;
+    private final List<Object> values;
 
     /**
      * Creates an empty JsonArray
@@ -38,21 +39,21 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         values = new ArrayList<>();
     }
 
-    private JsonArray(List<? extends JsonNode> nodes) {
+    private JsonArray(List<? extends Object> nodes) {
         this.values = new ArrayList<>(nodes);
     }
 
     /**
      * Creates JsonArray with the nodes in the argument list
      */
-    public static JsonArray fromNodeList(List<? extends JsonNode> nodes) {
+    public static JsonArray fromNodeList(List<? extends Object> nodes) {
         return new JsonArray(nodes);
     }
 
     /**
      * Collects the argument stream into a JsonArray
      */
-    public static JsonArray fromNodeStream(Stream<? extends JsonNode> nodes) {
+    public static JsonArray fromNodeStream(Stream<? extends Object> nodes) {
         return new JsonArray(nodes.collect(Collectors.toList()));
     }
 
@@ -70,20 +71,20 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         if (nodes == null) {
             return new JsonArray();
         }
-        return new JsonArray(nodes.stream().map(JsonString::new).collect(Collectors.toList()));
+        return new JsonArray(nodes);
     }
 
     /**
      * Collects the argument stream into a JsonArray with Strings
      */
     public static JsonArray fromStringStream(Stream<String> nodes) {
-        return new JsonArray(nodes.map(JsonString::new).collect(Collectors.toList()));
+        return new JsonArray(nodes.collect(Collectors.toList()));
     }
 
     /**
      * Maps the values over the function and returns a JsonArray with the results
      */
-    public static <T> JsonArray map(Collection<T> values, Function<T, JsonNode> f) {
+    public static <T> JsonArray map(Collection<T> values, Function<T, Object> f) {
         return fromNodeStream(values.stream().map(o -> f.apply(o)));
     }
 
@@ -110,14 +111,14 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     /**
      * Returns a list of the members of this JsonArray mapped over the function.
      */
-    public <T> List<T> mapNodes(Function<JsonNode,T> mapFunc) {
+    public <T> List<T> mapNodes(Function<Object,T> mapFunc) {
         return nodeStream().map(mapFunc).collect(Collectors.toList());
     }
 
     /**
      * Returns a stream of the members of this JsonArray.
      */
-    public Stream<JsonNode> nodeStream() {
+    public Stream<Object> nodeStream() {
         return values.stream();
     }
 
@@ -128,24 +129,35 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * TODO Should this rather throw an exception if there's an unexpected member? Or return toString?
      */
     public Stream<String> stringStream() {
-        return nodeStream()
-                .filter(no -> no instanceof JsonValue)
-                .map(no -> ((JsonValue) no).stringValue());
+        return nodeStream().map(no -> no.toString());
+    }
+
+    /**
+     * The value as a JSON string
+     */
+    public String toJson() {
+        StringWriter res = new StringWriter();
+        toJson(new PrintWriter(res));
+        return res.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toJson();
     }
 
     /**
      * Writes the JSON text representation of this JsonArray to the writer
      */
-    @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("[");
         boolean notFirst = false;
-        for (JsonNode node : values) {
+        for (Object node : values) {
             if (notFirst) {
                 printWriter.append(",");
             }
             notFirst = true;
-            node.toJson(printWriter);
+            JsonValues.toJson(node, printWriter);
         }
         printWriter.append("]");
     }
@@ -153,16 +165,19 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     /**
      * Creates a copy of this JsonArray with all the values copied
      */
-    @Override
     public JsonArray deepClone() {
-        return new JsonArray(mapNodes(JsonNode::deepClone));
+        return new JsonArray(mapNodes(this::deepClone));
+    }
+
+    private Object deepClone(Object o) {
+        return JsonValues.deepClone(o);
     }
 
     /**
      * Appends the argument to the end of the JsonArray
      */
     public JsonArray add(Object o) {
-        values.add(JsonFactory.jsonNode(o));
+        values.add(JsonValues.asJsonValue(o));
         return this;
     }
 
@@ -170,7 +185,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Appends the arguments to the end of the JsonArray
      */
     public JsonArray addAll(List<String> values) {
-        this.values.addAll(values.stream().map(JsonFactory::jsonString).collect(Collectors.toList()));
+        this.values.addAll(values);
         return this;
     }
 
@@ -204,8 +219,14 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *
      * @throws JsonConversionException if the value at the position is not a String
      */
-    public CharSequence requiredString(int pos) throws JsonConversionException {
-        return get(pos, JsonValue.class).stringValue();
+    public String requiredString(int pos) throws JsonConversionException {
+        Object o = get(pos);
+        if (o instanceof JsonObject || o instanceof JsonArray) {
+            throw new JsonConversionException(pos + " is not a string");
+        } else if (o instanceof JsonNull) {
+            return null;
+        }
+        return o != null ? o.toString() : null;
     }
 
 
@@ -233,12 +254,10 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonConversionException if the value at the position is not a boolean
      */
     public boolean requiredBoolean(int position) throws JsonConversionException {
-        if (get(position) instanceof JsonBoolean) {
-            return ((JsonBoolean)get(position)).booleanValue();
-        } else if (get(position) instanceof JsonValue) {
-            return Boolean.parseBoolean(((JsonValue)get(position)).stringValue());
+        if (get(position) instanceof Boolean) {
+            return ((Boolean)get(position)).booleanValue();
         } else {
-            throw new JsonConversionException(position + " is not boolean");
+            return Boolean.parseBoolean(requiredString(position));
         }
     }
 
@@ -248,15 +267,15 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonConversionException if the value at the position is not numeric
      */
     private Number requiredNumber(int position) throws JsonConversionException {
-        if (get(position) instanceof JsonNumber) {
-            return ((JsonNumber)get(position)).javaObjectValue();
-        } else if (get(position) instanceof JsonValue) {
-            try {
-                return Double.parseDouble(((JsonValue)get(position)).stringValue());
-            } catch (NumberFormatException e) {
-                throw new JsonConversionException(position + " is not numeric");
-            }
-        } else {
+        Object o = get(position);
+        if (o instanceof Number) {
+            return ((Number)o);
+        } else if (o instanceof JsonObject || o instanceof JsonArray) {
+            throw new JsonConversionException(position + " is not numeric");
+        }
+        try {
+            return Double.parseDouble(o.toString());
+        } catch (NumberFormatException e) {
             throw new JsonConversionException(position + " is not numeric");
         }
     }
@@ -268,14 +287,14 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonConversionException if the value at the position is not the correct class
      */
     public <T> T get(int pos, Class<T> jsonClass) throws JsonConversionException, JsonValueNotPresentException {
-        JsonNode jsonNode = get(pos);
-        if (!jsonClass.isAssignableFrom(jsonNode.getClass())) {
-            throw new JsonConversionException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
+        Object node = get(pos);
+        if (!jsonClass.isAssignableFrom(node.getClass())) {
+            throw new JsonConversionException(String.format("Object in array (%s) is not %s",node.getClass().getName(),jsonClass.getName()));
         }
-        return (T) jsonNode;
+        return (T) node;
     }
 
-    private JsonNode get(int pos) throws JsonValueNotPresentException {
+    private Object get(int pos) throws JsonValueNotPresentException {
         if (pos < 0 || pos >= size()) {
             throw new JsonValueNotPresentException("Json array does not have a value at position " + pos);
         }
@@ -300,7 +319,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     }
 
     @Override
-    public Iterator<JsonNode> iterator() {
+    public Iterator<Object> iterator() {
         return new ArrayList<>(values).iterator();
     }
 
@@ -313,7 +332,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    public JsonNode remove(int i) {
+    public Object remove(int i) {
         return values.remove(i);
     }
 
@@ -331,7 +350,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
     public void set(int i, Object o) {
-        values.set(i, JsonFactory.jsonNode(o));
+        values.set(i, o);
     }
 
     /**

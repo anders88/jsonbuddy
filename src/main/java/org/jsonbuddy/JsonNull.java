@@ -1,29 +1,8 @@
 package org.jsonbuddy;
 
-import java.io.PrintWriter;
 
-public class JsonNull extends JsonValue {
+public class JsonNull  {
     public JsonNull() {
-    }
-
-    @Override
-    public String stringValue() {
-        return null;
-    }
-
-    @Override
-    public Object javaObjectValue() {
-        return null;
-    }
-
-    @Override
-    public void toJson(PrintWriter printWriter) {
-        printWriter.append("null");
-    }
-
-    @Override
-    public JsonNull deepClone() {
-        return this;
     }
 
     @Override

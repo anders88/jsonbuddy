@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -33,9 +34,9 @@ import java.util.stream.Collectors;
  * JsonValueNotPresentException if the key is not present or JsonConversionException
  * if the value is on a wrong type.
  */
-public class JsonObject extends JsonNode {
+public class JsonObject {
 
-    private final Map<String,JsonNode> values;
+    private final Map<String, Object> values;
 
     /**
      * Creates an empty JsonObject
@@ -44,7 +45,7 @@ public class JsonObject extends JsonNode {
         this.values = new HashMap<>();
     }
 
-    private JsonObject(Map<String,JsonNode> values) {
+    private JsonObject(Map<String, Object> values) {
         this.values = values;
     }
 
@@ -55,7 +56,15 @@ public class JsonObject extends JsonNode {
      * TODO Throw JsonConversionException if it's not a fitting value?
      */
     public Optional<String> stringValue(String key) {
-        return get(key, JsonValue.class).map(JsonValue::stringValue);
+        Optional<Object> o = value(key);
+        if (o.isPresent()) {
+            if (o.get() instanceof JsonObject || o.get() instanceof JsonArray) {
+                throw new JsonConversionException(key + " is not a string");
+            } else if (o.get() instanceof JsonNull) {
+                return Optional.empty();
+            }
+        }
+        return o.map(value -> value.toString());
     }
 
     /**
@@ -114,20 +123,20 @@ public class JsonObject extends JsonNode {
      * @throws JsonConversionException if the value is not convertible to a number
      */
     public Optional<Number> numberValue(String key) throws JsonConversionException {
-        JsonNode node = values.get(key);
+        Object node = values.get(key);
         if (node == null || node instanceof JsonNull) {
             return Optional.empty();
         }
-        if (node instanceof JsonNumber) {
-            return Optional.of(((JsonNumber)node).javaObjectValue());
+        if (node instanceof Number) {
+            return Optional.of((Number)node);
         }
-        if (node instanceof JsonValue) {
-            try {
-                return Optional.of(Double.parseDouble(node.stringValue()));
-            } catch (NumberFormatException e) {
-                throw new JsonConversionException(key + " is not numeric");
-            }
-        } else {
+        if (node instanceof JsonArray || node instanceof JsonObject) {
+            throw new JsonConversionException(key + " is not numeric");
+        }
+
+        try {
+            return Optional.of(Double.parseDouble(node.toString()));
+        } catch (NumberFormatException e) {
             throw new JsonConversionException(key + " is not numeric");
         }
     }
@@ -139,17 +148,17 @@ public class JsonObject extends JsonNode {
      * @throws JsonConversionException if the value is not convertible to a boolean
      */
     public Optional<Boolean> booleanValue(String key) throws JsonConversionException {
-        JsonNode node = values.get(key);
+        Object node = values.get(key);
         if (node == null || node instanceof JsonNull) {
             return Optional.empty();
         }
-        if (node instanceof JsonBoolean) {
-            return Optional.of(((JsonBoolean)node).booleanValue());
+        if (node instanceof Boolean) {
+            return Optional.of(((Boolean)node).booleanValue());
         }
-        if (node instanceof JsonValue) {
-            return Optional.of(Boolean.parseBoolean(node.stringValue()));
-        } else {
+        if (node instanceof JsonObject || node instanceof JsonArray) {
             throw new JsonConversionException(key + " is not boolean");
+        } else {
+            return Optional.of(Boolean.parseBoolean(node.toString()));
         }
     }
 
@@ -189,14 +198,7 @@ public class JsonObject extends JsonNode {
      * @throws DateTimeParseException if the text cannot be parsed as an Instant
      */
     public Optional<Instant> instantValue(String key) {
-        Optional<JsonValue> val = value(key)
-                .filter(no -> (no instanceof JsonString))
-                .map(no -> (JsonValue) no);
-        if (!val.isPresent()) {
-            return Optional.empty();
-        }
-        String text = val.get().stringValue();
-        return Optional.of(Instant.parse(text));
+        return stringValue(key).map(s -> Instant.parse(s));
     }
 
     /**
@@ -232,7 +234,7 @@ public class JsonObject extends JsonNode {
      * Returns the value at the argument position as or an empty Optional
      * if the key is not present.
      */
-    public Optional<JsonNode> value(String key) {
+    public Optional<Object> value(String key) {
         return Optional.ofNullable(values.get(key));
     }
 
@@ -242,7 +244,7 @@ public class JsonObject extends JsonNode {
      *
      * TODO throw exception if the value isn't matching?
      */
-    public <T extends JsonNode> Optional<T> get(String key, Class<T> t) {
+    public <T> Optional<T> get(String key, Class<T> t) {
         return value(key)
                 .filter(node -> t.isAssignableFrom(node.getClass()))
                 .map(node -> (T) node);
@@ -252,14 +254,27 @@ public class JsonObject extends JsonNode {
         return () -> new JsonValueNotPresentException(String.format("Required key '%s' does not exist",key));
     }
 
+    @Override
+    public String toString() {
+        return toJson();
+    }
+
+    /**
+     * The value as a JSON string
+     */
+    public String toJson() {
+        StringWriter res = new StringWriter();
+        toJson(new PrintWriter(res));
+        return res.toString();
+    }
+
     /**
      * Writes the JSON text representation of this JsonArray to the writer
      */
-    @Override
     public void toJson(PrintWriter printWriter) {
         printWriter.append("{");
         boolean notFirst = false;
-        for (Map.Entry<String,JsonNode> entry : values.entrySet()) {
+        for (Map.Entry<String, Object> entry : values.entrySet()) {
             if (notFirst) {
                 printWriter.append(",");
             }
@@ -267,7 +282,8 @@ public class JsonObject extends JsonNode {
             printWriter.append('"');
             printWriter.append(entry.getKey());
             printWriter.append("\":");
-            entry.getValue().toJson(printWriter);
+            Object node = entry.getValue();
+            JsonValues.toJson(node, printWriter);
         }
 
         printWriter.append("}");
@@ -282,7 +298,7 @@ public class JsonObject extends JsonNode {
      * @throws IllegalArgumentException if the value cannot be represented as JSON
      */
     public JsonObject put(String key, Object value) {
-        values.put(key, JsonFactory.jsonNode(value));
+        values.put(key, JsonValues.asJsonValue(value));
         return this;
     }
 
@@ -298,7 +314,7 @@ public class JsonObject extends JsonNode {
      *
      * @return The previous value or Optional.empty is there were no previous value
      */
-    public Optional<JsonNode> remove(String key) {
+    public Optional<Object> remove(String key) {
         if (key == null) {
             return Optional.empty();
         }
@@ -308,13 +324,10 @@ public class JsonObject extends JsonNode {
     /**
      * Creates a copy of this JsonObject with all the values copied
      */
-    @Override
     public JsonObject deepClone() {
-        Map<String, JsonNode> cloned = values.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().deepClone()));
-        Map<String, JsonNode> newValues = new HashMap<>();
-        newValues.putAll(cloned);
-        return new JsonObject(newValues);
+        Map<String, Object> cloned = values.entrySet().stream()
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> JsonValues.deepClone(entry.getValue())));
+        return new JsonObject(cloned);
     }
 
     /**

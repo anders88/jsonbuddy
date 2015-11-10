@@ -10,26 +10,21 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonBoolean;
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonNumber;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonValue;
 
 public class JsonParser {
 
-    public static JsonNode parse(Reader reader) throws JsonParseException {
+    public static Object parse(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return jsonParser.parseValue();
     }
 
-    public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
+    public static Object parse(InputStream inputStream) throws JsonParseException  {
         return parse(new InputStreamReader(inputStream));
     }
 
-    public static JsonNode parse(String input) throws JsonParseException  {
+    public static Object parse(String input) throws JsonParseException  {
         return parse(new StringReader(input));
     }
 
@@ -42,7 +37,7 @@ public class JsonParser {
         return toObject(jsonParser.parseValue());
     }
 
-    private static JsonObject toObject(JsonNode result) {
+    private static JsonObject toObject(Object result) {
         if (!(result instanceof JsonObject)) {
             throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
         }
@@ -58,7 +53,7 @@ public class JsonParser {
         return toArray(jsonParser.parseValue());
     }
 
-    private static JsonArray toArray(JsonNode result) {
+    private static JsonArray toArray(Object result) {
         if (!(result instanceof JsonArray)) {
             throw new JsonParseException("Expected json array got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
         }
@@ -91,7 +86,7 @@ public class JsonParser {
 
 
 
-    private JsonNode parseValue() {
+    private Object parseValue() {
         while (!finished) {
             switch (lastRead) {
                 case '{':
@@ -118,7 +113,7 @@ public class JsonParser {
     }
 
 
-    private JsonValue parseNumberValue() {
+    private Number parseNumberValue() {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
         while (!finished && (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead))) {
@@ -130,9 +125,9 @@ public class JsonParser {
             throw new JsonParseException("Illegal value '" + val + lastRead + "'");
         }
         if (isDouble) {
-            return new JsonNumber(Double.parseDouble(val.toString()));
+            return Double.parseDouble(val.toString());
         }
-        return new JsonNumber(Long.parseLong(val.toString()));
+        return Long.parseLong(val.toString());
     }
 
 
@@ -141,11 +136,11 @@ public class JsonParser {
         return new JsonNull();
     }
 
-    private JsonValue parseBooleanValue() {
+    private Boolean parseBooleanValue() {
         boolean isTrue = (lastRead == 't');
         String expect = isTrue ? "true" : "false";
         expectValue(expect);
-        return new JsonBoolean(isTrue);
+        return new Boolean(isTrue);
     }
 
     private void expectValue(String value) {
@@ -166,7 +161,7 @@ public class JsonParser {
             if (lastRead == ']') {
                 break;
             }
-            JsonNode jsonArrayValue = parseValue();
+            Object jsonArrayValue = parseValue();
             jsonArray.add(jsonArrayValue);
             readSpaceUntil("Expected , or ] in array", ']', ',');
         }
@@ -178,10 +173,9 @@ public class JsonParser {
         return jsonArray;
     }
 
-    private JsonValue parseStringValue() {
+    private String parseStringValue() {
         readNext();
-        String value = readText();
-        return JsonFactory.jsonString(value);
+        return readText();
     }
 
     private JsonObject parseObject() {
@@ -199,7 +193,7 @@ public class JsonParser {
             if (finished) {
                 throw new JsonParseException("Expected value for key " + key);
             }
-            JsonNode value = parseValue();
+            Object value = parseValue();
             jsonObject.put(key, value);
             readSpaceUntil("JsonObject not closed. Expected }", ',', '}');
         }

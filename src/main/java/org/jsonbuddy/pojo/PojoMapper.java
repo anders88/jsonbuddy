@@ -37,7 +37,7 @@ public class PojoMapper {
     }
 
     public static <T> void registerGlobalClassBuilder(Class<T> clazz,JsonPojoBuilder<T> jsonPojoBuilder) {
-        globalPojoBuilders.put(clazz,jsonPojoBuilder);
+        globalPojoBuilders.put(clazz, jsonPojoBuilder);
     }
 
     public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) throws CanNotMapException {
@@ -50,16 +50,19 @@ public class PojoMapper {
     }
 
     public  <T> List<T> mapToPojo(JsonArray jsonArray,Class<T> listClazz) throws CanNotMapException {
-        return jsonArray.objects(node -> mapToPojo((JsonObject) node,listClazz));
+        return jsonArray.objects(node -> mapToPojo(node,listClazz));
     }
 
-    private Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
+    private Object mapit(Object jsonNode, Class<?> clazz) throws Exception {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             return annotationsByType[0].using().newInstance().build(jsonNode);
         }
-        if (jsonNode instanceof JsonValue) {
-            return ((JsonValue) jsonNode).javaObjectValue();
+        if (jsonNode instanceof String || jsonNode instanceof Number || jsonNode instanceof Boolean) {
+            return jsonNode;
+        }
+        if (jsonNode instanceof JsonNull || jsonNode == null) {
+            return null;
         }
         if (jsonNode instanceof JsonArray) {
             return mapArray((JsonArray) jsonNode,clazz);
@@ -119,7 +122,7 @@ public class PojoMapper {
         } catch (NoSuchFieldException e) {
             return false;
         }
-        JsonNode nodeValue = jsonObject.value(key).get();
+        Object nodeValue = jsonObject.value(key).get();
         Object value;
         OverriddenVal overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
         if (overriddenValue.ovverridden) {
@@ -211,11 +214,11 @@ public class PojoMapper {
         }
     }
 
-    private static OverriddenVal overriddenValue(Class<?> declaredClass,JsonNode nodValue) {
+    private static OverriddenVal overriddenValue(Class<?> declaredClass, Object nodeValue) {
         if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
-            OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
+            OverrideMapper[] annotationsByType = declaredClass.getAnnotationsByType(OverrideMapper.class);
             try {
-                Object res = annotationsByType[0].using().newInstance().build(nodValue);
+                Object res = annotationsByType[0].using().newInstance().build(nodeValue);
                 return new OverriddenVal(true,res);
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -224,7 +227,7 @@ public class PojoMapper {
         return new OverriddenVal(false,null);
     }
 
-    private static Class<?> computeType(Field declaredField, JsonNode nodeValue) {
+    private static Class<?> computeType(Field declaredField, Object nodeValue) {
         if (!(nodeValue instanceof JsonArray)) {
             return declaredField.getType();
         }

@@ -16,7 +16,7 @@ public class JsonGeneratorTest {
     @Test
     public void shouldHandleSimpleClass() throws Exception {
         SimpleWithName simpleWithName = new SimpleWithName("Darth Vader");
-        JsonNode generated = JsonGenerator.generate(simpleWithName);
+        Object generated = JsonGenerator.generate(simpleWithName);
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
@@ -25,15 +25,15 @@ public class JsonGeneratorTest {
     @Test
     public void shouldHandleSimpleValues() throws Exception {
         assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNull());
-        assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonString("Darth"));
-        assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonNumber(42L));
+        assertThat(JsonGenerator.generate("Darth")).isEqualTo("Darth");
+        assertThat(JsonGenerator.generate(42)).isEqualTo(42);
 
     }
 
     @Test
     public void shoulHandleFloats() throws Exception {
-        JsonNode jsonNode = JsonGenerator.generate(3.14f);
-        JsonNumber jsonDouble = (JsonNumber) jsonNode;
+        Object jsonNode = JsonGenerator.generate(3.14f);
+        Number jsonDouble = (Number) jsonNode;
         assertThat(new Double(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
     }
 
@@ -41,7 +41,7 @@ public class JsonGeneratorTest {
     public void shouldHandleList() throws Exception {
         List<String> stringlist = Arrays.asList("one", "two", "three");
 
-        JsonNode generate = JsonGenerator.generate(stringlist);
+        Object generate = JsonGenerator.generate(stringlist);
         assertThat(generate).isInstanceOf(JsonArray.class);
         JsonArray array = (JsonArray) generate;
         assertThat(array.strings()).isEqualTo(stringlist);
@@ -88,8 +88,8 @@ public class JsonGeneratorTest {
     @Test
     public void shoulHandleEmbeddedJson() throws Exception {
         ClassWithJsonElements classWithJsonElements = new ClassWithJsonElements("Darth Vader",
-                JsonFactory.jsonObject().put("title", "Dark Lord"),
-                JsonFactory.jsonArray().add("Luke").add("Leia"));
+                new JsonObject().put("title", "Dark Lord"),
+                new JsonArray().add("Luke").add("Leia"));
         JsonObject generate = (JsonObject) JsonGenerator.generate(classWithJsonElements);
 
         assertThat(generate.requiredString("name")).isEqualTo("Darth Vader");
@@ -137,7 +137,7 @@ public class JsonGeneratorTest {
     public void shouldHandleMapWithKeyOtherThanString() throws Exception {
         Map<Long,String> myLongMap = new HashMap<>();
         myLongMap.put(42L, "Meaning of life");
-        JsonNode generated = JsonGenerator.generate(myLongMap);
+        Object generated = JsonGenerator.generate(myLongMap);
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.requiredString("42")).isEqualTo("Meaning of life");

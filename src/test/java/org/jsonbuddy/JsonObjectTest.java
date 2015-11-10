@@ -12,7 +12,7 @@ public class JsonObjectTest {
 
     @Test
     public void shouldGiveStringAsDouble() throws Exception {
-        JsonObject obj = JsonFactory.jsonObject()
+        JsonObject obj = new JsonObject()
                 .put("pi", "3.14")
                 .put("null", new JsonNull());
         assertThat(obj.requiredDouble("pi")).isEqualTo(3.14d);
@@ -41,13 +41,13 @@ public class JsonObjectTest {
     @Test
     public void handleInvalidTypes() {
         assertThatThrownBy(() -> new JsonObject().put("a", new Object()))
-            .hasMessageContaining("Invalid JsonNode class java.lang.Object");
+            .hasMessageContaining("Invalid JSON value class java.lang.Object");
     }
 
     @Test
     public void shouldRemove() throws Exception {
         JsonObject o = new JsonObject().put("key", "value");
-        assertThat(o.remove("key")).contains(new JsonString("value"));
+        assertThat(o.remove("key")).contains("value");
         assertThat(o.stringValue("key")).isEmpty();
         assertThat(o.keys()).isEmpty();
         assertThat(o.size()).isZero();
@@ -109,7 +109,7 @@ public class JsonObjectTest {
         assertThat(new JsonObject().put("number", 42.5).requiredString("number"))
             .isEqualTo("42.5");
 
-        assertThat(JsonFactory.jsonObject().put("anumber", 42).stringValue("anumber"))
+        assertThat(new JsonObject().put("anumber", 42).stringValue("anumber"))
             .isPresent().contains("42");
     }
 
@@ -128,7 +128,7 @@ public class JsonObjectTest {
 
     @Test
     public void booleanShouldReturnAsString() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("abool", true);
+        JsonObject jsonObject = new JsonObject().put("abool", true);
         assertThat(jsonObject.stringValue("abool")).isPresent().contains("true");
 
         assertThat(new JsonObject().stringValue("noSuchKey")).isEmpty();
@@ -144,7 +144,7 @@ public class JsonObjectTest {
                 .put("string", "TRuE")
                 .put("nonsense", "maybe")
                 .put("object", new JsonObject())
-                .put("null", (JsonObject)null)
+                .put("null", null)
                 .put("number", 0);
         assertThat(o.requiredBoolean("boolean")).isTrue();
         assertThat(o.booleanValue("string")).isPresent().contains(true);

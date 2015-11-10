@@ -14,9 +14,9 @@ public class JsonArrayTest {
     @Test
     public void shouldMapValues() throws Exception {
         JsonArray jsonArray = JsonArray.fromNodeList(Arrays.asList(
-                JsonFactory.jsonObject().put("name", "Darth"),
-                JsonFactory.jsonObject().put("name", "Luke"),
-                JsonFactory.jsonObject().put("name", "Leia")
+                new JsonObject().put("name", "Darth"),
+                new JsonObject().put("name", "Luke"),
+                new JsonObject().put("name", "Leia")
         ));
         List<String> names = jsonArray.objects(jo -> jo.requiredString("name"));
         assertThat(names).containsExactly("Darth","Luke","Leia");
@@ -89,7 +89,7 @@ public class JsonArrayTest {
         assertThat(a.requiredBoolean(2)).isEqualTo(false);
 
         assertThatThrownBy(() -> a.requiredBoolean(3))
-            .hasMessageContaining("3 is not boolean");
+            .hasMessageContaining("3 is not a string");
     }
 
     @Test
@@ -106,14 +106,8 @@ public class JsonArrayTest {
     public void shouldCreateFromStrings() throws Exception {
         JsonArray jsonArray = JsonArray.fromStringList(Arrays.asList("a", "b", "c"));
 
-        assertThat(jsonArray.get(0, JsonString.class).stringValue()).isEqualTo("a");
-        assertThat(jsonArray.get(1, JsonValue.class).stringValue()).isEqualTo("b");
-    }
-
-    @Test
-    public void hasNoTextValue() throws Exception {
-        assertThatThrownBy(() -> new JsonArray().stringValue())
-            .hasMessageContaining("Not supported");
+        assertThat(jsonArray.get(0, String.class)).isEqualTo("a");
+        assertThat(jsonArray.get(1, String.class)).isEqualTo("b");
     }
 
     @Test
@@ -139,7 +133,7 @@ public class JsonArrayTest {
 
     @Test
     public void shouldThrowOnMissingValues() throws Exception {
-        assertThatThrownBy(() -> new JsonArray().get(43, JsonString.class))
+        assertThatThrownBy(() -> new JsonArray().get(43, String.class))
             .hasMessageContaining("does not have a value at position 43");
     }
 

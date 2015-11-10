@@ -13,17 +13,11 @@ import static org.assertj.core.api.Assertions.*;
 
 public class JsonBuildTest {
 
-    @Test
-    public void shouldCreateValue() throws Exception {
-        JsonValue jsonValue = new JsonString("Darth Vader");
-        assertThat(jsonValue.stringValue()).isEqualTo("Darth Vader");
-
-    }
 
     @Test
     public void shouldCreateObjectWithValue() throws Exception {
         JsonObject jsonObject = new JsonObject()
-                .put("name", new JsonString("Darth Vader"));
+                .put("name", "Darth Vader");
 
         assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
         assertThat(jsonObject.stringValue("xxx").isPresent()).isFalse();
@@ -41,7 +35,7 @@ public class JsonBuildTest {
     @Test
     public void shouldThrowExceptionIfRequiredValueIsNotPresent() throws Exception {
         try {
-            JsonFactory.jsonObject().requiredString("cake");
+            new JsonObject().requiredString("cake");
             fail("Expected exception");
         } catch (JsonValueNotPresentException e) {
             assertThat(e.getMessage()).isEqualTo("Required key 'cake' does not exist");
@@ -57,28 +51,28 @@ public class JsonBuildTest {
     @Test
     public void shouldHandleDates() throws Exception {
         Instant instant = LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant();
-        JsonObject jsonObject = JsonFactory.jsonObject().put("time", instant);
+        JsonObject jsonObject = new JsonObject().put("time", instant);
 
-        assertThat(jsonObject.value("time")).isPresent().containsInstanceOf(JsonString.class);
+        assertThat(jsonObject.value("time")).containsInstanceOf(String.class);
         Optional<String> timetext = jsonObject.stringValue("time");
         assertThat(timetext).isPresent().contains("2015-08-30T11:21:12.314Z");
     }
 
     @Test
     public void shouldClone() throws Exception {
-        JsonObject orig = JsonFactory.jsonObject()
+        JsonObject orig = new JsonObject()
                 .put("name", "Darth Vader")
-                .put("properties", JsonFactory.jsonObject().put("religion", "sith"))
+                .put("properties", new JsonObject().put("religion", "sith"))
                 .put("master", "Yoda")
-                .put("children", JsonFactory.jsonArray().addAll(Arrays.asList("Luke")));
+                .put("children", new JsonArray().addAll(Arrays.asList("Luke")));
 
         JsonObject clone = orig.deepClone();
 
         assertThat(orig).isEqualTo(clone);
 
         clone.put("name", "Anakin Skywalker")
-                .put("properties", JsonFactory.jsonObject().put("religion", "jedi"))
-                .put("children", JsonFactory.jsonArray().addAll(Arrays.asList("Luke", "Leia")));
+                .put("properties", new JsonObject().put("religion", "jedi"))
+                .put("children", new JsonArray().addAll(Arrays.asList("Luke", "Leia")));
 
         assertThat(clone.requiredString("master")).isEqualTo("Yoda");
         assertThat(orig.requiredObject("properties").requiredString("religion")).isEqualTo("sith");
@@ -90,7 +84,7 @@ public class JsonBuildTest {
 
     @Test
     public void shouldHandleNullAsStringValue() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("nullValue", new JsonNull());
+        JsonObject jsonObject = new JsonObject().put("nullValue", new JsonNull());
 
         assertThat(jsonObject.value("nullValue")).isPresent();
         assertThatThrownBy(() -> jsonObject.requiredString("nullValue"))
@@ -100,9 +94,7 @@ public class JsonBuildTest {
     @Test
     public void shouldGiveStringFormattetAsInstantAsInstant() throws Exception {
         Instant now = Instant.now();
-        JsonObject jsonObject = JsonFactory.jsonObject().put("now", JsonFactory.jsonString(now.toString()));
+        JsonObject jsonObject = new JsonObject().put("now", now.toString());
         assertThat(jsonObject.requiredInstant("now")).isEqualTo(now);
-
-
     }
 }

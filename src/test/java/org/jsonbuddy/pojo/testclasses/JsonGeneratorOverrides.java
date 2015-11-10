@@ -1,12 +1,11 @@
 package org.jsonbuddy.pojo.testclasses;
 
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.OverridesJsonGenerator;
 
 public class JsonGeneratorOverrides implements OverridesJsonGenerator {
     @Override
-    public JsonNode jsonValue() {
-        return JsonFactory.jsonObject().put("myOverriddenValue",42);
+    public Object jsonValue() {
+        return new JsonObject().put("myOverriddenValue",42);
     }
 }

@@ -9,45 +9,32 @@ import java.util.Collection;
 import java.util.Map;
 
 public class JsonGenerator {
-    public static JsonNode generate(Object object) {
+    public static Object generate(Object object) {
         return new JsonGenerator().generateNode(object);
     }
 
-    private JsonNode generateNode(Object object) {
+    private Object generateNode(Object object) {
         if (object == null) {
             return new JsonNull();
         }
-        if (object instanceof JsonNode) {
-            return (JsonNode) object;
+        if (object instanceof JsonObject || object instanceof JsonArray) {
+            return object;
         }
         if (object instanceof String) {
-            return JsonFactory.jsonString((String) object);
+            return object;
         }
-        if ((object instanceof Integer))  {
-            int i = (int) object;
-            long l = i;
-            return JsonFactory.jsonNumber(l);
-        }
-        if (object instanceof Long) {
-            return JsonFactory.jsonNumber((Long) object);
-        }
-        if (object instanceof Double) {
-            return JsonFactory.jsonNumber((Double) object);
-        }
-        if (object instanceof Float) {
-            float f = (float) object;
-            double d = f;
-            return JsonFactory.jsonNumber(d);
+        if (object instanceof Number) {
+            return object;
         }
         if (object instanceof Boolean) {
-            return JsonFactory.jsonBoolean((Boolean) object);
+            return object;
         }
         if (object instanceof Enum) {
-            return JsonFactory.jsonString(object.toString());
+            return object.toString();
         }
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
-            JsonObject jsonObject = JsonFactory.jsonObject();
+            JsonObject jsonObject = new JsonObject();
             map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue())));
 
             return jsonObject;
@@ -56,7 +43,7 @@ public class JsonGenerator {
             return JsonArray.map((Collection<?>) object, this::generateNode);
         }
         if (object instanceof Temporal) {
-            return JsonFactory.jsonString(object.toString());
+            return object.toString();
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
@@ -93,8 +80,8 @@ public class JsonGenerator {
         return name;
     }
 
-    private JsonNode handleSpecificClass(Object object) {
-        JsonObject jsonObject = JsonFactory.jsonObject();
+    private Object handleSpecificClass(Object object) {
+        JsonObject jsonObject = new JsonObject();
         Arrays.asList(object.getClass().getFields()).stream()
         .filter(fi -> {
             int modifiers = fi.getModifiers();
@@ -103,7 +90,7 @@ public class JsonGenerator {
         .forEach(fi -> {
             try {
                 Object val = fi.get(object);
-                JsonNode jsonNode = generateNode(val);
+                Object jsonNode = generateNode(val);
                 jsonObject.put(fi.getName(), jsonNode);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -114,7 +101,7 @@ public class JsonGenerator {
                 .forEach(method -> {
                     try {
                         Object result = method.invoke(object);
-                        JsonNode jsonNode = generateNode(result);
+                        Object jsonNode = generateNode(result);
                         jsonObject.put(getFieldName(method), jsonNode);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
