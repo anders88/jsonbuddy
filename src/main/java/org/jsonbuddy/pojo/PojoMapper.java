@@ -1,23 +1,57 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.*;
-import org.jsonbuddy.parse.JsonParseException;
-
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
+import org.jsonbuddy.parse.JsonParseException;
+
+/**
+ * Deserializes a JsonObject or JsonArray into plain Java objects by setting
+ * fields and calling setters on the target object.
+ */
 public class PojoMapper {
 
     private static Map<Class<?>,JsonPojoBuilder<?>> globalPojoBuilders = new HashMap<>();
 
     private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
 
-    public static <T> T map(JsonObject jsonObject,Class<T> clazz) {
+    /**
+     * Converts the argument JsonObject into an object of the specified class.
+     *
+     * <li>If the class is annotated with an {@link OverrideMapper}, this deserializer is used
+     * <li>If there is a {@link JsonPojoBuilder} registered with
+     * {@link #registerClassBuilder(Class, JsonPojoBuilder)} deserialize wit this class
+     * <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
+     *
+     * @throws CanNotMapException if there is no appropriate constructor
+     */
+    public static <T> T map(JsonObject jsonObject, Class<T> clazz) {
         return new PojoMapper().mapToPojo(jsonObject,clazz);
     }
 
+    /**
+     * Converts the argument JsonArray into an list of object of the specified class.
+     *
+     * Each JsonArray element is mapped according to {@link #mapToPojo(JsonObject, Class)}.
+     *
+     * @throws CanNotMapException if there is no appropriate constructor
+     */
     public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz) {
         return new PojoMapper().mapToPojo(jsonArray,listClazz);
     }
@@ -30,30 +64,47 @@ public class PojoMapper {
         return new PojoMapper();
     }
 
-
-    public <T> PojoMapper registerClassBuilder(Class<T> clazz,JsonPojoBuilder<T> jsonPojoBuilder) {
+    /**
+     * Registers a {@link JsonPojoBuilder} for a class to use used when we're mapping
+     * to that class
+     */
+    public <T> PojoMapper registerClassBuilder(Class<T> clazz, JsonPojoBuilder<T> jsonPojoBuilder) {
         pojoBuilders.put(clazz, jsonPojoBuilder);
         return this;
     }
 
-    public static <T> void registerGlobalClassBuilder(Class<T> clazz,JsonPojoBuilder<T> jsonPojoBuilder) {
+    /**
+     * Registers a {@link JsonPojoBuilder} for a class to use used when we're mapping
+     * to that class
+     */
+    public static <T> void registerGlobalClassBuilder(Class<T> clazz, JsonPojoBuilder<T> jsonPojoBuilder) {
         globalPojoBuilders.put(clazz,jsonPojoBuilder);
     }
 
-    public <T> T mapToPojo(JsonObject jsonObject,Class<T> clazz) throws CanNotMapException {
+    /**
+     * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class)}
+     *
+     * @return a new object of the specified class
+     */
+    public <T> T mapToPojo(JsonObject jsonObject, Class<T> clazz) throws CanNotMapException {
         try {
             return (T) mapit(jsonObject,clazz);
         } catch (Exception e) {
-            ExceptionUtil.soften(e);
-            return null;
+            throw ExceptionUtil.soften(e);
         }
     }
 
-    public  <T> List<T> mapToPojo(JsonArray jsonArray,Class<T> listClazz) throws CanNotMapException {
-        return jsonArray.objects(node -> mapToPojo((JsonObject) node,listClazz));
+    /**
+     * Try to convert the argument JsonArray into a list of the specified class.
+     * See {@link #map(JsonArray, Class)}
+     *
+     * @return a new object of the specified class
+     */
+    public <T> List<T> mapToPojo(JsonArray jsonArray ,Class<T> listClazz) throws CanNotMapException {
+        return jsonArray.objects(node -> mapToPojo(node,listClazz));
     }
 
-    private Object mapit(JsonNode jsonNode,Class<?> clazz) throws Exception {
+    private Object mapit(JsonNode jsonNode, Class<?> clazz) throws Exception {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             return annotationsByType[0].using().newInstance().build(jsonNode);
@@ -62,7 +113,7 @@ public class PojoMapper {
             return ((JsonValue) jsonNode).javaObjectValue();
         }
         if (jsonNode instanceof JsonArray) {
-            return mapArray((JsonArray) jsonNode,clazz);
+            return mapArray((JsonArray) jsonNode, clazz);
         }
         JsonObject jsonObject = (JsonObject) jsonNode;
         JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
@@ -91,10 +142,10 @@ public class PojoMapper {
             throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
         }
         for (String key : jsonObject.keys()) {
-            if (findField(clazz, jsonObject, result, key)) {
+            if (tryToSetField(clazz, jsonObject, result, key)) {
                 continue;
             }
-            if (findSetter(jsonObject, clazz, result, key)) {
+            if (tryToSetProperty(jsonObject, clazz, result, key)) {
                 continue;
             }
         }
@@ -112,7 +163,7 @@ public class PojoMapper {
         }).collect(Collectors.toList());
     }
 
-    private boolean findField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
+    private boolean tryToSetField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
         Field declaredField = null;
         try {
             declaredField = clazz.getDeclaredField(key);
@@ -122,7 +173,7 @@ public class PojoMapper {
         JsonNode nodeValue = jsonObject.value(key).get();
         Object value;
         OverriddenVal overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
-        if (overriddenValue.ovverridden) {
+        if (overriddenValue.overridden) {
             value = overriddenValue.value;
         } else if (declaredField.getType().isAssignableFrom(nodeValue.getClass())) {
             value = nodeValue;
@@ -132,9 +183,6 @@ public class PojoMapper {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
             value = convertIfNessesary(value,declaredField.getType());
         }
-
-
-
         declaredField.setAccessible(true);
         declaredField.set(result,value);
         declaredField.setAccessible(false);
@@ -202,18 +250,18 @@ public class PojoMapper {
     }
 
     private static class OverriddenVal {
-        private boolean ovverridden;
+        private boolean overridden;
         private Object value;
 
         public OverriddenVal(boolean ovverridden, Object value) {
-            this.ovverridden = ovverridden;
+            this.overridden = ovverridden;
             this.value = value;
         }
     }
 
     private static OverriddenVal overriddenValue(Class<?> declaredClass,JsonNode nodValue) {
         if (declaredClass.isAnnotationPresent(OverrideMapper.class)) {
-            OverrideMapper[] annotationsByType = (OverrideMapper[]) declaredClass.getAnnotationsByType(OverrideMapper.class);
+            OverrideMapper[] annotationsByType = declaredClass.getAnnotationsByType(OverrideMapper.class);
             try {
                 Object res = annotationsByType[0].using().newInstance().build(nodValue);
                 return new OverriddenVal(true,res);
@@ -238,7 +286,7 @@ public class PojoMapper {
         }
     }
 
-    private boolean findSetter(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
+    private boolean tryToSetProperty(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
         String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
         Optional<Method> setter = Arrays.asList(clazz.getMethods()).stream()
                 .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
@@ -251,7 +299,7 @@ public class PojoMapper {
         Class<?> setterClass = method.getParameterTypes()[0];
         Object value;
         OverriddenVal overriddenValue = overriddenValue(setterClass, jsonObject);
-        if (overriddenValue.ovverridden) {
+        if (overriddenValue.overridden) {
             value = overriddenValue.value;
         } else if (setterClass.isAssignableFrom(jsonObject.getClass())) {
             value = jsonObject;

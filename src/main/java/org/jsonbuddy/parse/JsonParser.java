@@ -1,8 +1,6 @@
 package org.jsonbuddy.parse;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -18,25 +16,50 @@ import org.jsonbuddy.JsonNumber;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.JsonValue;
 
+/**
+ * Create a JsonNode from an input Reader. Use {@link #parse} to parse any
+ * primitive or complex JsonNode, {@link #parseToArray(Reader)} to parse a JsonArray
+ * or {@link #parseToObject(Reader)} to parse a JsonObject.
+ */
 public class JsonParser {
 
+    /**
+     * Parse the reader as a JsonNode. Will return a JsonArray, JsonArray
+     * or a JsonValue.
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered
+     */
     public static JsonNode parse(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return jsonParser.parseValue();
     }
 
-    public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
-        return parse(new InputStreamReader(inputStream));
-    }
-
+    /**
+     * Parse the String as a JsonNode. Will return a JsonArray, JsonArray
+     * or a JsonValue.
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered
+     */
     public static JsonNode parse(String input) throws JsonParseException  {
         return parse(new StringReader(input));
     }
 
+    /**
+     * Parse the String as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
     public static JsonObject parseToObject(String input) throws JsonParseException  {
         return parseToObject(new StringReader(input));
     }
 
+    /**
+     * Parse the Reader as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
     public static JsonObject parseToObject(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return toObject(jsonParser.parseValue());
@@ -49,10 +72,22 @@ public class JsonParser {
         return (JsonObject) result;
     }
 
+    /**
+     * Parse the String as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
     public static JsonArray parseToArray(String input) throws JsonParseException  {
         return parseToArray(new StringReader(input));
     }
 
+    /**
+     * Parse the Reader as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
     public static JsonArray parseToArray(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return toArray(jsonParser.parseValue());
@@ -161,7 +196,7 @@ public class JsonParser {
 
     private JsonArray parseArray() {
         JsonArray jsonArray = new JsonArray();
-        while (!(finished || lastRead == ']')) {
+        while (lastRead != ']') {
             readNext();
             if (lastRead == ']') {
                 break;
@@ -170,11 +205,7 @@ public class JsonParser {
             jsonArray.add(jsonArrayValue);
             readSpaceUntil("Expected , or ] in array", ']', ',');
         }
-        if (finished) {
-            throw new JsonParseException("Expected , or ] in array");
-        } else {
-            readNext();
-        }
+        readNext();
         return jsonArray;
     }
 
@@ -186,7 +217,7 @@ public class JsonParser {
 
     private JsonObject parseObject() {
         JsonObject jsonObject = new JsonObject();
-        while (!(finished || lastRead == '}')) {
+        while (lastRead != '}') {
             readSpaceUntil("JsonObject not closed. Expected }", '}', '"');
             if (lastRead == '}') {
                 readNext();
@@ -202,9 +233,6 @@ public class JsonParser {
             JsonNode value = parseValue();
             jsonObject.put(key, value);
             readSpaceUntil("JsonObject not closed. Expected }", ',', '}');
-        }
-        if (finished) {
-            throw new JsonParseException("JsonObject not closed. Expected }");
         }
         readNext();
         return jsonObject;

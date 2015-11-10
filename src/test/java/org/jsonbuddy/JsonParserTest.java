@@ -4,7 +4,6 @@ package org.jsonbuddy;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -59,12 +58,6 @@ public class JsonParserTest {
         List<String> children = vader.requiredArray("children").stringStream()
                 .collect(Collectors.toList());
         assertThat(children).containsExactly("Luke", "Leia");
-    }
-
-    @Test
-    public void shouldHandleInputStream() throws Exception {
-        JsonObject obj = (JsonObject) JsonParser.parse(new ByteArrayInputStream("{}".getBytes()));
-        assertThat(obj).isNotNull();
     }
 
     @Test
@@ -129,6 +122,7 @@ public class JsonParserTest {
         validateException("['Luke'", "Expected , or ] in array");
         validateException("{'name'}", "Expected value for objectkey name");
         validateException("{'name' 'Darth'", "Expected value for objectkey name");
+        validateException("[", "Expected , or ] in array");
         validateException("[1 2]", "Expected , or ] in array");
         validateException("[1, 2", "Expected , or ] in array");
         validateException("[1, 2 :", "Expected , or ] in array");
