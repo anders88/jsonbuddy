@@ -89,19 +89,20 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     /**
      * Returns a list of this JsonArray of JsonObjects mapped over the function.
-     *
-     * @throws ClassCastException if one of the JsonArray members is not JsonObject
-     * TODO Should this be another exception?
+     * Skips values that are not JsonObjects.
      */
-    public <T> List<T> objects(Function<JsonObject,T> mapFunc) throws ClassCastException {
-        return mapNodes(n -> mapFunc.apply(((JsonObject)n)));
+    public <T> List<T> objects(Function<JsonObject,T> mapFunc) {
+        return nodeStream()
+                .filter(n -> n instanceof JsonObject)
+                .map(n -> (JsonObject) n)
+                .map(mapFunc)
+                .collect(Collectors.toList());
     }
 
     /**
      * Returns a list of all the string values of the members this JsonArray that
      * are not JsonObjects or JsonArrays. Skips the JsonObjects and JsonArray
      *
-     * TODO Should this rather throw an exception if there's an unexpected member? Or return toString?
      */
     public List<String> strings() {
         return stringStream().collect(Collectors.toList());
@@ -125,7 +126,6 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Returns a stream of all the string values of the members this JsonArray that
      * are not JsonObjects or JsonArrays. Skips the JsonObjects and JsonArray
      *
-     * TODO Should this rather throw an exception if there's an unexpected member? Or return toString?
      */
     public Stream<String> stringStream() {
         return nodeStream()

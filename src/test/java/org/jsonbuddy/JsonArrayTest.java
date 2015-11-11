@@ -175,4 +175,15 @@ public class JsonArrayTest {
         a.clear();
         assertThat(a.isEmpty()).isTrue();
     }
+
+    @Test
+    public void shouldSkipElementsThatAreNotObjectsWhenMappingObjects() throws Exception {
+        JsonArray a = new JsonArray()
+                .add("0")
+                .add(new JsonObject().put("number","one"))
+                .add(new JsonObject().put("number","two"));
+
+        assertThat(a.objects(n -> n.requiredString("number"))).containsExactly("one","two");
+
+    }
 }
