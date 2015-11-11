@@ -1,6 +1,7 @@
 ## Status
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy)
 [![Build Status](https://travis-ci.org/anders88/jsonbuddy.png)](https://travis-ci.org/anders88/jsonbuddy)
+
 # jsonbuddy
 
 A JSON parser for Java 8. The aim of jsonbuddy is to make building
@@ -8,17 +9,25 @@ and traversing ad hoc JSON object structures fluent and easy.
 
 In order to achieve this, jsonbuddy:
 
+* Has many convenience methods to build and processes JSON
+* Uses Optionals to return non-required values
+* Has convenience methods that throws if values are missing
 * Uses lambdas to simplify mapping to JSON objects and arrays
 * Uses lambdas to simplify extracting data from JSON objects and arrays
-* Uses Optional values instead of nulls
-* Has convenience methods that throws if values are missing
 
 
-# Features
-Parses json to a java object structure. Generates json
+## Features
 
-# Usage
-# Maven
+* Parse JSON to untyped Java objects
+* Build JSON object structures fluently
+* Extract JSON values
+* Automatically map Java object field values and properties to JSON
+* Automatically read JSON into Java object with fields and properties
+
+## Usage
+
+### Maven
+
 Jsononbuddy is on maven central. Add to your pom
 ```xml
 <dependency>
@@ -28,35 +37,86 @@ Jsononbuddy is on maven central. Add to your pom
 </dependency>
 ```
 
-## Usage summary
-Convert from | Convert to|Use
------------- | ----------|-----
-Text,input stream or reader | JsonNode | JsonParser.parse(input)
-JsonNode | String or writer | jsonNode.toJson(writer) or jsNode.toString()
-JsonNode | POJO | PojoMapper.map(jsonNode,POJO.class)
-POJO     | JsonNode | JsonGenerator.generate(pojo)
+### Usage summary
 
-## Parsing json (String to JsonNode)
-Parsing a string to a jsonnode
+Convert from     | Convert to       | Use
+-----------------|------------------|--------------------------------------------
+String or Reader | JsonNode         | JsonParser.parse(input)
+JsonNode         | String or Writer | jsonNode.toJson(writer) or JsonNode.toString()
+JsonNode         | POJO             | PojoMapper.map(jsonNode,POJO.class)
+POJO             | JsonNode         | JsonGenerator.generate(pojo)
+
+### Parsing JSON (String to JsonNode)
+
+Parsing a string to a JsonNode
+
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
-JsonObject o = (JsonObject)JsonParser.parseToObject(jsonString);
+JsonObject o = (JsonObject)JsonParser.parse(jsonString);
 String name = node.requiredString("name"); // = Darth Vader
 ```
-You can also parse from an InputString or a reader. If you expect the json you can use the convenience method
+
+You can also parse from a Reader. If you expect the json to be an object you can use the convenience method parseToObject.
+
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
 JsonObject jsonObject = JsonJsonParser.parseToObject(jsonString);
 ```
-This will cast an exception if the result is not an object. The same method can be used for json arrays.
 
-## Traversing parsed result
+This will cast an exception if the result is not an object. You can similary use parseToArray to get a JsonArray.
+
+### Building JSON (JsonNode to String)
+
+Generating JSON as string
+
+```java
+JsonObject jsonObject = new JsonObject()
+        .put("name", "Darth Vader");
+String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
+```
+
+You can also send a PrintWriter, and the result will be written to the writer.
+
+The builder syntax is optimized for fluent building of complex hierarchies:
+
+```java
+JsonObject orderJson = new JsonObject()
+    .put("customer", new JsonObject()
+            .put("name", "Darth Vader")
+            .put("address", "Death Star"))
+    .put("date", Instant.now())
+    .put("status", OrderStatus.COMPLETE)
+    .put("tags", JsonArray.fromStrings("urgent", "international"))
+    .put("orderLines", new JsonArray()
+            .add(new JsonObject().put("productId", 1).put("amount", 400.5))
+            .add(new JsonObject().put("productId", 2).put("amount", 11.5)));
+```
+
+This also works well with complex Java objects:
+
+```java
+JsonObject orderJson = new JsonObject()
+    .put("customer", new JsonObject()
+            .put("name", order.getCustomer().getName())
+            .put("address", order.getCustomer().getAddress()))
+    .put("date", order.getOrderDate())
+    .put("status", order.getStatus())
+    .put("tags", JsonArray.fromStringList(order.getTagList()))
+    .put("orderLines", JsonArray.map(order.getOrderLines(), line -> {
+            return new JsonObject()
+                    .put("productId", line.getProductId())
+                    .put("amount", line.getAmount());
+    }));
+```
+
+
+### Traversing parsed result (JsonObject to Java objects)
+
 ```java
 JsonObject object = new JsonObject()
         .put("bool", true)
         .put("double", 0.0)
         .put("enum", Thread.State.WAITING)
-        .put("instant", instant)
         .put("node", new JsonArray())
         .put("array", Arrays.asList("a", "b"));
 
@@ -65,24 +125,40 @@ object.booleanValue("missing"); // Optional.empty
 object.requiredArray("array").strings(); // List<String> of "a", "b"
 ```
 
+The syntax also works well for constructing complex objects
 
-## Building json (JsonNode to String)
-Generating json as string
+```java
+Order order = new Order();
+order.setCustomer(orderJson.objectValue("customer")
+        .map(customerJson -> {
+                Customer customer = new Customer();
+                customer.setName(customerJson.requiredString("name"));
+                customer.setAddress(customerJson.requiredString("address"));
+                return customer;
+        }).orElse(null));
+order.setOrderDate(orderJson.requiredInstant("date"));
+order.setStatus(orderJson.requiredEnum("status", OrderStatus.class)); // TODO
+order.setTagList(orderJson.requiredArray("tags").strings());
+order.setOrderLines(orderJson.requiredArray("orderLines").objects(
+        lineJson ->  new OrderLine(lineJson.requiredLong("productId"), lineJson.requiredDouble("amount"))));
+```
+
+### Json to POJO
+
+
 ```java
 JsonObject jsonObject = JsonFactory.jsonObject()
         .put("name", "Darth Vader");
-String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
+PojoMapper pojoMapper = new PojoMapper();
+SithLord darth = pojoMapper.mapToPojo(jsonObject);
+darth.getName(); // Returns "Darth Vader"
 ```
-You can also send a PrintWriter, and the result will be written to the writer.
-
-## Json to POJO
-...
 
 
-# Todos
+# TODO
+
 * Strict mode in Pojo mapping
 * Better fetching in nested elements
-* BigDecimal support
 
 
 # Version history
@@ -100,6 +176,7 @@ Version | Description
 0.5.1   | Bugfix. Parsing nested tables
 
 # Licence
+
 Copyright © 2015 Anders Karlsen
 
 Distributed under the Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)

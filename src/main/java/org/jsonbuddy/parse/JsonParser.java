@@ -3,6 +3,7 @@ package org.jsonbuddy.parse;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -163,6 +164,9 @@ public class JsonParser {
         }
         if (!finished && (!(Character.isSpaceChar(lastRead) || "}],".contains("" + lastRead))) && (!"\n\r\t".contains("" + lastRead))) {
             throw new JsonParseException("Illegal value '" + val + lastRead + "'");
+        }
+        if (val.length() > 20) {
+            return new JsonNumber(new BigDecimal(val.toString()));
         }
         if (isDouble) {
             return new JsonNumber(Double.parseDouble(val.toString()));

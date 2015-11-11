@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,19 +14,19 @@ import java.util.stream.Stream;
 
 /**
  * JsonArray represents an indexed list of values. Each value can be
- * a JsonObject, a number, a string, a boolean or another array.
- * This class is made to resemble the java.util.List interface,
+ * a {@link JsonObject}, a number, a String, a boolean or another array.
+ * This class is made to resemble the {@link java.util.List} interface,
  * with helper methods to work with different types.
  * For example, given: <code>['string', 123, false, {"foo": "bar"}]</code>,
- * <code>requiredString(0)</code> with return 'string' and
- * <code>requiredLong(1)</code> will return 123.
+ * <code>{@link #requiredString}(0)</code> with return 'string' and
+ * <code>{@link #requiredLong})(1)</code> will return 123.
  * <p>
  * If the index is out of bounds for the array or has the wrong data type,
- * JsonValueNotPresentException is thrown.
+ * {@link JsonValueNotPresentException} is thrown.
  * <p>
- * For convenience, <code>objects(Function)</code> will assume all entries
+ * For convenience, {@link #objects} will assume all entries
  * are JsonObjects and call the supplied function on them. Similarly,
- * the method <code>strings()</code> will return a List of all the elements as strings.
+ * the method {@link #strings} will return a List of all the elements as strings.
  */
 public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
@@ -103,8 +104,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     /**
      * Returns a list of all the string values of the members this JsonArray that
-     * are not JsonObjects or JsonArrays. Skips the JsonObjects and JsonArray
-     *
+     * are not JsonObjects or JsonArrays. Skips JsonObjects and JsonArrays
      */
     public List<String> strings() {
         return stringStream().collect(Collectors.toList());
@@ -126,8 +126,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     /**
      * Returns a stream of all the string values of the members this JsonArray that
-     * are not JsonObjects or JsonArrays. Skips the JsonObjects and JsonArray
-     *
+     * are not JsonObjects or JsonArrays. Skips JsonObjects and JsonArrays.
      */
     public Stream<String> stringStream() {
         return nodeStream()
@@ -206,18 +205,17 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *
      * @throws JsonConversionException if the value at the position is not a String
      */
-    public CharSequence requiredString(int pos) throws JsonConversionException {
+    public String requiredString(int pos) throws JsonConversionException {
         return get(pos, JsonValue.class).stringValue();
     }
-
 
     /**
      * Returns the value at the argument position as a long.
      *
      * @throws JsonConversionException if the value at the position is not numeric
      */
-    public long requiredLong(int position) throws JsonConversionException {
-        return requiredNumber(position).longValue();
+    public long requiredLong(int pos) throws JsonConversionException {
+        return requiredNumber(pos).longValue();
     }
 
     /**
@@ -225,8 +223,8 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *
      * @throws JsonConversionException if the value at the position is not numeric
      */
-    public double requiredDouble(int position) throws JsonConversionException {
-        return requiredNumber(position).doubleValue();
+    public double requiredDouble(int pos) throws JsonConversionException {
+        return requiredNumber(pos).doubleValue();
     }
 
     /**
@@ -234,14 +232,33 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *
      * @throws JsonConversionException if the value at the position is not a boolean
      */
-    public boolean requiredBoolean(int position) throws JsonConversionException {
-        if (get(position) instanceof JsonBoolean) {
-            return ((JsonBoolean)get(position)).booleanValue();
-        } else if (get(position) instanceof JsonValue) {
-            return Boolean.parseBoolean(((JsonValue)get(position)).stringValue());
+    public boolean requiredBoolean(int pos) throws JsonConversionException {
+        if (get(pos) instanceof JsonBoolean) {
+            return ((JsonBoolean)get(pos)).booleanValue();
+        } else if (get(pos) instanceof JsonValue) {
+            return Boolean.parseBoolean(((JsonValue)get(pos)).stringValue());
         } else {
-            throw new JsonConversionException(position + " is not boolean");
+            throw new JsonConversionException(pos + " is not boolean");
         }
+    }
+
+    /**
+     * Returns the value at the argument position as the specified Enum type.
+     *
+     * @throws IllegalArgumentException if the specified enum type has
+     *         no constant with a matching name
+     */
+    public <T extends Enum<T>> T requiredEnum(int pos, Class<T> enumType) {
+        return Enum.valueOf(enumType, requiredString(pos));
+    }
+
+    /**
+     * Returns the value at the argument position as an instant.
+     *
+     * @throws JsonConversionException if the value at the position is not a time
+     */
+    public Instant requiredInstant(int pos) {
+        return Instant.parse(requiredString(pos));
     }
 
     /**
@@ -249,17 +266,17 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *
      * @throws JsonConversionException if the value at the position is not numeric
      */
-    private Number requiredNumber(int position) throws JsonConversionException {
-        if (get(position) instanceof JsonNumber) {
-            return ((JsonNumber)get(position)).javaObjectValue();
-        } else if (get(position) instanceof JsonValue) {
+    public Number requiredNumber(int pos) throws JsonConversionException {
+        if (get(pos) instanceof JsonNumber) {
+            return ((JsonNumber)get(pos)).javaObjectValue();
+        } else if (get(pos) instanceof JsonValue) {
             try {
-                return Double.parseDouble(((JsonValue)get(position)).stringValue());
+                return Double.parseDouble(((JsonValue)get(pos)).stringValue());
             } catch (NumberFormatException e) {
-                throw new JsonConversionException(position + " is not numeric");
+                throw new JsonConversionException(pos + " is not numeric");
             }
         } else {
-            throw new JsonConversionException(position + " is not numeric");
+            throw new JsonConversionException(pos + " is not numeric");
         }
     }
 
@@ -347,4 +364,6 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     public JsonArray subList(int fromIndex, int toIndex) {
         return new JsonArray(values.subList(fromIndex, toIndex));
     }
+
+
 }

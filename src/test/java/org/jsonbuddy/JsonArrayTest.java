@@ -3,11 +3,13 @@ package org.jsonbuddy;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.StrictAssertions.assertThat;
 import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
 
 public class JsonArrayTest {
@@ -100,6 +102,38 @@ public class JsonArrayTest {
             .hasMessageContaining("not numeric");
         assertThatThrownBy(() -> a.requiredDouble(1))
             .hasMessageContaining("not numeric");
+    }
+
+    @Test
+    public void shouldHandleEnumValues() throws Exception {
+        JsonArray a = new JsonArray().add(Thread.State.BLOCKED);
+        assertThat(a.requiredString(0)).isEqualTo("BLOCKED");
+        assertThat(a.requiredEnum(0, Thread.State.class))
+            .isEqualTo(Thread.State.BLOCKED);
+    }
+
+    @Test
+    public void shouldHandleInstantValues() throws Exception {
+        Instant time = Instant.ofEpochMilli(1447278780000L);
+        JsonArray a = new JsonArray().add(time);
+        assertThat(a.requiredString(0)).startsWith("2015-11-11T21:53");
+        assertThat(a.requiredInstant(0)).isEqualTo(time);
+    }
+
+    @Test
+    public void shouldHandleBigDecimalValues() throws Exception {
+        StringBuilder numberAsString = new StringBuilder();
+        for (int i = 0; i < 40; i++) {
+            numberAsString.append("910");
+        }
+        numberAsString.append(".125");
+
+        BigDecimal largeNumber = new BigDecimal(numberAsString.toString());
+
+        JsonArray o = new JsonArray().add(largeNumber);
+        o = JsonParser.parseToArray(o.toJson());
+        assertThat(o.requiredNumber(0)).isEqualTo(largeNumber);
+        assertThat(o.requiredString(0)).isEqualTo(numberAsString.toString());
     }
 
     @Test

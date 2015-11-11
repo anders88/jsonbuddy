@@ -2,6 +2,7 @@ package org.jsonbuddy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 
@@ -63,6 +64,30 @@ public class JsonObjectTest {
                 .put("objectNull", (JsonObject)null);
         assertThat(o.containsKey("jsonNull")).isTrue();
         assertThat(o.keys()).contains("jsonNull", "objectNull");
+    }
+
+    @Test
+    public void shouldHandleEnumValues() throws Exception {
+        JsonObject o = new JsonObject().put("state", Thread.State.WAITING);
+        assertThat(o.requiredString("state")).isEqualTo("WAITING");
+        assertThat(o.requiredEnum("state", Thread.State.class))
+            .isEqualTo(Thread.State.WAITING);
+    }
+
+    @Test
+    public void shouldHandleBigDecimalValues() throws Exception {
+        StringBuilder numberAsString = new StringBuilder();
+        for (int i = 0; i < 40; i++) {
+            numberAsString.append("910");
+        }
+        numberAsString.append(".125");
+
+        BigDecimal largeNumber = new BigDecimal(numberAsString.toString());
+
+        JsonObject o = new JsonObject().put("largeNumber", largeNumber);
+        o = JsonParser.parseToObject(o.toJson());
+        assertThat(o.numberValue("largeNumber")).contains(largeNumber);
+        assertThat(o.requiredString("largeNumber")).isEqualTo(numberAsString.toString());
     }
 
     @Test

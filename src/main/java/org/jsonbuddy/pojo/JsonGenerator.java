@@ -16,12 +16,14 @@ public class JsonGenerator {
 
     /**
      * Recursively serializes the argument as JSON.
-     * <li>If the argument is a JsonNode the argument is returned.
-     * <li>If it is a String, Number or Boolean, the corresponding JsonNode type is returned.
-     * <li>If it is a Temporal or Enum, the String representation is returned.
-     * <li>If it is a collection, a JsonArray of the elements is returned.
-     * <li>If it implements OverridesJsonGenerator, the custom serialization is called.
-     * <li>If it is an Object, reflection is used to generate a JsonObject of the public fields and getters.
+     * <ul>
+     *   <li>If the argument is a JsonNode the argument is returned.
+     *   <li>If it is a String, Number or Boolean, the corresponding JsonNode type is returned.
+     *   <li>If it is a Temporal or Enum, the String representation is returned.
+     *   <li>If it is a collection, a JsonArray of the elements is returned.
+     *   <li>If it implements OverridesJsonGenerator, the custom serialization is called.
+     *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters.
+     * </ul>
      */
     public static JsonNode generate(Object object) {
         return new JsonGenerator().generateNode(object);

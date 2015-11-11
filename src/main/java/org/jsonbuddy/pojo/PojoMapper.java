@@ -34,10 +34,12 @@ public class PojoMapper {
     /**
      * Converts the argument JsonObject into an object of the specified class.
      *
-     * <li>If the class is annotated with an {@link OverrideMapper}, this deserializer is used
-     * <li>If there is a {@link JsonPojoBuilder} registered with
-     * {@link #registerClassBuilder(Class, JsonPojoBuilder)} deserialize wit this class
-     * <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
+     * <ul>
+     *   <li>If the class is annotated with an {@link OverrideMapper}, this deserializer is used
+     *   <li>If there is a {@link JsonPojoBuilder} registered with
+     *   {@link #registerClassBuilder(Class, JsonPojoBuilder)} deserialize wit this class
+     *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
+     * </ul>
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */

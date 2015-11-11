@@ -21,16 +21,17 @@ import java.util.stream.Collectors;
  * <code>requiredString("foo")</code> with return 'string' and
  * <code>requiredLong("number")</code> will return 123.
  * <p>
- * The methods <code>doubleValue</code>, <code>stringValue</code>, <code>longValue</<code>,
- * <code>objectValue</code>, <code>arrayValue</code> return an Optional of the
+ * The methods {@link #doubleValue}, {@link #stringValue}, {@link #longValue},
+ * {@link #objectValue}, {@link #arrayValue} return an Optional of the
  * specified type. They return an empty Optional if the key is not present or
  * throws JsonConversionException of the value is of the wrong type.
  * <p>
- * The methods <code>requiredDouble</code>, <code>requiredString</code>,
- * <code>requiredLong</<code>, <code>requiredObject</code>,
- * <code>requiredArray</code> return the specified type if the value is
- * present and convertible to the specified type. They return throw
- * JsonValueNotPresentException if the key is not present or JsonConversionException
+ * The methods {@link #requiredLong}, {@link #requiredString},
+ * {@link #requiredLong}, {@link #requiredObject},
+ * {@link #requiredArray} return the specified type if the value is
+ * present and convertible to the specified type. They throw
+ * {@link JsonValueNotPresentException} if the key is not present or
+ * {@link JsonConversionException}
  * if the value is on a wrong type.
  */
 public class JsonObject extends JsonNode {
@@ -49,7 +50,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a String or an empty
+     * Returns the value of the argument key as a String or an empty
      * Optional if the key is not present.
      *
      * @throws JsonConversionException if the value is a JsonArray or JsonObject.
@@ -59,7 +60,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a String.
+     * Returns the value of the argument key as a String.
      *
      * @throws JsonValueNotPresentException if the key is not present or a wrong type
      */
@@ -68,7 +69,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a double or an empty
+     * Returns the value of the argument key as a double or an empty
      * Optional if the key is not present.
      *
      * @throws JsonConversionException if the value is not convertible to a number
@@ -78,7 +79,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a double.
+     * Returns the value of the argument key as a double.
      *
      * @throws JsonValueNotPresentException if the key is not present
      * @throws JsonConversionException if the value is not convertible to a number
@@ -88,7 +89,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a long or an empty
+     * Returns the value of the argument key as a long or an empty
      * Optional if the key is not present.
      *
      * @throws JsonConversionException if the value is not convertible to a number
@@ -98,7 +99,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a long.
+     * Returns the value of the argument key as a long.
      *
      * @throws JsonValueNotPresentException if the key is not present
      * @throws JsonConversionException if the value is not convertible to a number
@@ -108,7 +109,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a Number or an empty
+     * Returns the value of the argument key as a Number or an empty
      * Optional if the key is not present.
      *
      * @throws JsonConversionException if the value is not convertible to a number
@@ -133,7 +134,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a boolean or an empty
+     * Returns the value of the argument key as a boolean or an empty
      * Optional if the key is not present.
      *
      * @throws JsonConversionException if the value is not convertible to a boolean
@@ -154,7 +155,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a boolean.
+     * Returns the value of the argument key as a boolean.
      *
      * @throws JsonValueNotPresentException if the key is not present
      * @throws JsonConversionException if the value is not convertible to a boolean
@@ -164,7 +165,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a JsonObject or an empty
+     * Returns the value of the argument key as a JsonObject or an empty
      * Optional if the key is not present.
      *
      *  @throws JsonConversionException if the value is not a JsonObject
@@ -174,7 +175,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a JsonObject.
+     * Returns the value of the argument key as a JsonObject.
      *
      * @throws JsonValueNotPresentException if the key is not present or not JsonObject
      */
@@ -183,7 +184,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as an {@link Instant} or
+     * Returns the value of the argument key as an {@link Instant} or
      * an empty Optional if the key is not present.
      *
      * @throws DateTimeParseException if the text cannot be parsed as an Instant
@@ -193,7 +194,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as an {@link Instant}.
+     * Returns the value of the argument key as an {@link Instant}.
      *
      * @throws JsonValueNotPresentException if the key is not present
      * @throws DateTimeParseException if the text cannot be parsed as an Instant
@@ -203,7 +204,29 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a JsonArray or an empty
+     * Returns the value of the argument key as the specified Enum type or
+     * an empty Optional if the key is not present.
+     *
+     * @throws IllegalArgumentException if the specified enum type has
+     *         no constant with a matching name
+     */
+    private <T extends Enum<T>> Optional<T> enumValue(String key, Class<T> enumType) {
+        return stringValue(key).map(s -> Enum.valueOf(enumType, s));
+    }
+
+    /**
+     * Returns the value of the argument key as the specified Enum type.
+     *
+     * @throws JsonValueNotPresentException if the key is not present
+     * @throws IllegalArgumentException if the specified enum type has
+     *         no constant with a matching name
+     */
+    public <T extends Enum<T>> T requiredEnum(String key, Class<T> enumType) {
+        return enumValue(key, enumType).orElseThrow(throwKeyNotPresent(key));
+    }
+
+    /**
+     * Returns the value of the argument key as a JsonArray or an empty
      * Optional if the key is not present.
      *
      *  @throws JsonConversionException if the value is not a JsonArray
@@ -213,7 +236,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as a JsonArray.
+     * Returns the value of the argument key as a JsonArray.
      *
      * @throws JsonValueNotPresentException if the key is not present or not JsonArray
      */
@@ -222,7 +245,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as or an empty Optional
+     * Returns the value of the argument key as or an empty Optional
      * if the key is not present.
      */
     public Optional<JsonNode> value(String key) {
@@ -230,7 +253,7 @@ public class JsonObject extends JsonNode {
     }
 
     /**
-     * Returns the value at the argument position as or an empty Optional
+     * Returns the value of the argument key as the argument type or an empty Optional
      * if the key is not present.
      *
      * @throws JsonConversionException if the value is not of the specified type
