@@ -1,3 +1,5 @@
+## Status
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy)
 # jsonbuddy
 
 A JSON parser for Java 8. The aim of jsonbuddy is to make building
