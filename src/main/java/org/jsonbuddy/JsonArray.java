@@ -53,7 +53,9 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Collects the argument stream into a JsonArray
      */
     public static JsonArray fromNodeStream(Stream<? extends JsonNode> nodes) {
-        return new JsonArray(nodes.collect(Collectors.toList()));
+        JsonArray jsonNodes = new JsonArray();
+        nodes.forEach(jsonNodes::add);
+        return jsonNodes;
     }
 
     /**
