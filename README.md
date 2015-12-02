@@ -33,7 +33,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.5.1</version>
+	<version>0.6.0</version>
 </dependency>
 ```
 
@@ -174,6 +174,7 @@ Version | Description
 0.4.2   | Bugfix. Json Instant sends as string
 0.5.0   | Renamed method to make naming more consequent. Now uses put instead of withValue. We use jsonString, JsonNumber (who can hold all kinds of numbers integers and numbers with decimals). JsonBoolean and JsonNull. SimpleValue are now called JsonValue.
 0.5.1   | Bugfix. Parsing nested tables
+0.6.0   | Buffixes. A little documentation. Make apis of JsonArray and JsonObject more simular.
 
 # Licence
 
