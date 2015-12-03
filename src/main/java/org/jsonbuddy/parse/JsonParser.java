@@ -1,8 +1,6 @@
 package org.jsonbuddy.parse;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +43,18 @@ public class JsonParser {
         return parse(new StringReader(input));
     }
 
+
+    /**
+     * Parse the InputStream as a JsonNode. Will return a JsonArray, JsonArray
+     * or a JsonValue.
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered
+     */
+    public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
+        return parse(new InputStreamReader(inputStream));
+    }
+
+
     /**
      * Parse the String as a JsonObject
      *
@@ -66,6 +76,16 @@ public class JsonParser {
         return toObject(jsonParser.parseValue());
     }
 
+    /**
+     * Parse the InputStream as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
+    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException {
+        return parseToObject(new InputStreamReader(inputStream));
+    }
+
     private static JsonObject toObject(JsonNode result) {
         if (!(result instanceof JsonObject)) {
             throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
@@ -81,6 +101,16 @@ public class JsonParser {
      */
     public static JsonArray parseToArray(String input) throws JsonParseException  {
         return parseToArray(new StringReader(input));
+    }
+
+    /**
+     * Parse the InputStream as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
+    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException  {
+        return parseToArray(new InputStreamReader(inputStream));
     }
 
     /**
