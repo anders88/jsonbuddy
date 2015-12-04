@@ -33,4 +33,20 @@ public abstract class JsonNode {
     }
 
     public abstract JsonNode deepClone();
+
+    /**
+     * Check if this node is an array
+     * @return true if this is a JsonArray, false otherwise
+     */
+    public boolean isArray() {
+        return (this instanceof JsonArray);
+    }
+
+    /**
+     * Check if this node is an object
+     * @return true if this is a JsonObject, false otherwise
+     */
+    public boolean isObject() {
+        return (this instanceof JsonObject);
+    }
 }
