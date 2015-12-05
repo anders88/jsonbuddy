@@ -15,10 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonValue;
+import org.jsonbuddy.*;
 import org.jsonbuddy.parse.JsonParseException;
 
 /**
@@ -173,6 +170,21 @@ public class PojoMapper {
             return false;
         }
         JsonNode nodeValue = jsonObject.value(key).get();
+        if (Optional.class.equals(declaredField.getType())) {
+            Optional<?> optionalValue;
+            if (nodeValue.equals(new JsonNull())) {
+                optionalValue = Optional.empty();
+            } else {
+                String typeName = declaredField.getGenericType().getTypeName();
+                Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
+                optionalValue = Optional.of(mapit(nodeValue, optClass));
+            }
+
+            declaredField.setAccessible(true);
+            declaredField.set(result,optionalValue);
+            declaredField.setAccessible(false);
+            return true;
+        }
         Object value;
         OverriddenVal overriddenValue = overriddenValue(declaredField.getType(), nodeValue);
         if (overriddenValue.overridden) {
@@ -306,7 +318,18 @@ public class PojoMapper {
         } else if (setterClass.isAssignableFrom(jsonObject.getClass())) {
             value = jsonObject;
         } else if (Map.class.isAssignableFrom(setterClass) && (jsonObject.objectValue(key).isPresent())) {
-            value = mapAsMap((ParameterizedType) method.getGenericParameterTypes()[0],jsonObject.requiredObject(key));
+            value = mapAsMap((ParameterizedType) method.getGenericParameterTypes()[0], jsonObject.requiredObject(key));
+        } else if (Optional.class.equals(setterClass)) {
+            JsonNode nodeValue = jsonObject.value(key).get();
+            Optional<?> optionalValue;
+            if (nodeValue.equals(new JsonNull())) {
+                optionalValue = Optional.empty();
+            } else {
+                String typeName = method.getParameters()[0].getParameterizedType().getTypeName();
+                Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
+                optionalValue = Optional.of(mapit(nodeValue, optClass));
+            }
+            value = optionalValue;
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);
             value = convertIfNessesary(value, setterClass);

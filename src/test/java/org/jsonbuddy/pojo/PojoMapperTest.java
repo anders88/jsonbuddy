@@ -3,7 +3,9 @@ package org.jsonbuddy.pojo;
 
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.parse.JsonParser;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
@@ -227,5 +229,29 @@ public class PojoMapperTest {
 
     }
 
+    @Test
+    public void shouldHandleOptionalField() throws Exception {
+        ClassWithOptional classWithOptional = PojoMapper.map(JsonFactory.jsonObject(), ClassWithOptional.class);
+        assertThat(classWithOptional.optStr).isNull();
 
+        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr",new JsonNull()), ClassWithOptional.class);
+        assertThat(classWithOptional.optStr.isPresent()).isFalse();
+
+        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptional.class);
+        assertThat(classWithOptional.optStr).isPresent().contains("abc");
+
+    }
+
+    @Test
+    public void shouldHandleOptionalProperty() throws Exception {
+        ClassWithOptionalProperty classWithOptional = PojoMapper.map(JsonFactory.jsonObject(), ClassWithOptionalProperty.class);
+        assertThat(classWithOptional.getOptStr()).isNull();
+
+        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr",new JsonNull()), ClassWithOptionalProperty.class);
+        assertThat(classWithOptional.getOptStr().isPresent()).isFalse();
+
+        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptionalProperty.class);
+        assertThat(classWithOptional.getOptStr()).isPresent().contains("abc");
+
+    }
 }
