@@ -5,7 +5,6 @@ import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.parse.JsonParser;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
