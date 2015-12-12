@@ -9,10 +9,12 @@ import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
 
 public class PojoMapperTest {
     @Test
@@ -78,6 +80,30 @@ public class PojoMapperTest {
         assertThat(differentTypes.number).isEqualTo(42);
         assertThat(differentTypes.bool).isTrue();
         assertThat(differentTypes.bool).isTrue();
+    }
+
+    @Test
+    public void shouldHandleNumbersAsText() throws Exception {
+        JsonObject json = new JsonObject().put("intValue", "13").put("longValue", "14");
+        ClassWithNumbers object = PojoMapper.map(json, ClassWithNumbers.class);
+        assertThat(object.getIntValue()).isEqualTo(13);
+        assertThat(object.getLongValue()).isEqualTo(14);
+    }
+
+    @Test
+    public void shouldHandleNullNumbers() throws Exception {
+        JsonObject json = new JsonObject().put("intValue", null).put("longValue", 12);
+        ClassWithNumbers object = PojoMapper.map(json, ClassWithNumbers.class);
+        assertThat(object.getLongValue()).isEqualTo(12L);
+        assertThat(object.getIntValue()).isNull();
+    }
+
+    @Test
+    public void shouldThrownOnIllegalAssigments() throws Exception {
+        JsonObject json = new JsonObject().put("intValue", true);
+        assertThatThrownBy(() -> PojoMapper.map(json, ClassWithNumbers.class))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("intValue");
     }
 
     @Test
@@ -251,6 +277,11 @@ public class PojoMapperTest {
 
         classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptionalProperty.class);
         assertThat(classWithOptional.getOptStr()).isPresent().contains("abc");
+    }
 
+    @Test
+    public void shouldThrowOnNonApplicableClasses() throws Exception {
+        assertThatThrownBy(() -> PojoMapper.map(new JsonObject(), LocalDate.class))
+            .isInstanceOf(CanNotMapException.class);
     }
 }

@@ -19,4 +19,20 @@ public class ClassWithDifferentTypes {
         this.bool = bool;
         this.falseBool = falseBool;
     }
+
+    public String a() {
+        return "a";
+    }
+
+    public String getter_method() {
+        return "";
+    }
+
+    public void getWithIllegalSignature() {
+        // Dummy method to test getter signature detection
+    }
+
+    public String getWithParam(String s) {
+        return s;
+    }
 }

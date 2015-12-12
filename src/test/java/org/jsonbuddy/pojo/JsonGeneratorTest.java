@@ -26,7 +26,7 @@ public class JsonGeneratorTest {
     public void shouldHandleSimpleValues() throws Exception {
         assertThat(JsonGenerator.generate(null)).isEqualTo(new JsonNull());
         assertThat(JsonGenerator.generate("Darth")).isEqualTo(JsonFactory.jsonString("Darth"));
-        assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonNumber(42L));
+        assertThat(JsonGenerator.generate(42)).isEqualTo(JsonFactory.jsonNumber(42));
 
     }
 
@@ -130,7 +130,12 @@ public class JsonGeneratorTest {
         ClassWithEnum classWithEnum = new ClassWithEnum();
         JsonObject jso = (JsonObject) JsonGenerator.generate(classWithEnum);
         assertThat(jso.requiredString("enumNumber")).isEqualTo("ONE");
+    }
 
+    @Test
+    public void shouldHandleNumbers() throws Exception {
+        assertThat(JsonGenerator.generate(12L)).isEqualTo(new JsonNumber(12L));
+        assertThat(JsonGenerator.generate(12)).isEqualTo(new JsonNumber(12));
     }
 
     @Test
@@ -141,6 +146,6 @@ public class JsonGeneratorTest {
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.requiredString("42")).isEqualTo("Meaning of life");
-
     }
+
 }

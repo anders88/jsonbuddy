@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.jsonbuddy.*;
-import org.jsonbuddy.parse.JsonParseException;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting
@@ -204,18 +203,12 @@ public class PojoMapper {
     }
 
     private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
-        Class<?> valueclass;
         String typeName = genericType.getActualTypeArguments()[1].getTypeName();
         int genericStart = typeName.indexOf("<");
         if (genericStart != -1) {
             typeName = typeName.substring(genericStart+1,typeName.indexOf(">"));
         }
-        try {
-            valueclass = Class.forName(typeName);
-        } catch (ClassNotFoundException e) {
-            throw new JsonParseException("Could not find class " + typeName) ;
-        }
-
+        Class<?> valueclass = Class.forName(typeName);
         Map<String, Object> result = new HashMap<>();
         for (String key : nodeValue.keys()) {
             result.put(key, mapit(nodeValue.value(key).get(), valueclass));
@@ -233,24 +226,13 @@ public class PojoMapper {
         if (value instanceof String && Instant.class.isAssignableFrom(destinationType)) {
             return Instant.parse(value.toString());
         }
-        if (value instanceof Long && Integer.class.equals(destinationType)) {
-            int intval = Integer.parseInt(value.toString());
-            return intval;
-        }
-        if (value instanceof Integer && Long.class.equals(destinationType)) {
-            long longval = (long) value;
-            return longval;
+        if (value instanceof Number && Integer.class.equals(destinationType)) {
+            return ((Number)value).intValue();
         }
         if (Integer.class.equals(destinationType) && (value instanceof String)) {
             return Integer.parseInt((String) value);
         }
         if (Long.class.equals(destinationType) && (value instanceof String)) {
-            return Long.parseLong((String) value);
-        }
-        if (destinationType.isAssignableFrom(Integer.class) && (value instanceof String)) {
-            return Integer.parseInt((String) value);
-        }
-        if (destinationType.isAssignableFrom(Long.class) && (value instanceof String)) {
             return Long.parseLong((String) value);
         }
         if (destinationType.isEnum() && (value instanceof String)) {

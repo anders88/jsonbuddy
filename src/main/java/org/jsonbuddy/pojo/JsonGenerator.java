@@ -40,21 +40,8 @@ public class JsonGenerator {
         if (object instanceof String) {
             return JsonFactory.jsonString((String) object);
         }
-        if ((object instanceof Integer))  {
-            int i = (int) object;
-            long l = i;
-            return JsonFactory.jsonNumber(l);
-        }
-        if (object instanceof Long) {
-            return JsonFactory.jsonNumber((Long) object);
-        }
-        if (object instanceof Double) {
-            return JsonFactory.jsonNumber((Double) object);
-        }
-        if (object instanceof Float) {
-            float f = (float) object;
-            double d = f;
-            return JsonFactory.jsonNumber(d);
+        if ((object instanceof Number))  {
+            return JsonFactory.jsonNumber(((Number)object));
         }
         if (object instanceof Boolean) {
             return JsonFactory.jsonBoolean((Boolean) object);
