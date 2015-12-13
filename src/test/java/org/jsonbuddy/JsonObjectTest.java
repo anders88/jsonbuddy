@@ -24,6 +24,11 @@ public class JsonObjectTest {
     }
 
     @Test
+    public void shouldHandleEmptyNumericStrings() throws Exception {
+        assertThat(new JsonObject().put("value", "").longValue("value")).isEmpty();
+    }
+
+    @Test
     public void instantValues() throws Exception {
         Instant instant = Instant.now();
         JsonObject o = new JsonObject().put("instant", instant);

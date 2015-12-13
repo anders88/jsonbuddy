@@ -123,8 +123,12 @@ public class JsonObject extends JsonNode {
             return Optional.of(((JsonNumber)node).javaObjectValue());
         }
         if (node instanceof JsonValue) {
+            String stringValue = node.stringValue();
+            if (stringValue.isEmpty()) {
+                return Optional.empty();
+            }
             try {
-                return Optional.of(Double.parseDouble(node.stringValue()));
+                return Optional.of(Double.parseDouble(stringValue));
             } catch (NumberFormatException e) {
                 throw new JsonConversionException(key + " is not numeric");
             }
