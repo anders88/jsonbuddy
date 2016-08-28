@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import static org.junit.Assert.fail;
 
 public class PojoMapperTest {
     @Test
@@ -277,6 +278,21 @@ public class PojoMapperTest {
 
         classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptionalProperty.class);
         assertThat(classWithOptional.getOptStr()).isPresent().contains("abc");
+    }
+
+    @Test
+    public void shouldHandleIntegerToFloatingPointConversion() {
+        ClassWithNumbers classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("floatValue", 17), ClassWithNumbers.class);
+        assertThat(classWithNumbers.getFloatValue()).isEqualTo(17.0f);
+
+        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("floatValue", 17L), ClassWithNumbers.class);
+        assertThat(classWithNumbers.getFloatValue()).isEqualTo(17.0f);
+
+        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("doubleValue", 89), ClassWithNumbers.class);
+        assertThat(classWithNumbers.getDoubleValue()).isEqualTo(89.0);
+
+        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("doubleValue", 89L), ClassWithNumbers.class);
+        assertThat(classWithNumbers.getDoubleValue()).isEqualTo(89.0);
     }
 
     @Test

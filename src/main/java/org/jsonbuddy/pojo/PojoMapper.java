@@ -194,7 +194,7 @@ public class PojoMapper {
             value = mapAsMap((ParameterizedType) declaredField.getGenericType(), (JsonObject) nodeValue);
         } else {
             value = mapit(nodeValue, computeType(declaredField, nodeValue));
-            value = convertIfNessesary(value,declaredField.getType());
+            value = convertIfNecessary(value,declaredField.getType());
         }
         declaredField.setAccessible(true);
         declaredField.set(result,value);
@@ -216,7 +216,7 @@ public class PojoMapper {
         return result;
     }
 
-    private Object convertIfNessesary(Object value, Class<?> destinationType) {
+    private Object convertIfNecessary(Object value, Class<?> destinationType) {
         if (value == null) {
             return null;
         }
@@ -227,7 +227,13 @@ public class PojoMapper {
             return Instant.parse(value.toString());
         }
         if (value instanceof Number && Integer.class.equals(destinationType)) {
-            return ((Number)value).intValue();
+            return ((Number) value).intValue();
+        }
+        if (value instanceof Number && Float.class.equals(destinationType)) {
+            return ((Number) value).floatValue();
+        }
+        if (value instanceof Number && Double.class.equals(destinationType)) {
+            return ((Number) value).doubleValue();
         }
         if (Integer.class.equals(destinationType) && (value instanceof String)) {
             return Integer.parseInt((String) value);
@@ -314,7 +320,7 @@ public class PojoMapper {
             value = optionalValue;
         } else {
             value = mapit(jsonObject.value(key).get(),setterClass);
-            value = convertIfNessesary(value, setterClass);
+            value = convertIfNecessary(value, setterClass);
         }
         method.invoke(instance,value);
         return true;
