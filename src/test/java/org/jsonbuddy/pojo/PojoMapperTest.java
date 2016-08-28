@@ -1,16 +1,14 @@
 package org.jsonbuddy.pojo;
 
 
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -293,6 +291,16 @@ public class PojoMapperTest {
 
         classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("doubleValue", 89L), ClassWithNumbers.class);
         assertThat(classWithNumbers.getDoubleValue()).isEqualTo(89.0);
+    }
+
+    @Test
+    public void shouldHandleListWithNulls() throws Exception {
+        List<String> withNull = Arrays.asList("one",null,"two");
+        JsonArray arr = JsonArray.fromStringList(withNull);
+        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "darth").put("children", arr);
+        ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
+        assertThat(classWithList.children.get(1)).isNull();
+
     }
 
     @Test

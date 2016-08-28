@@ -198,7 +198,14 @@ public class JsonParserTest {
         String json = "{\"coordinates\":[[9.0, 80.0]]}";
         JsonObject jsonObject = JsonParser.parseToObject(json);
         assertThat(jsonObject).isNotNull();
+    }
 
+    @Test
+    public void shouldHandleNullElementsInArray() throws Exception {
+        String json = fixQuotes("['one',null,'two']");
+        JsonArray jsonArray = JsonParser.parseToArray(json);
+        assertThat(jsonArray.size()).isEqualTo(3);
+        assertThat(jsonArray.get(1,JsonNull.class)).isEqualTo(new JsonNull());
     }
 
     private static String fixQuotes(String content) {
