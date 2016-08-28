@@ -308,4 +308,18 @@ public class PojoMapperTest {
         assertThatThrownBy(() -> PojoMapper.map(new JsonObject(), LocalDate.class))
             .isInstanceOf(CanNotMapException.class);
     }
+
+    @Test
+    public void shouldHandleListOfOverriddenValues() throws Exception {
+        JsonArray jsonArray = JsonFactory.jsonArray()
+                .add(JsonFactory.jsonObject())
+                .add(JsonFactory.jsonObject());
+
+        List<ClassWithAnnotation> result = PojoMapper.map(jsonArray, ClassWithAnnotation.class);
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).value).isEqualTo("overridden");
+        assertThat(result.get(1).value).isEqualTo("overridden");
+
+
+    }
 }
