@@ -59,6 +59,9 @@ public class JsonGenerator {
         if (object instanceof Collection) {
             return JsonArray.map((Collection<?>) object, this::generateNode);
         }
+        if (object.getClass().isArray()) {
+            return JsonArray.map(Arrays.asList((Object[])object), this::generateNode);
+        }
         if (object instanceof Temporal) {
             return JsonFactory.jsonString(object.toString());
         }

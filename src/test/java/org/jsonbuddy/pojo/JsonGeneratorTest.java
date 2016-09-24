@@ -48,6 +48,16 @@ public class JsonGeneratorTest {
     }
 
     @Test
+    public void shouldHandleArray() throws Exception {
+        String[] stringarray = { "one", "two", "three" };
+
+        JsonNode generate = JsonGenerator.generate(stringarray);
+        assertThat(generate).isInstanceOf(JsonArray.class);
+        JsonArray array = (JsonArray) generate;
+        assertThat(array.strings()).containsExactly(stringarray);
+    }
+
+    @Test
     public void shouldHandleListWithClasses() throws Exception {
         List<SimpleWithName> simpleWithNames = Arrays.asList(new SimpleWithName("Darth"), new SimpleWithName("Anakin"));
         JsonArray array = (JsonArray) JsonGenerator.generate(simpleWithNames);
