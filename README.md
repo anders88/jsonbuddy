@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.7.1</version>
+	<version>0.7.2</version>
 </dependency>
 ```
 
@@ -178,7 +178,8 @@ Version | Description
 0.6.0   | Buffixes. A little documentation. Make apis of JsonArray and JsonObject more simular.
 0.6.1   | ObjectStream from array. Parsing from InputStream reintroduced
 0.7.0   | Using Number class to handle numbers. Supporting Optional. Minow tweaks
-0.7.1   | Bugfix to handle integers as floats and doubles 
+0.7.1   | Bugfix to handle integers as floats and doubles
+0.7.2   | Bugfix to ovverriden classes as part of list in POJO mapping
 
 # Licence
 
