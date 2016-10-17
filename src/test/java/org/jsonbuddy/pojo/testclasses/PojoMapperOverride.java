@@ -1,7 +1,10 @@
 package org.jsonbuddy.pojo.testclasses;
 
 import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.JsonPojoBuilder;
+
+import java.util.Optional;
 
 public class PojoMapperOverride implements JsonPojoBuilder<ClassWithAnnotation> {
     public static boolean returnNull = false;

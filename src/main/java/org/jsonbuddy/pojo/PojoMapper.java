@@ -107,12 +107,13 @@ public class PojoMapper {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             return annotationsByType[0].using().newInstance().build(jsonNode);
         }
-        if (jsonNode instanceof JsonValue) {
-            return ((JsonValue) jsonNode).javaObjectValue();
-        }
         if (jsonNode instanceof JsonArray) {
             return mapArray((JsonArray) jsonNode, clazz);
         }
+        if (jsonNode instanceof JsonValue) {
+            return ((JsonValue) jsonNode).javaObjectValue();
+        }
+
         JsonObject jsonObject = (JsonObject) jsonNode;
         JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
         if (jsonPojoBuilder != null) {
@@ -193,8 +194,13 @@ public class PojoMapper {
         } else if (Map.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonObject)) {
             value = mapAsMap((ParameterizedType) declaredField.getGenericType(), (JsonObject) nodeValue);
         } else {
-            value = mapit(nodeValue, computeType(declaredField, nodeValue));
-            value = convertIfNecessary(value,declaredField.getType());
+            Class<?> mappedClass = computeType(declaredField, nodeValue);
+            if (List.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonArray)) {
+                value = mapArray((JsonArray) nodeValue,mappedClass);
+            } else {
+                value = mapit(nodeValue, mappedClass);
+                value = convertIfNecessary(value,declaredField.getType());
+            }
         }
         declaredField.setAccessible(true);
         declaredField.set(result,value);

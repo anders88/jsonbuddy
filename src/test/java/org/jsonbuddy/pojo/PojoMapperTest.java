@@ -181,14 +181,6 @@ public class PojoMapperTest {
 
     }
 
-    @Test
-    public void shouldHandleCombined() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("name", "Darth Vader")
-                .put("myHack",JsonFactory.jsonArray().add("Hola"));
-        CombinedClassWithAnnotation combinedClassWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
-        assertThat(combinedClassWithAnnotation.myHack.value).isEqualTo("overridden");
-    }
 
     @Test
     public void shouldHandleClassWithMap() throws Exception {
@@ -319,7 +311,44 @@ public class PojoMapperTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).value).isEqualTo("overridden");
         assertThat(result.get(1).value).isEqualTo("overridden");
+    }
 
+    @Test
+    public void shouldHandleCombined() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .put("name", "Darth Vader")
+                .put("myHack",JsonFactory.jsonArray().add("Hola"));
+        CombinedClassWithAnnotation combinedClassWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
+        assertThat(combinedClassWithAnnotation.myHack.value).isEqualTo("overridden");
+    }
+
+
+    @Test
+    public void shouldHandleClassContainingAnnotated() throws Exception {
+        JsonObject obj = JsonFactory.jsonObject().put("annonlist",
+                JsonFactory.jsonArray()
+                        .add(JsonFactory.jsonObject().put("value", "one"))
+                        .add(JsonFactory.jsonObject().put("value", "two")));
+        ClassContainingAnnotated containingAnnotated = PojoMapper.map(obj, ClassContainingAnnotated.class);
+        List<ClassWithPojoOverride> result = containingAnnotated.annonlist;
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).value).isEqualTo("overridden one");
+        assertThat(result.get(1).value).isEqualTo("overridden two");
 
     }
+
+    @Test
+    public void shouldHandleClassContainingMethodAnnotated() throws Exception {
+        JsonObject obj = JsonFactory.jsonObject().put("annonlist",
+                JsonFactory.jsonArray()
+                        .add(JsonFactory.jsonObject().put("value", "one"))
+                        .add(JsonFactory.jsonObject().put("value", "two")));
+        ClassContainingOverriddenAsSetter containingAnnotated = PojoMapper.map(obj, ClassContainingOverriddenAsSetter.class);
+        List<ClassWithPojoOverride> result = containingAnnotated.getAnnonlist();
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).value).isEqualTo("overridden one");
+        assertThat(result.get(1).value).isEqualTo("overridden two");
+
+    }
+
 }
