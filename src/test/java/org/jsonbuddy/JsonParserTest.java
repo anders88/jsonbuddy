@@ -208,6 +208,13 @@ public class JsonParserTest {
         assertThat(jsonArray.get(1,JsonNull.class)).isEqualTo(new JsonNull());
     }
 
+    @Test
+    public void shouldHandleUnicode() throws Exception {
+        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'value':'with\\u22A1xx'}"));
+        assertThat(jsonObject.requiredString("value")).isEqualTo("with\u22A1xx");
+
+    }
+
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }

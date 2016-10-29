@@ -303,7 +303,8 @@ public class JsonParser {
                         res.append("\t");
                         break;
                     case 'u':
-                        throw new RuntimeException("\\u Not supported yet");
+                        res.append(readUnicodeValue());
+                        break;
                 }
             } else {
                 res.append(lastRead);
@@ -314,6 +315,26 @@ public class JsonParser {
             throw new JsonParseException("JsonString not closed. Expected \"");
         }
         return res.toString();
+    }
+
+    private String readUnicodeValue() {
+        StringBuilder code = new StringBuilder();
+        for (int i=0;i<4;i++) {
+            readNext();
+            if (finished) {
+                throw new JsonParseException("JsonString not closed. Ended in escape sequence");
+            }
+            code.append(lastRead);
+        }
+
+        int unicode;
+        try {
+            unicode = Integer.parseInt(code.toString(), 16);
+        } catch (NumberFormatException e) {
+            throw new JsonParseException("Illegal unicode sequence " + code);
+        }
+        String s = Character.toString((char)unicode);
+        return s;
     }
 
     private void readSpaceUntil(String errormessage, Character... readUntil) {
