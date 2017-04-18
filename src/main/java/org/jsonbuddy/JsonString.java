@@ -26,13 +26,14 @@ public class JsonString extends JsonValue {
     public void toJson(PrintWriter printWriter) {
         printWriter.append("\"");
         StringBuilder val = new StringBuilder(value);
-        replace(val,'\\','\\');
-        replace(val,'\n','n');
-        replace(val,'"','"');
-        replace(val,'\b','b');
-        replace(val,'\f','f');
-        replace(val,'\r','r');
-        replace(val,'\t','t');
+        replace(val,'\\',"\\");
+        replace(val,'\n',"n");
+        replace(val,'"',"\"");
+        replace(val,'\b',"b");
+        replace(val,'\f',"f");
+        replace(val,'\r',"r");
+        replace(val,'\t',"t");
+        replace(val,'\u000B',"u000B");
         printWriter.append(val.toString());
         printWriter.append(("\""));
     }
@@ -42,7 +43,7 @@ public class JsonString extends JsonValue {
         return this;
     }
 
-    private void replace(StringBuilder val, char c, char rep) {
+    private void replace(StringBuilder val, char c, String rep) {
         for (int i=0;i<val.length();i++) {
             if (val.charAt(i) == c) {
                 val.deleteCharAt(i);
