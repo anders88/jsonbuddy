@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.8.1</version>
+	<version>0.9.0</version>
 </dependency>
 ```
 
@@ -182,9 +182,10 @@ Version | Description
 0.7.2   | Bugfix to ovverriden classes as part of list in POJO mapping
 0.8.0   | Unicode support (Supports \u)
 0.8.1   | Bugfix to support unicode u008
+0.9.0   | Pojo mapper supports BigDecimal and BigInteger
 
 # Licence
 
-Copyright © 2015-2016 Anders Karlsen
+Copyright © 2015-2017 Anders Karlsen
 
 Distributed under the Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
