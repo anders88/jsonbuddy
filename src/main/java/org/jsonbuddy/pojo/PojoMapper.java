@@ -7,6 +7,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -231,6 +233,12 @@ public class PojoMapper {
         }
         if (value instanceof String && Instant.class.isAssignableFrom(destinationType)) {
             return Instant.parse(value.toString());
+        }
+        if (value instanceof Number && BigInteger.class.equals(destinationType)) {
+            return new BigInteger(value.toString());
+        }
+        if (value instanceof Number && BigDecimal.class.equals(destinationType)) {
+            return new BigDecimal(value.toString());
         }
         if (value instanceof Number && Integer.class.equals(destinationType)) {
             return ((Number) value).intValue();

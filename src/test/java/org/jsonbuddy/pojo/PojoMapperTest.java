@@ -5,6 +5,8 @@ import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -348,7 +350,16 @@ public class PojoMapperTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).value).isEqualTo("overridden one");
         assertThat(result.get(1).value).isEqualTo("overridden two");
-
     }
 
+    @Test
+    public void shouldHandleBigNumbers() throws Exception {
+        JsonObject obj = JsonFactory.jsonObject()
+                .put("oneBigInt", 42L)
+                .put("oneBigDec", 3.14d);
+        ClassWithBigNumbers classWithBigNumbers = PojoMapper.map(obj, ClassWithBigNumbers.class);
+
+        assertThat(classWithBigNumbers.getOneBigInt()).isEqualTo(BigInteger.valueOf(42L));
+        assertThat(classWithBigNumbers.getOneBigDec()).isEqualTo(BigDecimal.valueOf(3.14d));
+    }
 }

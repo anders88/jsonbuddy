@@ -4,6 +4,8 @@ import org.jsonbuddy.*;
 import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -158,4 +160,27 @@ public class JsonGeneratorTest {
         assertThat(jsonObject.requiredString("42")).isEqualTo("Meaning of life");
     }
 
+    @Test
+    public void shouldHandleBigInteger() throws Exception {
+        ClassWithBigNumbers bn = new ClassWithBigNumbers();
+        bn.setOneBigInt(BigInteger.valueOf(42L));
+
+        JsonNode generated = JsonGenerator.generate(bn);
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        assertThat(jsonObject.requiredLong("oneBigInt")).isEqualTo(42L);
+
+    }
+
+    @Test
+    public void shouldHandleBigDecimal() throws Exception {
+        ClassWithBigNumbers bn = new ClassWithBigNumbers();
+        bn.setOneBigDec(BigDecimal.valueOf(3.14d));
+
+        JsonNode generated = JsonGenerator.generate(bn);
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        assertThat(jsonObject.requiredDouble("oneBigDec")).isEqualTo(3.14d);
+
+    }
 }
