@@ -183,4 +183,89 @@ public class JsonGeneratorTest {
         assertThat(jsonObject.requiredDouble("oneBigDec")).isEqualTo(3.14d);
 
     }
+
+    @Test
+    public void shouldMaskMethodsNotInInterfaceWhenUsingGetter() throws Exception {
+        InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
+        ClassWithGetterInterface classWithGetterInterface = new ClassWithGetterInterface(myInterface);
+        JsonNode generated = JsonGenerator.generate(classWithGetterInterface, PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        JsonObject childObj = jsonObject.requiredObject("myInterface");
+        assertThat(childObj.requiredString("publicvalue")).isEqualTo("myPublic");
+        assertThat(childObj.stringValue("privatevalue").isPresent()).isFalse();
+    }
+
+    @Test
+    public void shouldMaskMethodsNotInInterfaceWhenUsingField() throws Exception {
+        InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
+        ClassWithFieldInterface classWithFieldInterface = new ClassWithFieldInterface(myInterface);
+        JsonNode generated = JsonGenerator.generate(classWithFieldInterface, PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        JsonObject childObj = jsonObject.requiredObject("myInterface");
+        assertThat(childObj.requiredString("publicvalue")).isEqualTo("myPublic");
+        assertThat(childObj.stringValue("privatevalue").isPresent()).isFalse();
+    }
+
+    @Test
+    public void shouldBeAbleToSpesifyGeneratorClass() throws Exception {
+        InterfaceWithMethod interfaceWithMethod = new ClassImplementingInterface("myPublic", "mySecret");
+        JsonNode generated = JsonGenerator.generateWithSpecifyingClass(interfaceWithMethod, InterfaceWithMethod.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        assertThat(jsonObject.requiredString("publicvalue")).isEqualTo("myPublic");
+        assertThat(jsonObject.stringValue("privatevalue").isPresent()).isFalse();
+    }
+
+    @Test
+    public void shouldHandleAnonymousClass() throws Exception {
+        InterfaceWithMethod interfaceWithMethod = new InterfaceWithMethod() {
+            @Override
+            public String getPublicvalue() {
+                return "Hello world";
+            }
+        };
+        JsonNode generated = JsonGenerator.generateWithSpecifyingClass(interfaceWithMethod, InterfaceWithMethod.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        assertThat(jsonObject.requiredString("publicvalue")).isEqualTo("Hello world");
+    }
+
+    @Test
+    public void shouldHandleInterfaceTypesInMethodList() throws Exception {
+        ClassWithInterfaceListAndMapMethods classWithInterfaceListAndMapMethods = new ClassWithInterfaceListAndMapMethods();
+        List<InterfaceWithMethod> myList = new ArrayList<>();
+        myList.add(new ClassImplementingInterface("mypub","myPriv"));
+        classWithInterfaceListAndMapMethods.setMyList(myList);
+
+        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods, PojoMapOption.USE_INTERFACE_FIELDS);
+
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        JsonArray interfacelist = jsonObject.requiredArray("myList");
+        assertThat(interfacelist).hasSize(1);
+
+        JsonObject interfaceobj = interfacelist.get(0, JsonObject.class);
+        assertThat(interfaceobj.requiredString("publicvalue")).isEqualTo("mypub");
+        assertThat(interfaceobj.stringValue("privatevalue").isPresent()).isFalse();
+   }
+
+    @Test
+    public void shouldHandleInterfaceTypesInMethodMaps() throws Exception {
+        ClassWithInterfaceListAndMapMethods classWithInterfaceListAndMapMethods = new ClassWithInterfaceListAndMapMethods();
+        Map<String,InterfaceWithMethod> myMap = new HashMap<>();
+        myMap.put("mykey",new ClassImplementingInterface("mypub","myPriv"));
+        classWithInterfaceListAndMapMethods.setMyMap(myMap);
+
+        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods, PojoMapOption.USE_INTERFACE_FIELDS);
+
+        assertThat(generated).isInstanceOf(JsonObject.class);
+        JsonObject jsonObject = (JsonObject) generated;
+        JsonObject interfacemap = jsonObject.requiredObject("myMap");
+        assertThat(interfacemap.keys()).hasSize(1);
+        JsonObject interfaceobj = interfacemap.requiredObject("mykey");
+        assertThat(interfaceobj.requiredString("publicvalue")).isEqualTo("mypub");
+        assertThat(interfaceobj.stringValue("privatevalue").isPresent()).isFalse();
+    }
+
+
 }

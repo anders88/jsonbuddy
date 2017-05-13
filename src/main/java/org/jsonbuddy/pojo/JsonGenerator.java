@@ -4,15 +4,23 @@ import org.jsonbuddy.*;
 
 import java.lang.reflect.*;
 import java.time.temporal.Temporal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Convert an object to JSON by mapping fields for any object
  * provided.
  */
 public class JsonGenerator {
+
+    private final Set<PojoMapOption> mapOptions;
+
+    private JsonGenerator(PojoMapOption[] options) {
+        mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
+    }
+
+    private JsonGenerator(Set<PojoMapOption> mapOptions) {
+        this.mapOptions = mapOptions;
+    }
 
     /**
      * Recursively serializes the argument as JSON.
@@ -25,12 +33,15 @@ public class JsonGenerator {
      *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters.
      * </ul>
      */
-    public static JsonNode generate(Object object) {
-        return new JsonGenerator().generateNode(object);
+    public static JsonNode generate(Object object,PojoMapOption... options) {
+        return new JsonGenerator(options).generateNode(object,Optional.empty());
     }
 
-    /** @see #generate(Object) */
-    private JsonNode generateNode(Object object) {
+    public static JsonNode generateWithSpecifyingClass(Object object,Class classToUse) {
+        return new JsonGenerator(EnumSet.of(PojoMapOption.USE_INTERFACE_FIELDS)).generateNode(object,Optional.of(classToUse));
+    }
+
+    private JsonNode generateNode(Object object, Optional<Class> declaringClass) {
         if (object == null) {
             return new JsonNull();
         }
@@ -52,15 +63,15 @@ public class JsonGenerator {
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
-            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue())));
+            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue(),declaringClass)));
 
             return jsonObject;
         }
         if (object instanceof Collection) {
-            return JsonArray.map((Collection<?>) object, this::generateNode);
+            return JsonArray.map((Collection<?>) object, ob -> generateNode(ob,declaringClass));
         }
         if (object.getClass().isArray()) {
-            return JsonArray.map(Arrays.asList((Object[])object), this::generateNode);
+            return JsonArray.map(Arrays.asList((Object[])object), ob -> generateNode(ob,declaringClass));
         }
         if (object instanceof Temporal) {
             return JsonFactory.jsonString(object.toString());
@@ -69,7 +80,7 @@ public class JsonGenerator {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
             return overridesJsonGenerator.jsonValue();
         }
-        return handleSpecificClass(object);
+        return handleSpecificClass(object,declaringClass);
     }
 
     private static boolean isGetMethod(Method method) {
@@ -100,14 +111,17 @@ public class JsonGenerator {
         return name;
     }
 
+
+
     /**
      * Uses reflection to convert the argument to a JsonObject. Each
      * public final field and accessor (getter) is included in the
      * result.
      */
-    private JsonObject handleSpecificClass(Object object) {
+    private JsonObject handleSpecificClass(Object object,Optional<Class> declaringClass) {
         JsonObject jsonObject = JsonFactory.jsonObject();
-        Arrays.asList(object.getClass().getFields()).stream()
+        Class<?> theClass = declaringClass.isPresent() && mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS) ? declaringClass.get() : object.getClass();
+        Arrays.asList(theClass.getFields()).stream()
         .filter(fi -> {
             int modifiers = fi.getModifiers();
             return Modifier.isPublic(modifiers) && Modifier.isFinal(modifiers);
@@ -115,23 +129,59 @@ public class JsonGenerator {
         .forEach(fi -> {
             try {
                 Object val = fi.get(object);
-                JsonNode jsonNode = generateNode(val);
+
+                Class<?> type = fi.getType();
+                AnnotatedType annotatedType = fi.getAnnotatedType();
+                type = overrideReturnType(type,annotatedType);
+                JsonNode jsonNode = generateNode(val,Optional.of(type));
                 jsonObject.put(fi.getName(), jsonNode);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
         });
-        Arrays.asList(object.getClass().getDeclaredMethods()).stream()
+        Arrays.asList(theClass.getDeclaredMethods()).stream()
                 .filter(JsonGenerator::isGetMethod)
                 .forEach(method -> {
                     try {
+                        Class returnType = method.getReturnType();
+                        AnnotatedType annotatedType = method.getAnnotatedReturnType();
+
+                        returnType = overrideReturnType(returnType, annotatedType);
                         Object result = method.invoke(object);
-                        JsonNode jsonNode = generateNode(result);
+                        JsonNode jsonNode = generateNode(result,Optional.of(returnType));
                         jsonObject.put(getFieldName(method), jsonNode);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
                     }
                 });
         return jsonObject;
+    }
+
+    private Class overrideReturnType(Class returnType, AnnotatedType in) {
+        if (!mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
+            // Shortcut.
+            return returnType;
+        }
+        if (!(in instanceof AnnotatedParameterizedType)) {
+            return returnType;
+        }
+        AnnotatedParameterizedType annotatedType = (AnnotatedParameterizedType) in;
+        if (Collection.class.isAssignableFrom(returnType)) {
+            Type listType = annotatedType.getAnnotatedActualTypeArguments()[0].getType();
+            try {
+                return Class.forName(listType.getTypeName());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (Map.class.isAssignableFrom(returnType)) {
+            Type valuetype = annotatedType.getAnnotatedActualTypeArguments()[1].getType();
+            try {
+                return Class.forName(valuetype.getTypeName());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return returnType;
     }
 }
