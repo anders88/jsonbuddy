@@ -1,7 +1,10 @@
 package org.jsonbuddy.pojo.testclasses;
 
 public class ClassWithGetterInterface {
-    private final InterfaceWithMethod myInterface;
+    private InterfaceWithMethod myInterface;
+
+    public ClassWithGetterInterface() {
+    }
 
     public ClassWithGetterInterface(InterfaceWithMethod myInterface) {
         this.myInterface = myInterface;

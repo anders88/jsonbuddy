@@ -10,13 +10,14 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.TypeManifestation;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.FixedValue;
+import net.bytebuddy.matcher.ElementMatchers;
 import org.jsonbuddy.*;
 
 /**
@@ -28,6 +29,7 @@ public class PojoMapper {
     private static Map<Class<?>,JsonPojoBuilder<?>> globalPojoBuilders = new HashMap<>();
 
     private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
+    private final Set<PojoMapOption> mapOptions;
 
     /**
      * Converts the argument JsonObject into an object of the specified class.
@@ -41,8 +43,8 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> T map(JsonObject jsonObject, Class<T> clazz) {
-        return new PojoMapper().mapToPojo(jsonObject,clazz);
+    public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMapOption... options) {
+        return new PojoMapper(options).mapToPojo(jsonObject,clazz);
     }
 
     /**
@@ -52,16 +54,18 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz) {
-        return new PojoMapper().mapToPojo(jsonArray,listClazz);
+    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz,PojoMapOption... options) {
+        return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
     }
 
-    private PojoMapper() {
+
+    private PojoMapper(PojoMapOption[] options) {
         pojoBuilders.putAll(globalPojoBuilders);
+        mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
     }
 
-    public static PojoMapper create() {
-        return new PojoMapper();
+    public static PojoMapper create(PojoMapOption... options) {
+        return new PojoMapper(options);
     }
 
     /**
@@ -96,7 +100,7 @@ public class PojoMapper {
 
     /**
      * Try to convert the argument JsonArray into a list of the specified class.
-     * See {@link #map(JsonArray, Class)}
+     * See {@link #map(JsonObject, Class, PojoMapOption...)} (JsonArray, Class)}
      *
      * @return a new object of the specified class
      */
@@ -120,6 +124,13 @@ public class PojoMapper {
         JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
         if (jsonPojoBuilder != null) {
             return jsonPojoBuilder.build(jsonObject);
+        }
+
+        if (clazz.isInterface()) {
+            if (!mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
+                throw new CanNotMapException("Can not genereate instance of interfaces, if not option USE_INTERFACE_FIELDS is set");
+            }
+            return createDynamicInterface(jsonObject,clazz);
         }
 
         Object result;
@@ -338,6 +349,43 @@ public class PojoMapper {
         }
         method.invoke(instance,value);
         return true;
+    }
+
+    private <T> T createDynamicInterface(JsonObject jsonObject, Class<T> clazz) throws Exception {
+        DynamicType.Builder<T> builder = new ByteBuddy()
+                .subclass(clazz);
+
+
+        for (String key : jsonObject.keys()) {
+            String getterName = "get" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
+            Optional<Method> getter = Arrays.stream(clazz.getMethods())
+                    .filter(met -> getterName.equals(met.getName()) && met.getParameterCount() == 0)
+                    .findAny();
+            if (!getter.isPresent()) {
+                continue;
+            }
+
+            Method getterMethod = getter.get();
+
+            Object value = mapit(jsonObject.value(key).get(), getterMethod.getReturnType());
+            builder = builder.method(ElementMatchers.anyOf(getterMethod))
+                .intercept(FixedValue.value(value));
+        }
+
+        Class<? extends T> loaded = builder
+                .make()
+                .load(clazz.getClassLoader())
+                .getLoaded();
+
+        return createInstance(loaded);
+    }
+
+    private static <T> T createInstance(Class<? extends T> loaded) {
+        try {
+            return loaded.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

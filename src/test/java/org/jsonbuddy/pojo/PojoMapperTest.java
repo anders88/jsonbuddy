@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -361,5 +362,50 @@ public class PojoMapperTest {
 
         assertThat(classWithBigNumbers.getOneBigInt()).isEqualTo(BigInteger.valueOf(42L));
         assertThat(classWithBigNumbers.getOneBigDec()).isEqualTo(BigDecimal.valueOf(3.14d));
+    }
+
+    @Test
+    public void shouldParseToInterface() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
+        InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class, PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(interfaceWithMethod).isNotNull();
+        assertThat(interfaceWithMethod.getPublicvalue()).isEqualTo("A public value");
+    }
+
+    @Test
+    public void shouldNotHandleInterfacesWithoiyMapOption() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
+        try {
+            InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class);
+            fail("Expected exception");
+        } catch (CanNotMapException ignored) {}
+    }
+
+    @Test
+    public void shouldHandleInterfacesAsFields() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .put("myInterface", JsonFactory.jsonObject().put("publicvalue", "A public value"));
+        ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isEqualTo("A public value");
+    }
+
+    @Test
+    public void shouldHandleInterfaceInLists() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("myList", JsonArray.fromNodeList(Collections.singletonList(
+                JsonFactory.jsonObject().put("publicvalue", "A public value")
+        )));
+
+        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(result.getMyList()).hasSize(1);
+        assertThat(result.getMyList().get(0).getPublicvalue()).isEqualTo("A public value");
+    }
+
+    @Test
+    public void shouldHandleInterfaceInMaps() throws Exception {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("myMap", JsonFactory.jsonObject().put("intkey",
+                JsonFactory.jsonObject().put("publicvalue", "A public value")));
+        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
+
     }
 }

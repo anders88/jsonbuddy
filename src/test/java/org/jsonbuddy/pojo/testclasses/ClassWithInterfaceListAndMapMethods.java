@@ -7,21 +7,22 @@ public class ClassWithInterfaceListAndMapMethods {
     private List<InterfaceWithMethod> myList;
     private Map<String,InterfaceWithMethod> myMap;
 
+    public ClassWithInterfaceListAndMapMethods() {
+    }
+
     public List<InterfaceWithMethod> getMyList() {
         return myList;
     }
 
-    public ClassWithInterfaceListAndMapMethods setMyList(List<InterfaceWithMethod> myList) {
+    public void setMyList(List<InterfaceWithMethod> myList) {
         this.myList = myList;
-        return this;
     }
 
     public Map<String, InterfaceWithMethod> getMyMap() {
         return myMap;
     }
 
-    public ClassWithInterfaceListAndMapMethods setMyMap(Map<String, InterfaceWithMethod> myMap) {
+    public void setMyMap(Map<String, InterfaceWithMethod> myMap) {
         this.myMap = myMap;
-        return this;
     }
 }
