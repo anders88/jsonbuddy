@@ -41,6 +41,10 @@ public class PojoMapper {
      *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
      * </ul>
      *
+     * @param options If PojoMapOption.USE_INTERFACE_FIELDS is supplied, the Pojo could be an interface.
+     *                Interfaces are supported with dynamic class generation. The pojo will be given values
+     *                in corresponding getters.
+     *
      * @throws CanNotMapException if there is no appropriate constructor
      */
     public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMapOption... options) {

@@ -32,6 +32,13 @@ public class JsonGenerator {
      *   <li>If it implements OverridesJsonGenerator, the custom serialization is called.
      *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters.
      * </ul>
+     *
+     * @param object The object that will be converted to json
+     * @param options If PojoMapOption.USE_INTERFACE_FIELDS is supplied fields and methods declared as an interface
+     *                the interface will be used to map to json. This is a way of concealing methods in the underlying
+     *                implementation. It can also be used to map anonymous classes.
+     *
+     *
      */
     public static JsonNode generate(Object object,PojoMapOption... options) {
         return new JsonGenerator(options).generateNode(object,Optional.empty());

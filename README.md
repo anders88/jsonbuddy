@@ -155,6 +155,13 @@ SithLord darth = pojoMapper.mapToPojo(jsonObject);
 darth.getName(); // Returns "Darth Vader"
 ```
 
+### PojoMapOption
+Pojo map options can be supplied to alter the functionality of pojo mapping and generation.
+
+USE_INTERFACE_FIELDS : This enables interface types to be part of the pojos. In Json 
+generation the interfaces methods is used to generate json (not the methods and fields of the 
+implementing class). In PojoMapping the interfaces in the Pojo are created using dynamic
+class generation. The corresponding get methods in the intercace will return values from the json.
 
 # TODO
 
