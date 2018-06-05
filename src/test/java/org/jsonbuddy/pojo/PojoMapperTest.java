@@ -408,4 +408,11 @@ public class PojoMapperTest {
         assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
 
     }
+
+    @Test
+    public void shouldHandleInputWithSingleCharKey() {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("", "dsfds");
+        SimpleWithName simpleWithName = PojoMapper.map(jsonObject, SimpleWithName.class);
+        assertThat(simpleWithName.name).isNull();
+    }
 }

@@ -318,6 +318,9 @@ public class PojoMapper {
     }
 
     private boolean tryToSetProperty(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
+        if (key.isEmpty()) {
+            return false;
+        }
         String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
         Optional<Method> setter = Arrays.asList(clazz.getMethods()).stream()
                 .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
