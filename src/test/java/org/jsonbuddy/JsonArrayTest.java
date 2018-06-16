@@ -1,16 +1,15 @@
 package org.jsonbuddy;
 
-import org.jsonbuddy.parse.JsonParser;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import org.jsonbuddy.parse.JsonParser;
+import org.junit.Test;
 
 public class JsonArrayTest {
     @Test

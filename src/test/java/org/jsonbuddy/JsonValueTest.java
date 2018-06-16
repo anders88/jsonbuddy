@@ -1,7 +1,8 @@
 package org.jsonbuddy;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import org.junit.Test;
 
 public class JsonValueTest {

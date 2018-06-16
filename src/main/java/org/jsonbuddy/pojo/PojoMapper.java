@@ -10,15 +10,25 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.description.modifier.TypeManifestation;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.matcher.ElementMatchers;
-import org.jsonbuddy.*;
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting

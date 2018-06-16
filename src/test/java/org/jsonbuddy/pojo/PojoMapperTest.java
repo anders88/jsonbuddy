@@ -1,9 +1,8 @@
 package org.jsonbuddy.pojo;
 
 
-import org.jsonbuddy.*;
-import org.jsonbuddy.pojo.testclasses.*;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -14,9 +13,40 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.pojo.testclasses.ClassContainingAnnotated;
+import org.jsonbuddy.pojo.testclasses.ClassContainingOverriddenAsSetter;
+import org.jsonbuddy.pojo.testclasses.ClassWithAnnotation;
+import org.jsonbuddy.pojo.testclasses.ClassWithBigNumbers;
+import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
+import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedGetSetMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
+import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
+import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
+import org.jsonbuddy.pojo.testclasses.ClassWithList;
+import org.jsonbuddy.pojo.testclasses.ClassWithMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithMapWithList;
+import org.jsonbuddy.pojo.testclasses.ClassWithNumbers;
+import org.jsonbuddy.pojo.testclasses.ClassWithOptional;
+import org.jsonbuddy.pojo.testclasses.ClassWithOptionalProperty;
+import org.jsonbuddy.pojo.testclasses.ClassWithPojoOverride;
+import org.jsonbuddy.pojo.testclasses.ClassWithPrivateConstructor;
+import org.jsonbuddy.pojo.testclasses.ClassWithTime;
+import org.jsonbuddy.pojo.testclasses.CombinedClass;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithAnnotation;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
+import org.jsonbuddy.pojo.testclasses.EnumClass;
+import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
+import org.jsonbuddy.pojo.testclasses.PojoMapperOverride;
+import org.jsonbuddy.pojo.testclasses.SimpleWithName;
+import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
+import org.junit.Test;
 
 public class PojoMapperTest {
     @Test
@@ -375,10 +405,8 @@ public class PojoMapperTest {
     @Test
     public void shouldNotHandleInterfacesWithoiyMapOption() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
-        try {
-            InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class);
-            fail("Expected exception");
-        } catch (CanNotMapException ignored) {}
+        assertThatThrownBy(() -> PojoMapper.map(jsonObject, InterfaceWithMethod.class))
+            .isInstanceOf(CanNotMapException.class);
     }
 
     @Test
