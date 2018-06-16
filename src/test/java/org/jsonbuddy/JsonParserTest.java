@@ -1,8 +1,8 @@
 package org.jsonbuddy;
 
 
-import org.jsonbuddy.parse.JsonParser;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.StringReader;
 import java.time.LocalDateTime;
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import org.jsonbuddy.parse.JsonParser;
+import org.junit.Test;
 
 public class JsonParserTest {
 

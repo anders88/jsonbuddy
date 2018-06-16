@@ -21,7 +21,7 @@ public class JsonBoolean extends JsonValue {
     }
 
     @Override
-    public void toJson(PrintWriter printWriter) {
+    public void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount) {
         printWriter.append(stringValue());
     }
 

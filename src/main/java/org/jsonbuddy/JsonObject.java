@@ -4,7 +4,10 @@ import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +45,7 @@ public class JsonObject extends JsonNode {
      * Creates an empty JsonObject
      */
     public JsonObject() {
-        this.values = new HashMap<>();
+        this.values = new LinkedHashMap<>();
     }
 
     private JsonObject(Map<String,JsonNode> values) {
@@ -278,21 +281,24 @@ public class JsonObject extends JsonNode {
      * Writes the JSON text representation of this JsonArray to the writer
      */
     @Override
-    public void toJson(PrintWriter printWriter) {
+    public void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount) {
         printWriter.append("{");
-        boolean notFirst = false;
-        for (Map.Entry<String,JsonNode> entry : values.entrySet()) {
-            if (notFirst) {
-                printWriter.append(",");
-            }
-            notFirst = true;
+        if (!indentationAmount.isEmpty()) printWriter.append("\n");
+        for (Iterator<Entry<String, JsonNode>> iterator = values.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String,JsonNode> entry = iterator.next();
+            printWriter.append(currentIntentation + indentationAmount);
             printWriter.append('"');
             printWriter.append(entry.getKey());
             printWriter.append("\":");
-            entry.getValue().toJson(printWriter);
-        }
+            entry.getValue().toJson(printWriter, currentIntentation + indentationAmount, indentationAmount);
 
-        printWriter.append("}");
+            if (iterator.hasNext()) {
+                printWriter.append(",");
+            }
+
+            if (!indentationAmount.isEmpty()) printWriter.append("\n");
+        }
+        printWriter.append(currentIntentation + "}");
     }
 
     /**

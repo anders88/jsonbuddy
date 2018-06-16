@@ -14,14 +14,21 @@ public abstract class JsonNode {
      */
     public String toJson() {
         StringWriter res = new StringWriter();
-        toJson(new PrintWriter(res));
+        toJson(new PrintWriter(res), "", "");
         return res.toString();
     }
+
+    public String toIndentedJson(String indentationAmount) {
+        StringWriter res = new StringWriter();
+        toJson(new PrintWriter(res), "", indentationAmount);
+        return res.toString();
+    }
+
 
     /**
      * Writes this objects as JSON to the given writer
      */
-    public abstract void toJson(PrintWriter printWriter);
+    public abstract void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount);
 
     public String stringValue() throws JsonValueNotPresentException {
         throw new JsonValueNotPresentException(String.format("Not supported for class %s",getClass().getSimpleName()));

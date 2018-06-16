@@ -149,17 +149,18 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Writes the JSON text representation of this JsonArray to the writer
      */
     @Override
-    public void toJson(PrintWriter printWriter) {
+    public void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount) {
         printWriter.append("[");
-        boolean notFirst = false;
-        for (JsonNode node : values) {
-            if (notFirst) {
-                printWriter.append(",");
-            }
-            notFirst = true;
-            node.toJson(printWriter);
+        if (!indentationAmount.isEmpty()) printWriter.append("\n");
+        for (Iterator<JsonNode> iterator = values.iterator(); iterator.hasNext();) {
+            JsonNode node = iterator.next();
+            printWriter.write(currentIntentation + indentationAmount);
+            node.toJson(printWriter, currentIntentation + indentationAmount, indentationAmount);
+
+            if (iterator.hasNext()) printWriter.append(",");
+            if (!indentationAmount.isEmpty()) printWriter.append("\n");
         }
-        printWriter.append("]");
+        printWriter.append(currentIntentation + "]");
     }
 
     /**

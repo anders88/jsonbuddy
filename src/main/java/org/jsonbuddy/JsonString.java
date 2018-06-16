@@ -23,7 +23,7 @@ public class JsonString extends JsonValue {
     }
 
     @Override
-    public void toJson(PrintWriter printWriter) {
+    public void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount) {
         printWriter.append("\"");
         StringBuilder val = new StringBuilder(value);
         replace(val,'\\',"\\");
