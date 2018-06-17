@@ -17,6 +17,14 @@ import org.jsonbuddy.JsonObject;
  */
 public class DynamicClassMappingRule implements PojoMappingRule {
 
+    public DynamicClassMappingRule() {
+        try {
+            Class.forName("net.bytebuddy.ByteBuddy");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(getClass() + " is dependent on net.bytebuddy:byte-buddy. Add to your pom.xml");
+        }
+    }
+
     @Override
     public boolean isApplicableToClass(Class<?> clazz) {
         return clazz.isInterface();
