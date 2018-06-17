@@ -2,6 +2,7 @@ package org.jsonbuddy.pojo;
 
 import java.lang.reflect.AnnotatedParameterizedType;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -49,7 +50,7 @@ public class JsonGenerator {
         return new JsonGenerator().generateNode(object,Optional.empty());
     }
 
-    public static JsonNode generateWithSpecifyingClass(Object object,Class classToUse) {
+    public static JsonNode generateWithSpecifyingClass(Object object, Class classToUse) {
         return new JsonGenerator().generateNode(object,Optional.of(classToUse));
     }
 
@@ -95,6 +96,11 @@ public class JsonGenerator {
         return handleSpecificClass(object,declaringClass);
     }
 
+    private static boolean isPrivateStaticField(Field field) {
+        int modifiers = field.getModifiers();
+        return Modifier.isPublic(modifiers) && Modifier.isFinal(modifiers);
+    }
+
     private static boolean isGetMethod(Method method) {
         if (!Modifier.isPublic(method.getModifiers())) {
             return false;
@@ -132,44 +138,42 @@ public class JsonGenerator {
      */
     private JsonObject handleSpecificClass(Object object,Optional<Class> declaringClass) {
         JsonObject jsonObject = JsonFactory.jsonObject();
-        Class<?> theClass = declaringClass.isPresent() ? declaringClass.get() : object.getClass();
-        Arrays.asList(theClass.getFields()).stream()
-        .filter(fi -> {
-            int modifiers = fi.getModifiers();
-            return Modifier.isPublic(modifiers) && Modifier.isFinal(modifiers);
-        })
-        .forEach(fi -> {
-            try {
-                Object val = fi.get(object);
-
-                Class<?> type = fi.getType();
-                AnnotatedType annotatedType = fi.getAnnotatedType();
-                type = overrideReturnType(type,annotatedType);
-                JsonNode jsonNode = generateNode(val,Optional.of(type));
-                jsonObject.put(fi.getName(), jsonNode);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        Arrays.asList(theClass.getDeclaredMethods()).stream()
-                .filter(JsonGenerator::isGetMethod)
-                .forEach(method -> {
-                    try {
-                        Class returnType = method.getReturnType();
-                        AnnotatedType annotatedType = method.getAnnotatedReturnType();
-
-                        returnType = overrideReturnType(returnType, annotatedType);
-                        Object result = method.invoke(object);
-                        JsonNode jsonNode = generateNode(result,Optional.of(returnType));
-                        jsonObject.put(getFieldName(method), jsonNode);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        Class<?> theClass = declaringClass.orElse(object.getClass());
+        while (theClass != null && theClass != Object.class) {
+            mapFieldsToJson(jsonObject, object, theClass);
+            theClass = theClass.getSuperclass();
+        }
         return jsonObject;
     }
 
-    private Class overrideReturnType(Class returnType, AnnotatedType in) {
+    private void mapFieldsToJson(JsonObject jsonObject, Object object, Class<?> theClass) {
+        Arrays.asList(theClass.getFields()).stream()
+            .filter(JsonGenerator::isPrivateStaticField)
+            .forEach(field -> {
+                try {
+                    Object val = field.get(object);
+                    AnnotatedType annotatedType = field.getAnnotatedType();
+                    Class<?> type = overrideReturnType(field.getType(), annotatedType);
+                    jsonObject.put(field.getName(), generateNode(val, Optional.of(type)));
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        Arrays.asList(theClass.getDeclaredMethods()).stream()
+            .filter(JsonGenerator::isGetMethod)
+            .forEach(method -> {
+                try {
+                    AnnotatedType annotatedType = method.getAnnotatedReturnType();
+                    Class<?> returnType = overrideReturnType(method.getReturnType(), annotatedType);
+                    Object result = method.invoke(object);
+                    jsonObject.put(getFieldName(method), generateNode(result, Optional.of(returnType)));
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+
+    private Class<?> overrideReturnType(Class<?> returnType, AnnotatedType in) {
         if (!(in instanceof AnnotatedParameterizedType)) {
             return returnType;
         }

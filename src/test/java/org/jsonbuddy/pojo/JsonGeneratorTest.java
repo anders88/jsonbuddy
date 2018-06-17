@@ -29,6 +29,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
 import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
 import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
 import org.jsonbuddy.pojo.testclasses.ClassWithMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithSuperclass;
 import org.jsonbuddy.pojo.testclasses.ClassWithTime;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
 import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
@@ -215,6 +216,17 @@ public class JsonGeneratorTest {
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.requiredDouble("oneBigDec")).isEqualTo(3.14d);
 
+    }
+
+    @Test
+    public void shouldIncludeSuperclassFieldsWhenShowingSubclass() {
+        ClassWithSuperclass o = new ClassWithSuperclass();
+        o.setName("Darth Vader");
+        o.setAge(342232);
+
+        JsonObject json = (JsonObject) JsonGenerator.generate(o);
+        assertThat((int)json.requiredLong("age")).isEqualTo(o.getAge());
+        assertThat(json.requiredString("name")).isEqualTo(o.getName());
     }
 
     @Test
