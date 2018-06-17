@@ -45,9 +45,7 @@ public class PojoMapper {
      *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
      * </ul>
      *
-     * @param rules If PojoMapOption.USE_INTERFACE_FIELDS is supplied, the Pojo could be an interface.
-     *                Interfaces are supported with dynamic class generation. The pojo will be given values
-     *                in corresponding getters.
+     * @param rules Extra rules to customize the mapping
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
@@ -107,7 +105,7 @@ public class PojoMapper {
 
     /**
      * Try to convert the argument JsonArray into a list of the specified class.
-     * See {@link #map(JsonObject, Class, PojoMapOption...)} (JsonArray, Class)}
+     * See {@link #map(JsonObject, Class, PojoMappingRule...)} (JsonArray, Class)}
      *
      * @return a new object of the specified class
      */
