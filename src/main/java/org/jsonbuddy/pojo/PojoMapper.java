@@ -10,6 +10,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,10 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.implementation.FixedValue;
-import net.bytebuddy.matcher.ElementMatchers;
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
@@ -40,6 +37,7 @@ public class PojoMapper {
 
     private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
     private final Set<PojoMapOption> mapOptions;
+    private List<PojoMappingRule> mappingRules = new ArrayList<>();
 
     /**
      * Converts the argument JsonObject into an object of the specified class.
@@ -76,6 +74,9 @@ public class PojoMapper {
     private PojoMapper(PojoMapOption[] options) {
         pojoBuilders.putAll(globalPojoBuilders);
         mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
+        if (mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
+            mappingRules.add(new DynamicClassMappingRule());
+        }
     }
 
     public static PojoMapper create(PojoMapOption... options) {
@@ -106,7 +107,7 @@ public class PojoMapper {
      */
     public <T> T mapToPojo(JsonObject jsonObject, Class<T> clazz) throws CanNotMapException {
         try {
-            return (T) mapit(jsonObject,clazz);
+            return (T) mapToValue(jsonObject,clazz);
         } catch (Exception e) {
             throw ExceptionUtil.soften(e);
         }
@@ -122,7 +123,7 @@ public class PojoMapper {
         return jsonArray.objects(node -> mapToPojo(node,listClazz));
     }
 
-    private Object mapit(JsonNode jsonNode, Class<?> clazz) throws Exception {
+    Object mapToValue(JsonNode jsonNode, Class<?> clazz) throws ReflectiveOperationException {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             return annotationsByType[0].using().newInstance().build(jsonNode);
@@ -135,16 +136,9 @@ public class PojoMapper {
         }
 
         JsonObject jsonObject = (JsonObject) jsonNode;
-        JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
+        JsonPojoBuilder<?> jsonPojoBuilder = getBuilder(clazz);
         if (jsonPojoBuilder != null) {
             return jsonPojoBuilder.build(jsonObject);
-        }
-
-        if (clazz.isInterface()) {
-            if (!mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
-                throw new CanNotMapException("Can not genereate instance of interfaces, if not option USE_INTERFACE_FIELDS is set");
-            }
-            return createDynamicInterface(jsonObject,clazz);
         }
 
         Object result;
@@ -179,17 +173,26 @@ public class PojoMapper {
         return result;
     }
 
+    private <T> JsonPojoBuilder<? extends T> getBuilder(Class<T> clazz) {
+        for (PojoMappingRule rule : mappingRules) {
+            if (rule.isApplicableToClass(clazz)) {
+                return rule.createMapper(clazz, this);
+            }
+        }
+        return (JsonPojoBuilder<? extends T>) pojoBuilders.get(clazz);
+    }
+
     private Object mapArray(JsonArray jsonArray, Class<?> clazz) {
         return jsonArray.nodeStream().map(jn -> {
             try {
-                return mapit(jn, clazz);
+                return mapToValue(jn, clazz);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }).collect(Collectors.toList());
     }
 
-    private boolean tryToSetField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
+    private boolean tryToSetField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws ReflectiveOperationException {
         Field declaredField = null;
         try {
             declaredField = clazz.getDeclaredField(key);
@@ -204,7 +207,7 @@ public class PojoMapper {
             } else {
                 String typeName = declaredField.getGenericType().getTypeName();
                 Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
-                optionalValue = Optional.of(mapit(nodeValue, optClass));
+                optionalValue = Optional.of(mapToValue(nodeValue, optClass));
             }
 
             declaredField.setAccessible(true);
@@ -225,7 +228,7 @@ public class PojoMapper {
             if (List.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonArray)) {
                 value = mapArray((JsonArray) nodeValue,mappedClass);
             } else {
-                value = mapit(nodeValue, mappedClass);
+                value = mapToValue(nodeValue, mappedClass);
                 value = convertIfNecessary(value,declaredField.getType());
             }
         }
@@ -235,7 +238,7 @@ public class PojoMapper {
         return true;
     }
 
-    private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
+    private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws ReflectiveOperationException {
         String typeName = genericType.getActualTypeArguments()[1].getTypeName();
         int genericStart = typeName.indexOf("<");
         if (genericStart != -1) {
@@ -244,7 +247,7 @@ public class PojoMapper {
         Class<?> valueclass = Class.forName(typeName);
         Map<String, Object> result = new HashMap<>();
         for (String key : nodeValue.keys()) {
-            result.put(key, mapit(nodeValue.value(key).get(), valueclass));
+            result.put(key, mapToValue(nodeValue.value(key).get(), valueclass));
         }
         return result;
     }
@@ -327,7 +330,7 @@ public class PojoMapper {
         }
     }
 
-    private boolean tryToSetProperty(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws Exception {
+    private boolean tryToSetProperty(JsonObject jsonObject, Class<?> clazz, Object instance, String key) throws ReflectiveOperationException {
         if (key.isEmpty()) {
             return false;
         }
@@ -357,52 +360,15 @@ public class PojoMapper {
             } else {
                 String typeName = method.getParameters()[0].getParameterizedType().getTypeName();
                 Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
-                optionalValue = Optional.of(mapit(nodeValue, optClass));
+                optionalValue = Optional.of(mapToValue(nodeValue, optClass));
             }
             value = optionalValue;
         } else {
-            value = mapit(jsonObject.value(key).get(),setterClass);
+            value = mapToValue(jsonObject.value(key).get(),setterClass);
             value = convertIfNecessary(value, setterClass);
         }
         method.invoke(instance,value);
         return true;
-    }
-
-    private <T> T createDynamicInterface(JsonObject jsonObject, Class<T> clazz) throws Exception {
-        DynamicType.Builder<T> builder = new ByteBuddy()
-                .subclass(clazz);
-
-
-        for (String key : jsonObject.keys()) {
-            String getterName = "get" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
-            Optional<Method> getter = Arrays.stream(clazz.getMethods())
-                    .filter(met -> getterName.equals(met.getName()) && met.getParameterCount() == 0)
-                    .findAny();
-            if (!getter.isPresent()) {
-                continue;
-            }
-
-            Method getterMethod = getter.get();
-
-            Object value = mapit(jsonObject.value(key).get(), getterMethod.getReturnType());
-            builder = builder.method(ElementMatchers.anyOf(getterMethod))
-                .intercept(FixedValue.value(value));
-        }
-
-        Class<? extends T> loaded = builder
-                .make()
-                .load(clazz.getClassLoader())
-                .getLoaded();
-
-        return createInstance(loaded);
-    }
-
-    private static <T> T createInstance(Class<? extends T> loaded) {
-        try {
-            return loaded.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
