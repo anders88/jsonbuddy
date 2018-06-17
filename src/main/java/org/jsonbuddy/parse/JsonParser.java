@@ -1,7 +1,14 @@
 package org.jsonbuddy.parse;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +92,37 @@ public class JsonParser {
     public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException {
         return parseToObject(new InputStreamReader(inputStream));
     }
+
+    /**
+     * GET the contents of the url as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws IOException if there was a communication error
+     */
+    public static JsonObject parseToObject(URL url) throws IOException {
+        return parseToObject(url.openConnection());
+    }
+
+    /**
+     * GET the contents of the URLConnection as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws JsonHttpException if the endpoint returned a 4xx error
+     * @throws IOException if there was a communication error
+     */
+    public static JsonObject parseToObject(URLConnection connection) throws IOException {
+        HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (httpConnection.getResponseCode() < 400) {
+            try (InputStream input = connection.getInputStream()) {
+                return parseToObject(input);
+            }
+        } else {
+            throw new JsonHttpException(httpConnection);
+        }
+    }
+
 
     private static JsonObject toObject(JsonNode result) {
         if (!(result instanceof JsonObject)) {
@@ -353,5 +391,6 @@ public class JsonParser {
             throw new JsonParseException(errormessage);
         }
     }
+
 
 }
