@@ -11,6 +11,10 @@ import net.bytebuddy.matcher.ElementMatchers;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonObject;
 
+/**
+ * Support interfaces with dynamic class generation. The pojo will be given
+ * values in corresponding getters.
+ */
 public class DynamicClassMappingRule implements PojoMappingRule {
 
     @Override

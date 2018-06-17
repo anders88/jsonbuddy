@@ -12,13 +12,10 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.jsonbuddy.JsonArray;
@@ -36,7 +33,6 @@ public class PojoMapper {
     private static Map<Class<?>,JsonPojoBuilder<?>> globalPojoBuilders = new HashMap<>();
 
     private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
-    private final Set<PojoMapOption> mapOptions;
     private List<PojoMappingRule> mappingRules = new ArrayList<>();
 
     /**
@@ -49,14 +45,14 @@ public class PojoMapper {
      *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
      * </ul>
      *
-     * @param options If PojoMapOption.USE_INTERFACE_FIELDS is supplied, the Pojo could be an interface.
+     * @param rules If PojoMapOption.USE_INTERFACE_FIELDS is supplied, the Pojo could be an interface.
      *                Interfaces are supported with dynamic class generation. The pojo will be given values
      *                in corresponding getters.
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMapOption... options) {
-        return new PojoMapper(options).mapToPojo(jsonObject,clazz);
+    public static <T> T map(JsonObject jsonObject, Class<T> clazz, PojoMappingRule... rules) {
+        return new PojoMapper(Arrays.asList(rules)).mapToPojo(jsonObject,clazz);
     }
 
     /**
@@ -66,21 +62,17 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz,PojoMapOption... options) {
-        return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
+    public static <T> List<T> map(JsonArray jsonArray, Class<T> listClazz, PojoMappingRule... rules) {
+        return new PojoMapper(Arrays.asList(rules)).mapToPojo(jsonArray,listClazz);
     }
 
-
-    private PojoMapper(PojoMapOption[] options) {
+    private PojoMapper(List<PojoMappingRule> rules) {
         pojoBuilders.putAll(globalPojoBuilders);
-        mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
-        if (mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
-            mappingRules.add(new DynamicClassMappingRule());
-        }
+        mappingRules.addAll(rules);
     }
 
-    public static PojoMapper create(PojoMapOption... options) {
-        return new PojoMapper(options);
+    public static PojoMapper create(PojoMappingRule... rules) {
+        return new PojoMapper(Arrays.asList(rules));
     }
 
     /**
