@@ -147,20 +147,6 @@ public class PojoMapperTest {
         assertThat(classWithList.children).containsExactly("Luke", "Leia");
     }
 
-    @Test
-    public void shouldUseOwnMapper() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("secret", "Darth");
-        PojoMapper pojoMapper = PojoMapper.create().registerClassBuilder(SimpleWithNameGetter.class, new JsonPojoBuilder<SimpleWithNameGetter>() {
-            @Override
-            public SimpleWithNameGetter build(JsonNode jsonNode) {
-                SimpleWithNameGetter res = new SimpleWithNameGetter();
-                res.setName(((JsonObject)jsonNode).requiredString("secret"));
-                return res;
-            }
-        });
-        SimpleWithNameGetter simpleWithNameGetter = pojoMapper.mapToPojo(jsonObject, SimpleWithNameGetter.class);
-        assertThat(simpleWithNameGetter.getName()).isEqualTo("Darth");
-    }
 
     @Test
     public void shouldHandleClassWithInstant() throws Exception {
@@ -397,7 +383,7 @@ public class PojoMapperTest {
     @Test
     public void shouldParseToInterface() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
-        InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class, PojoMapOption.USE_INTERFACE_FIELDS);
+        InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class, new DynamicInterfaceMapper());
         assertThat(interfaceWithMethod).isNotNull();
         assertThat(interfaceWithMethod.getPublicvalue()).isEqualTo("A public value");
     }
@@ -413,7 +399,7 @@ public class PojoMapperTest {
     public void shouldHandleInterfacesAsFields() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject()
                 .put("myInterface", JsonFactory.jsonObject().put("publicvalue", "A public value"));
-        ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,new DynamicInterfaceMapper());
         assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isEqualTo("A public value");
     }
 
@@ -423,7 +409,7 @@ public class PojoMapperTest {
                 JsonFactory.jsonObject().put("publicvalue", "A public value")
         )));
 
-        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,new DynamicInterfaceMapper());
         assertThat(result.getMyList()).hasSize(1);
         assertThat(result.getMyList().get(0).getPublicvalue()).isEqualTo("A public value");
     }
@@ -432,7 +418,7 @@ public class PojoMapperTest {
     public void shouldHandleInterfaceInMaps() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject().put("myMap", JsonFactory.jsonObject().put("intkey",
                 JsonFactory.jsonObject().put("publicvalue", "A public value")));
-        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,PojoMapOption.USE_INTERFACE_FIELDS);
+        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,new DynamicInterfaceMapper());
         assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
 
     }

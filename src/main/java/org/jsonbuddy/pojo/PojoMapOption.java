@@ -3,9 +3,9 @@ package org.jsonbuddy.pojo;
 public enum PojoMapOption {
     USE_INTERFACE_FIELDS;
 
-    private MappingRule myMapper;
+    private PojoMappingRule myMapper;
 
-    public MappingRule myMappingRule() {
+    public PojoMappingRule myMappingRule() {
         if (myMapper != null) {
             return myMapper;
         }
