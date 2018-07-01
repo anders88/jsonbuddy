@@ -12,14 +12,11 @@ import java.util.*;
  */
 public class JsonGenerator {
 
-    private final Set<PojoMapOption> mapOptions;
+    private final boolean useDeclaringClassAsTemplate;
 
-    private JsonGenerator(PojoMapOption[] options) {
-        mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
-    }
 
-    private JsonGenerator(Set<PojoMapOption> mapOptions) {
-        this.mapOptions = mapOptions;
+    public JsonGenerator(boolean useDeclaringClassAsTemplate) {
+        this.useDeclaringClassAsTemplate = useDeclaringClassAsTemplate;
     }
 
     /**
@@ -34,18 +31,19 @@ public class JsonGenerator {
      * </ul>
      *
      * @param object The object that will be converted to json
-     * @param options If PojoMapOption.USE_INTERFACE_FIELDS is supplied fields and methods declared as an interface
-     *                the interface will be used to map to json. This is a way of concealing methods in the underlying
-     *                implementation. It can also be used to map anonymous classes.
      *
      *
      */
-    public static JsonNode generate(Object object,PojoMapOption... options) {
-        return new JsonGenerator(options).generateNode(object,Optional.empty());
+    public static JsonNode generate(Object object) {
+        return new JsonGenerator(true).generateNode(object,Optional.empty());
+    }
+
+    public static JsonNode generateUsingImplementationAsTemplate(Object object) {
+        return new JsonGenerator(false).generateNode(object,Optional.empty());
     }
 
     public static JsonNode generateWithSpecifyingClass(Object object,Class classToUse) {
-        return new JsonGenerator(EnumSet.of(PojoMapOption.USE_INTERFACE_FIELDS)).generateNode(object,Optional.of(classToUse));
+        return new JsonGenerator(true).generateNode(object,Optional.of(classToUse));
     }
 
     private JsonNode generateNode(Object object, Optional<Class> declaringClass) {
@@ -127,7 +125,7 @@ public class JsonGenerator {
      */
     private JsonObject handleSpecificClass(Object object,Optional<Class> declaringClass) {
         JsonObject jsonObject = JsonFactory.jsonObject();
-        Class<?> theClass = declaringClass.isPresent() && mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS) ? declaringClass.get() : object.getClass();
+        Class<?> theClass = declaringClass.isPresent() && this.useDeclaringClassAsTemplate ? declaringClass.get() : object.getClass();
         Arrays.asList(theClass.getFields()).stream()
         .filter(fi -> {
             int modifiers = fi.getModifiers();
@@ -165,7 +163,7 @@ public class JsonGenerator {
     }
 
     private Class overrideReturnType(Class returnType, AnnotatedType in) {
-        if (!mapOptions.contains(PojoMapOption.USE_INTERFACE_FIELDS)) {
+        if (!this.useDeclaringClassAsTemplate) {
             // Shortcut.
             return returnType;
         }

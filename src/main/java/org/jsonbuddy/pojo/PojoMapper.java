@@ -75,7 +75,7 @@ public class PojoMapper {
 
 
     /**
-     * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class, PojoMapOption...)}
+     * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class...)}
      *
      * @return a new object of the specified class
      */
@@ -89,7 +89,7 @@ public class PojoMapper {
 
     /**
      * Try to convert the argument JsonArray into a list of the specified class.
-     * See {@link #map(JsonObject, Class, PojoMapOption...)} (JsonArray, Class)}
+     * See {@link #map(JsonObject, Class,...)} (JsonArray, Class)}
      *
      * @return a new object of the specified class
      */
