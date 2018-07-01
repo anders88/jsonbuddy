@@ -32,18 +32,14 @@ import org.jsonbuddy.JsonValue;
  */
 public class PojoMapper {
 
-    private static Map<Class<?>,JsonPojoBuilder<?>> globalPojoBuilders = new HashMap<>();
 
-    private Map<Class<?>,JsonPojoBuilder<?>> pojoBuilders = new HashMap<>();
-    private final Set<PojoMapOption> mapOptions;
+    private final List<PojoMappingRule> mappingRules;
 
     /**
      * Converts the argument JsonObject into an object of the specified class.
      *
      * <ul>
      *   <li>If the class is annotated with an {@link OverrideMapper}, this deserializer is used
-     *   <li>If there is a {@link JsonPojoBuilder} registered with
-     *   {@link #registerClassBuilder(Class, JsonPojoBuilder)} deserialize wit this class
      *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
      * </ul>
      *
@@ -53,7 +49,7 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMapOption... options) {
+    public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMappingRule... options) {
         return new PojoMapper(options).mapToPojo(jsonObject,clazz);
     }
 
@@ -64,36 +60,19 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz,PojoMapOption... options) {
+    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz,PojoMappingRule... options) {
         return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
     }
 
 
-    private PojoMapper(PojoMapOption[] options) {
-        pojoBuilders.putAll(globalPojoBuilders);
-        mapOptions = options == null ? Collections.emptySet() : new HashSet<>(Arrays.asList(options));
+    private PojoMapper(PojoMappingRule[] options) {
+        this.mappingRules = options == null ? Collections.emptyList() : Arrays.asList(options);
     }
 
-    public static PojoMapper create(PojoMapOption... options) {
+    public static PojoMapper create(PojoMappingRule... options) {
         return new PojoMapper(options);
     }
 
-    /**
-     * Registers a {@link JsonPojoBuilder} for a class to use used when we're mapping
-     * to that class
-     */
-    public <T> PojoMapper registerClassBuilder(Class<T> clazz, JsonPojoBuilder<T> jsonPojoBuilder) {
-        pojoBuilders.put(clazz, jsonPojoBuilder);
-        return this;
-    }
-
-    /**
-     * Registers a {@link JsonPojoBuilder} for a class to use used when we're mapping
-     * to that class
-     */
-    public static <T> void registerGlobalClassBuilder(Class<T> clazz, JsonPojoBuilder<T> jsonPojoBuilder) {
-        globalPojoBuilders.put(clazz,jsonPojoBuilder);
-    }
 
     /**
      * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class, PojoMapOption...)}
@@ -132,15 +111,10 @@ public class PojoMapper {
         }
 
         JsonObject jsonObject = (JsonObject) jsonNode;
-        JsonPojoBuilder<?> jsonPojoBuilder = pojoBuilders.get(clazz);
-        if (jsonPojoBuilder != null) {
-            return jsonPojoBuilder.build(jsonObject);
-        }
 
-        for (PojoMapOption mapOption : mapOptions) {
-            MappingRule mappingRule = mapOption.myMappingRule();
-            if (mappingRule.useThisMapper(clazz)) {
-                return mappingRule.mapClass(jsonObject,clazz,this::mapit);
+        for (PojoMappingRule pojoMappingRule : mappingRules) {
+            if (pojoMappingRule.isApplicableToClass(clazz)) {
+                return pojoMappingRule.mapClass(jsonObject,clazz,this::mapit);
             }
         }
 

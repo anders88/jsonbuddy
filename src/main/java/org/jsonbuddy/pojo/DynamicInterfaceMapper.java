@@ -10,9 +10,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class DynamicInterfaceMapper implements MappingRule {
+public class DynamicInterfaceMapper implements PojoMappingRule {
     @Override
-    public boolean useThisMapper(Class<?> clazz) {
+    public boolean isApplicableToClass(Class<?> clazz) {
         return clazz.isInterface();
     }
 
