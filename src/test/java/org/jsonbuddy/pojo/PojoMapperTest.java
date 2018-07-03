@@ -134,7 +134,7 @@ public class PojoMapperTest {
     public void shouldThrownOnIllegalAssigments() throws Exception {
         JsonObject json = new JsonObject().put("intValue", true);
         assertThatThrownBy(() -> PojoMapper.map(json, ClassWithNumbers.class))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(CanNotMapException.class)
             .hasMessageContaining("intValue");
     }
 

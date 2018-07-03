@@ -30,6 +30,10 @@ public abstract class JsonNode {
      */
     public abstract void toJson(PrintWriter printWriter, String currentIntentation, String indentationAmount);
 
+    public void toJson(PrintWriter printWriter) {
+        toJson(printWriter,"","");
+    }
+
     public String stringValue() throws JsonValueNotPresentException {
         throw new JsonValueNotPresentException(String.format("Not supported for class %s",getClass().getSimpleName()));
     }
