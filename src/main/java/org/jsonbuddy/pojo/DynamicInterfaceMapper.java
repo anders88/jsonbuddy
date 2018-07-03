@@ -10,6 +10,11 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 
+
+/**
+ * A mapping rule that can be used to provide a mapping from json to an interface. Bytebuddy (bytebuddy.net) is used to create a runtime instance of the interface.
+ * You need to set bytebuddy as a maven dependency.
+ */
 public class DynamicInterfaceMapper implements PojoMappingRule {
     @Override
     public boolean isApplicableToClass(Class<?> clazz) {
@@ -17,7 +22,7 @@ public class DynamicInterfaceMapper implements PojoMappingRule {
     }
 
     @Override
-    public <T> T mapClass(JsonObject jsonObject, Class<T> clazz, MapitFunction mapitfunc) throws Exception {
+    public <T> T mapClass(JsonObject jsonObject, Class<T> clazz, MapitFunction mapitfunc)  throws CanNotMapException {
         DynamicType.Builder<T> builder = new ByteBuddy()
                 .subclass(clazz);
 

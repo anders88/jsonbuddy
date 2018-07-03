@@ -1,30 +1,13 @@
 package org.jsonbuddy.pojo;
 
-import java.lang.reflect.AnnotatedParameterizedType;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import org.jsonbuddy.*;
+
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonValue;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting
@@ -43,9 +26,8 @@ public class PojoMapper {
      *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
      * </ul>
      *
-     * @param options If PojoMapOption.USE_INTERFACE_FIELDS is supplied, the Pojo could be an interface.
-     *                Interfaces are supported with dynamic class generation. The pojo will be given values
-     *                in corresponding getters.
+     * @param options Zero one or more mapping rules that overrides default behaviour. Each of the supplied
+     *                rules are checked in order and used if it matches class.
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
@@ -75,7 +57,7 @@ public class PojoMapper {
 
 
     /**
-     * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class...)}
+     * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class, PojoMappingRule...)}
      *
      * @return a new object of the specified class
      */
@@ -89,7 +71,7 @@ public class PojoMapper {
 
     /**
      * Try to convert the argument JsonArray into a list of the specified class.
-     * See {@link #map(JsonObject, Class,...)} (JsonArray, Class)}
+     * See {@link #map(JsonObject, Class, PojoMappingRule...)} (JsonArray, Class)}
      *
      * @return a new object of the specified class
      */
@@ -98,10 +80,14 @@ public class PojoMapper {
     }
 
 
-    private Object mapit(JsonNode jsonNode, Class<?> clazz) throws Exception {
+    private Object mapit(JsonNode jsonNode, Class<?> clazz) throws CanNotMapException {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
-            return annotationsByType[0].using().newInstance().build(jsonNode);
+            try {
+                return annotationsByType[0].using().newInstance().build(jsonNode);
+            } catch (Exception e) {
+                throw new CanNotMapException(e);
+            }
         }
         if (jsonNode instanceof JsonArray) {
             return mapArray((JsonArray) jsonNode, clazz);
@@ -119,7 +105,7 @@ public class PojoMapper {
         }
 
         if (clazz.isInterface()) {
-            throw new CanNotMapException("Can not genereate instance of interfaces, if not option USE_INTERFACE_FIELDS is set");
+            throw new CanNotMapException("Can not genereate instance of interfaces, Supply DynamicInterfaceMapper as rule to support this");
         }
 
         Object result;
@@ -131,7 +117,11 @@ public class PojoMapper {
                 if (!accessible) {
                     constructor.setAccessible(true);
                 }
-                result = constructor.newInstance();
+                try {
+                    result = constructor.newInstance();
+                } catch (Exception e) {
+                    throw new CanNotMapException(e);
+                }
                 if (!accessible) {
                     constructor.setAccessible(false);
 
@@ -143,11 +133,15 @@ public class PojoMapper {
             throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
         }
         for (String key : jsonObject.keys()) {
-            if (tryToSetField(clazz, jsonObject, result, key)) {
-                continue;
-            }
-            if (tryToSetProperty(jsonObject, clazz, result, key)) {
-                continue;
+            try {
+                if (tryToSetField(clazz, jsonObject, result, key)) {
+                    continue;
+                }
+                if (tryToSetProperty(jsonObject, clazz, result, key)) {
+                    continue;
+                }
+            } catch (Exception e) {
+                throw new CanNotMapException(e);
             }
         }
 
