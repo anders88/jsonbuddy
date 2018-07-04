@@ -56,7 +56,6 @@
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.6.9</version>
-            <optional>true</optional>
         </dependency>
 
     </dependencies>
