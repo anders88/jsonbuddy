@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /**
  * A mapping rule that can be used to provide a mapping from json to an interface. Bytebuddy (bytebuddy.net) is used to create a runtime instance of the interface.
- * You need to set bytebuddy as a maven dependency.
+ * <strong>Important:</strong> Using this class requires you to add the optional dependency byte-buddy to your class path.
  */
 public class DynamicInterfaceMapper implements PojoMappingRule {
     @Override
