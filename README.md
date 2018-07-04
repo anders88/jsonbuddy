@@ -197,6 +197,8 @@ Version | Description
 0.9.0   | Pojo mapper supports BigDecimal and BigInteger
 0.10.0  | Supports pojo mapping and generation with interfaces
 0.10.1  | Bugfix Pojo mapper with empty key in jsonobject
+0.11.0  | Using mappingrules instead of feature-enum to handle PojoMapping. Bytebuddy is optional dependency. Default use declaring classes when generating json.
+
 
 # Licence
 
