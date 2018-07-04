@@ -94,16 +94,6 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleNestedLists() {
-        List<List<String>> nestedList = Arrays.asList(Arrays.asList("Vader", "Sidious"), Arrays.asList("Anakin"));
-
-        JsonArray array = (JsonArray) JsonGenerator.generate(nestedList);
-
-        assertThat(array.requiredArray(0).strings()).containsExactly("Vader", "Sidious");
-        assertThat(array.requiredArray(1).strings()).containsExactly("Anakin");
-    }
-
-    @Test
     public void shouldHandleClassWithGetter() throws Exception {
         CombinedClassWithSetter combinedClassWithSetter = new CombinedClassWithSetter();
         combinedClassWithSetter.setPerson(new SimpleWithName("Darth Vader"));
