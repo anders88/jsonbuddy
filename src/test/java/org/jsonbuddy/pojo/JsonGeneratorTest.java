@@ -267,5 +267,4 @@ public class JsonGeneratorTest {
         assertThat(interfaceobj.stringValue("privatevalue").isPresent()).isFalse();
     }
 
-
 }

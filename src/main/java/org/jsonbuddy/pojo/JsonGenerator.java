@@ -15,7 +15,7 @@ public class JsonGenerator {
     private final boolean useDeclaringClassAsTemplate;
 
 
-    public JsonGenerator(boolean useDeclaringClassAsTemplate) {
+    private JsonGenerator(boolean useDeclaringClassAsTemplate) {
         this.useDeclaringClassAsTemplate = useDeclaringClassAsTemplate;
     }
 
@@ -27,7 +27,7 @@ public class JsonGenerator {
      *   <li>If it is a Temporal or Enum, the String representation is returned.
      *   <li>If it is a collection, a JsonArray of the elements is returned.
      *   <li>If it implements OverridesJsonGenerator, the custom serialization is called.
-     *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters.
+     *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters. This method will use the field and method declaration as template for the generation
      * </ul>
      *
      * @param object The object that will be converted to json
@@ -38,6 +38,22 @@ public class JsonGenerator {
         return new JsonGenerator(true).generateNode(object,Optional.empty());
     }
 
+
+    /**
+     * Recursively serializes the argument as JSON.
+     * <ul>
+     *   <li>If the argument is a JsonNode the argument is returned.
+     *   <li>If it is a String, Number or Boolean, the corresponding JsonNode type is returned.
+     *   <li>If it is a Temporal or Enum, the String representation is returned.
+     *   <li>If it is a collection, a JsonArray of the elements is returned.
+     *   <li>If it implements OverridesJsonGenerator, the custom serialization is called.
+     *   <li>If it is an Object, uses reflection to generate a JsonObject of public fields and getters. This method will use the implementing object as template for the generation
+     * </ul>
+     *
+     * @param object The object that will be converted to json
+     *
+     *
+     */
     public static JsonNode generateUsingImplementationAsTemplate(Object object) {
         return new JsonGenerator(false).generateNode(object,Optional.empty());
     }

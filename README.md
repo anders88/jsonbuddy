@@ -155,13 +155,18 @@ SithLord darth = pojoMapper.mapToPojo(jsonObject);
 darth.getName(); // Returns "Darth Vader"
 ```
 
-### PojoMapOption
-Pojo map options can be supplied to alter the functionality of pojo mapping and generation.
+### Mapping to interfaces
+You can map Json to an interface using the DynamincInterfaceMapper mapping rule.
+```java
+public interface NameInterface {
+    String getName();
+}
+JsonObject jsonobject = JsonFactory.jsonObject().put("name","Darth Vader");
+NameInterface nameInterface = PojoMapper.map(jsonObject, NameInterface.class,new DynamicInterfaceMapper());
+nameInterface.getName() // = "Darth Vader"
+```
 
-USE_INTERFACE_FIELDS : This enables interface types to be part of the pojos. In Json 
-generation the interfaces methods is used to generate json (not the methods and fields of the 
-implementing class). In PojoMapping the interfaces in the Pojo are created using dynamic
-class generation. The corresponding get methods in the intercace will return values from the json.
+Jsonbuddy uses Bytebuddy (bytebuddy.net) to generate a runtime implementation of the interface. You need to supply bytebuddy as a maven dependency when using DynamicInterfaceMapper.
 
 # TODO
 
