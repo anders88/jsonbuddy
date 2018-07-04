@@ -14,9 +14,6 @@ import org.jsonbuddy.JsonObject;
 /**
  * Support interfaces with dynamic class generation. The pojo will be given
  * values in corresponding getters.
- *
- * <strong>Important:</strong> Using this class requires you to add the optional
- * dependency byte-buddy to your class path.
  */
 public class DynamicClassMappingRule implements PojoMappingRule {
 
