@@ -1,40 +1,17 @@
 package org.jsonbuddy.pojo;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.jsonbuddy.*;
+import org.jsonbuddy.pojo.testclasses.*;
+import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonNumber;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.pojo.testclasses.ClassImplementingInterface;
-import org.jsonbuddy.pojo.testclasses.ClassWithBigNumbers;
-import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
-import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
-import org.jsonbuddy.pojo.testclasses.ClassWithFieldInterface;
-import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
-import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
-import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
-import org.jsonbuddy.pojo.testclasses.ClassWithMap;
-import org.jsonbuddy.pojo.testclasses.ClassWithTime;
-import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
-import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
-import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
-import org.jsonbuddy.pojo.testclasses.SimpleWithName;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonGeneratorTest {
 
@@ -211,7 +188,7 @@ public class JsonGeneratorTest {
     public void shouldMaskMethodsNotInInterfaceWhenUsingGetter() throws Exception {
         InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
         ClassWithGetterInterface classWithGetterInterface = new ClassWithGetterInterface(myInterface);
-        JsonNode generated = JsonGenerator.generate(classWithGetterInterface);
+        JsonNode generated = JsonGenerator.generate(classWithGetterInterface, PojoMapOption.USE_INTERFACE_FIELDS);
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         JsonObject childObj = jsonObject.requiredObject("myInterface");
@@ -223,7 +200,7 @@ public class JsonGeneratorTest {
     public void shouldMaskMethodsNotInInterfaceWhenUsingField() throws Exception {
         InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
         ClassWithFieldInterface classWithFieldInterface = new ClassWithFieldInterface(myInterface);
-        JsonNode generated = JsonGenerator.generate(classWithFieldInterface);
+        JsonNode generated = JsonGenerator.generate(classWithFieldInterface, PojoMapOption.USE_INTERFACE_FIELDS);
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
         JsonObject childObj = jsonObject.requiredObject("myInterface");
@@ -260,7 +237,7 @@ public class JsonGeneratorTest {
         myList.add(new ClassImplementingInterface("mypub","myPriv"));
         classWithInterfaceListAndMapMethods.setMyList(myList);
 
-        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods);
+        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods, PojoMapOption.USE_INTERFACE_FIELDS);
 
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
@@ -279,7 +256,7 @@ public class JsonGeneratorTest {
         myMap.put("mykey",new ClassImplementingInterface("mypub","myPriv"));
         classWithInterfaceListAndMapMethods.setMyMap(myMap);
 
-        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods);
+        JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods, PojoMapOption.USE_INTERFACE_FIELDS);
 
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
