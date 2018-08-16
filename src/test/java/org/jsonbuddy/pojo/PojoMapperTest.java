@@ -32,6 +32,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
 import org.jsonbuddy.pojo.testclasses.ClassWithList;
 import org.jsonbuddy.pojo.testclasses.ClassWithMap;
 import org.jsonbuddy.pojo.testclasses.ClassWithMapWithList;
+import org.jsonbuddy.pojo.testclasses.ClassWithNumberSet;
 import org.jsonbuddy.pojo.testclasses.ClassWithNumbers;
 import org.jsonbuddy.pojo.testclasses.ClassWithOptional;
 import org.jsonbuddy.pojo.testclasses.ClassWithOptionalProperty;
@@ -420,7 +421,6 @@ public class PojoMapperTest {
                 JsonFactory.jsonObject().put("publicvalue", "A public value")));
         ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,new DynamicInterfaceMapper());
         assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
-
     }
 
     @Test
@@ -428,5 +428,16 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().put("", "dsfds");
         SimpleWithName simpleWithName = PojoMapper.map(jsonObject, SimpleWithName.class);
         assertThat(simpleWithName.name).isNull();
+    }
+
+    @Test
+    public void shouldMapToFieldOfSetOfNumbers() {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .put("numberSet", JsonFactory.jsonArray().add(1).add(2).add(3))
+                .put("mapOfSetOfString", JsonFactory.jsonObject()
+                        .put("first", JsonFactory.jsonArray().add("4").add("5").add("6")));
+        ClassWithNumberSet o = PojoMapper.map(jsonObject, ClassWithNumberSet.class);
+        assertThat(o.numberSet).containsOnly(1L, 2L, 3L);
+        assertThat(o.mapOfSetOfString.get("first")).containsOnly("4", "5", "6");
     }
 }

@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting
@@ -63,7 +64,7 @@ public class PojoMapper {
      */
     public <T> T mapToPojo(JsonObject jsonObject, Class<T> clazz) throws CanNotMapException {
         try {
-            return (T) mapit(jsonObject,clazz);
+            return (T) mapValue(jsonObject, clazz, null);
         } catch (Exception e) {
             throw ExceptionUtil.soften(e);
         }
@@ -80,7 +81,7 @@ public class PojoMapper {
     }
 
 
-    private Object mapit(JsonNode jsonNode, Class<?> clazz) throws CanNotMapException {
+    private Object mapValue(JsonNode jsonNode, Class<?> clazz, Class<?> elementType) throws CanNotMapException {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             try {
@@ -90,7 +91,7 @@ public class PojoMapper {
             }
         }
         if (jsonNode instanceof JsonArray) {
-            return mapArray((JsonArray) jsonNode, clazz);
+            return mapArray((JsonArray) jsonNode, clazz, elementType);
         }
         if (jsonNode instanceof JsonValue) {
             return ((JsonValue) jsonNode).javaObjectValue();
@@ -100,7 +101,7 @@ public class PojoMapper {
 
         for (PojoMappingRule pojoMappingRule : mappingRules) {
             if (pojoMappingRule.isApplicableToClass(clazz)) {
-                return pojoMappingRule.mapClass(jsonObject,clazz,this::mapit);
+                return pojoMappingRule.mapClass(jsonObject, clazz, (n, c) -> mapValue(n, c, null));
             }
         }
 
@@ -148,14 +149,16 @@ public class PojoMapper {
         return result;
     }
 
-    private Object mapArray(JsonArray jsonArray, Class<?> clazz) {
-        return jsonArray.nodeStream().map(jn -> {
-            try {
-                return mapit(jn, clazz);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }).collect(Collectors.toList());
+    private Object mapArray(JsonArray jsonArray, Class<?> collectionType, Class<?> elementType) {
+        Stream<Object> stream = jsonArray.nodeStream()
+                .map(element -> mapValue(element, elementType, null));
+        if (List.class.isAssignableFrom(collectionType)) {
+            return stream.collect(Collectors.toList());
+        } else if (Set.class.isAssignableFrom(collectionType)) {
+            return stream.collect(Collectors.toSet());
+        } else {
+            throw new CanNotMapException("Cannot map JsonArray to " + collectionType);
+        }
     }
 
     private boolean tryToSetField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
@@ -173,7 +176,7 @@ public class PojoMapper {
             } else {
                 String typeName = declaredField.getGenericType().getTypeName();
                 Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
-                optionalValue = Optional.of(mapit(nodeValue, optClass));
+                optionalValue = Optional.of(mapValue(nodeValue, optClass, null));
             }
 
             declaredField.setAccessible(true);
@@ -190,13 +193,10 @@ public class PojoMapper {
         } else if (Map.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonObject)) {
             value = mapAsMap((ParameterizedType) declaredField.getGenericType(), (JsonObject) nodeValue);
         } else {
-            Class<?> mappedClass = computeType(declaredField, nodeValue);
-            if (List.class.isAssignableFrom(declaredField.getType()) && (nodeValue instanceof JsonArray)) {
-                value = mapArray((JsonArray) nodeValue,mappedClass);
-            } else {
-                value = mapit(nodeValue, mappedClass);
-                value = convertIfNecessary(value,declaredField.getType());
-            }
+            Class<?> mappedClass = declaredField.getType();
+            Class<?> elementType = nodeValue instanceof JsonArray ? computeElementType(declaredField) : null;
+            value = mapValue(nodeValue, mappedClass, elementType);
+            value = convertIfNecessary(value,declaredField.getType());
         }
         declaredField.setAccessible(true);
         declaredField.set(result,value);
@@ -206,14 +206,17 @@ public class PojoMapper {
 
     private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
         String typeName = genericType.getActualTypeArguments()[1].getTypeName();
+        String elementClassName = null;
         int genericStart = typeName.indexOf("<");
         if (genericStart != -1) {
-            typeName = typeName.substring(genericStart+1,typeName.indexOf(">"));
+            elementClassName = typeName.substring(genericStart+1,typeName.indexOf(">"));
+            typeName = typeName.substring(0, genericStart);
         }
         Class<?> valueclass = Class.forName(typeName);
+        Class<?> valueElementClass = elementClassName != null ? Class.forName(elementClassName) : null;
         Map<String, Object> result = new HashMap<>();
         for (String key : nodeValue.keys()) {
-            result.put(key, mapit(nodeValue.value(key).get(), valueclass));
+            result.put(key, mapValue(nodeValue.value(key).get(), valueclass, valueElementClass));
         }
         return result;
     }
@@ -282,10 +285,7 @@ public class PojoMapper {
         return new OverriddenVal(false,null);
     }
 
-    private static Class<?> computeType(Field declaredField, JsonNode nodeValue) {
-        if (!(nodeValue instanceof JsonArray)) {
-            return declaredField.getType();
-        }
+    private static Class<?> computeElementType(Field declaredField) {
         AnnotatedType annotatedType = declaredField.getAnnotatedType();
         AnnotatedParameterizedType para = (AnnotatedParameterizedType) annotatedType;
         Type listType = para.getAnnotatedActualTypeArguments()[0].getType();
@@ -326,11 +326,11 @@ public class PojoMapper {
             } else {
                 String typeName = method.getParameters()[0].getParameterizedType().getTypeName();
                 Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
-                optionalValue = Optional.of(mapit(nodeValue, optClass));
+                optionalValue = Optional.of(mapValue(nodeValue, optClass, null));
             }
             value = optionalValue;
         } else {
-            value = mapit(jsonObject.value(key).get(),setterClass);
+            value = mapValue(jsonObject.value(key).get(),setterClass, null);
             value = convertIfNecessary(value, setterClass);
         }
         method.invoke(instance,value);
