@@ -1,18 +1,20 @@
 package org.jsonbuddy;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.jsonbuddy.parse.JsonParseException;
+import org.jsonbuddy.parse.JsonParser;
+import org.junit.Test;
 
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.jsonbuddy.parse.JsonParser;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JsonParserTest {
 
@@ -91,7 +93,7 @@ public class JsonParserTest {
         JsonNumber intVal = (JsonNumber) theMeaning;
         assertThat(intVal.intValue()).isEqualTo(42);
         assertThat(intVal.longValue()).isEqualTo(42);
-        assertThat(intVal.shortValue()).isEqualTo((short)42);
+        assertThat(intVal.shortValue()).isEqualTo((short) 42);
         assertThat(intVal.floatValue()).isEqualTo(42.0f);
         assertThat(intVal.byteValue()).isEqualTo((byte) 42);
 
@@ -116,7 +118,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void shouldThrowExceptionIJsonIsInvalid() throws Exception {
+    public void shouldThrowExceptionIfJsonIsInvalid() throws Exception {
         validateException("{'name':'Darth Vader'", "JsonObject not closed. Expected }");
         validateException("{'name':'Darth Vader' :", "JsonObject not closed. Expected }");
         validateException("['Luke'", "Expected , or ] in array");
@@ -205,7 +207,7 @@ public class JsonParserTest {
         String json = fixQuotes("['one',null,'two']");
         JsonArray jsonArray = JsonParser.parseToArray(json);
         assertThat(jsonArray.size()).isEqualTo(3);
-        assertThat(jsonArray.get(1,JsonNull.class)).isEqualTo(new JsonNull());
+        assertThat(jsonArray.get(1, JsonNull.class)).isEqualTo(new JsonNull());
     }
 
     @Test
@@ -213,6 +215,67 @@ public class JsonParserTest {
         JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'value':'with\\u22A1xx'}"));
         assertThat(jsonObject.requiredString("value")).isEqualTo("with\u22A1xx");
 
+    }
+
+    @Test
+    public void shouldParseBase64EncodedJsonObject() {
+        JsonObject expected = new JsonObject().put("one", "two");
+        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
+        JsonObject jsonObject = (JsonObject) JsonParser.parseFromBase64encodedString(base64EncodedString);
+        assertThat(jsonObject).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldParseBase64EncodedJsonArray() {
+        JsonArray expected = new JsonArray().add(new JsonObject().put("Some", "value"));
+        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
+        JsonArray jsonArray = (JsonArray) JsonParser.parseFromBase64encodedString(base64EncodedString);
+        assertThat(jsonArray).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldParseBase64EncodedJsonString() {
+        JsonString expected = new JsonString("Some value");
+        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
+        JsonString actual = (JsonString) JsonParser.parseFromBase64encodedString(base64EncodedString);
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldParseBase64EncodedJsonNumber() {
+        JsonNumber expected = new JsonNumber(123L);
+        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
+        JsonNumber actual = (JsonNumber) JsonParser.parseFromBase64encodedString(base64EncodedString);
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldParseBase64EncodedJsonBoolean() {
+        JsonBoolean expected = new JsonBoolean(false);
+        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
+        JsonBoolean actual = (JsonBoolean) JsonParser.parseFromBase64encodedString(base64EncodedString);
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenInputNotJson() {
+        String notJsonString = "Some value";
+        String base64EncodedString = Base64.getEncoder().encodeToString(notJsonString.getBytes());
+        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(base64EncodedString))
+                .isInstanceOf(JsonParseException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenInputNotBase64Encoded() {
+        JsonObject expected = new JsonObject().put("one", "two");
+        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(expected.toJson()))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenInputIsNull() {
+        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(null))
+                .isInstanceOf(NullPointerException.class);
     }
 
     private static String fixQuotes(String content) {

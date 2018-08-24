@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -160,6 +161,17 @@ public class JsonParser {
     public static JsonArray parseToArray(Reader reader) throws JsonParseException {
         JsonParser jsonParser = new JsonParser(reader);
         return toArray(jsonParser.parseValue());
+    }
+
+    /**
+     * Parse base64encoded JSON string to JSONNode. Will return a JsonArray, JsonArray
+     * or a JsonValue.
+
+     * @throws JsonParseException if a JSON syntax error was encountered
+     * @throws IllegalArgumentException if input not base64encoded
+     */
+    public static JsonNode parseFromBase64encodedString(String base64encodedJson) throws IllegalArgumentException {
+        return parse(new String(Base64.getUrlDecoder().decode(base64encodedJson)));
     }
 
     private static JsonArray toArray(JsonNode result) {
