@@ -218,43 +218,11 @@ public class JsonParserTest {
     }
 
     @Test
-    public void shouldParseBase64EncodedJsonObject() {
-        JsonObject expected = new JsonObject().put("one", "two");
-        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
-        JsonObject jsonObject = (JsonObject) JsonParser.parseFromBase64encodedString(base64EncodedString);
-        assertThat(jsonObject).isEqualTo(expected);
-    }
-
-    @Test
     public void shouldParseBase64EncodedJsonArray() {
         JsonArray expected = new JsonArray().add(new JsonObject().put("Some", "value"));
         String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
         JsonArray jsonArray = (JsonArray) JsonParser.parseFromBase64encodedString(base64EncodedString);
         assertThat(jsonArray).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldParseBase64EncodedJsonString() {
-        JsonString expected = new JsonString("Some value");
-        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
-        JsonString actual = (JsonString) JsonParser.parseFromBase64encodedString(base64EncodedString);
-        assertThat(actual).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldParseBase64EncodedJsonNumber() {
-        JsonNumber expected = new JsonNumber(123L);
-        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
-        JsonNumber actual = (JsonNumber) JsonParser.parseFromBase64encodedString(base64EncodedString);
-        assertThat(actual).isEqualTo(expected);
-    }
-
-    @Test
-    public void shouldParseBase64EncodedJsonBoolean() {
-        JsonBoolean expected = new JsonBoolean(false);
-        String base64EncodedString = Base64.getEncoder().encodeToString(expected.toJson().getBytes());
-        JsonBoolean actual = (JsonBoolean) JsonParser.parseFromBase64encodedString(base64EncodedString);
-        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
@@ -272,15 +240,8 @@ public class JsonParserTest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
-    @Test
-    public void shouldThrowExceptionWhenInputIsNull() {
-        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(null))
-                .isInstanceOf(NullPointerException.class);
-    }
-
     private static String fixQuotes(String content) {
         return content.replace("'", "\"");
     }
-
 
 }
