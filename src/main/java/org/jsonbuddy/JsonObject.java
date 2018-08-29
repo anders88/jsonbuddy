@@ -391,4 +391,15 @@ public class JsonObject extends JsonNode {
     public boolean containsKey(String key) {
         return values.containsKey(key);
     }
+
+    /**
+     * Put all objects from source JsonObject into this
+     *
+     * @param source The JsonObject to copy from
+     * @return this
+     */
+    public JsonObject putAll(JsonObject source) {
+        values.putAll(source.values);
+        return this;
+    }
 }
