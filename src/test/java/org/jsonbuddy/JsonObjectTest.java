@@ -196,4 +196,20 @@ public class JsonObjectTest {
         assertThatThrownBy(() -> o.booleanValue("object"))
             .hasMessageContaining("not boolean");
     }
+
+    @Test
+    public void shouldPutAllProperties() {
+        JsonObject source = new JsonObject()
+            .put("firstName", "Darth")
+            .put("lastName", "Vader")
+            .put("forcePowers", new JsonArray()
+                    .add("shock").add("lightning"));
+
+        JsonObject target = new JsonObject();
+        target.putAll(source);
+
+        assertThat(target.toJson())
+            .isEqualTo(source.toJson());
+    }
+
 }
