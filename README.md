@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.11.0</version>
+	<version>0.12.0</version>
 </dependency>
 ```
 
@@ -198,6 +198,7 @@ Version | Description
 0.10.0  | Supports pojo mapping and generation with interfaces
 0.10.1  | Bugfix Pojo mapper with empty key in jsonobject
 0.11.0  | Using mappingrules instead of feature-enum to handle PojoMapping. Bytebuddy is optional dependency. Default use declaring classes when generating json.
+0.12.0  | PutAll feature and parse from Base64
 
 
 # Licence
