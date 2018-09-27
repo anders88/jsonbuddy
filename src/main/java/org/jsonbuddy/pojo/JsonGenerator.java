@@ -157,7 +157,9 @@ public class JsonGenerator {
         Arrays.asList(theClass.getFields()).stream()
         .filter(fi -> {
             int modifiers = fi.getModifiers();
-            return Modifier.isPublic(modifiers) && Modifier.isFinal(modifiers);
+            return Modifier.isPublic(modifiers)
+                    && Modifier.isFinal(modifiers)
+                    && !Modifier.isStatic(modifiers);
         })
         .forEach(fi -> {
             try {

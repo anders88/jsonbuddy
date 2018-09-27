@@ -1,17 +1,41 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.*;
-import org.jsonbuddy.pojo.testclasses.*;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonNumber;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.pojo.testclasses.ClassImplementingInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithBigNumbers;
+import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
+import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
+import org.jsonbuddy.pojo.testclasses.ClassWithFieldInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
+import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
+import org.jsonbuddy.pojo.testclasses.ClassWithMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithStaticFieldsFromInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithTime;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
+import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
+import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
+import org.jsonbuddy.pojo.testclasses.SimpleWithName;
+import org.junit.Test;
 
 public class JsonGeneratorTest {
 
@@ -275,6 +299,16 @@ public class JsonGeneratorTest {
         JsonObject interfaceobj = interfacemap.requiredObject("mykey");
         assertThat(interfaceobj.requiredString("publicvalue")).isEqualTo("mypub");
         assertThat(interfaceobj.stringValue("privatevalue").isPresent()).isFalse();
+    }
+
+    @Test
+    public void shouldNotSerializeStaticFields() {
+        ClassWithStaticFieldsFromInterface classWithStaticFields = new ClassWithStaticFieldsFromInterface();
+        classWithStaticFields.setName("Darth Vader");
+
+        JsonObject generated = (JsonObject)JsonGenerator.generate(classWithStaticFields);
+
+        assertThat(generated.keys()).containsOnly("name");
     }
 
 }
