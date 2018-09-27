@@ -1,10 +1,22 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.*;
-
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonObject;
 
 /**
  * Convert an object to JSON by mapping fields for any object
@@ -58,11 +70,11 @@ public class JsonGenerator {
         return new JsonGenerator(false).generateNode(object,Optional.empty());
     }
 
-    public static JsonNode generateWithSpecifyingClass(Object object,Class classToUse) {
+    public static JsonNode generateWithSpecifyingClass(Object object, Class<?> classToUse) {
         return new JsonGenerator(true).generateNode(object,Optional.of(classToUse));
     }
 
-    private JsonNode generateNode(Object object, Optional<Class> declaringClass) {
+    private JsonNode generateNode(Object object, Optional<Class<?>> declaringClass) {
         if (object == null) {
             return new JsonNull();
         }
@@ -101,7 +113,7 @@ public class JsonGenerator {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
             return overridesJsonGenerator.jsonValue();
         }
-        return handleSpecificClass(object,declaringClass);
+        return handleSpecificClass(object, declaringClass);
     }
 
     private static boolean isGetMethod(Method method) {
@@ -139,7 +151,7 @@ public class JsonGenerator {
      * public final field and accessor (getter) is included in the
      * result.
      */
-    private JsonObject handleSpecificClass(Object object,Optional<Class> declaringClass) {
+    private JsonObject handleSpecificClass(Object object, Optional<Class<?>> declaringClass) {
         JsonObject jsonObject = JsonFactory.jsonObject();
         Class<?> theClass = declaringClass.isPresent() && this.useDeclaringClassAsTemplate ? declaringClass.get() : object.getClass();
         Arrays.asList(theClass.getFields()).stream()
@@ -164,7 +176,7 @@ public class JsonGenerator {
                 .filter(JsonGenerator::isGetMethod)
                 .forEach(method -> {
                     try {
-                        Class returnType = method.getReturnType();
+                        Class<?> returnType = method.getReturnType();
                         AnnotatedType annotatedType = method.getAnnotatedReturnType();
 
                         returnType = overrideReturnType(returnType, annotatedType);
@@ -178,7 +190,7 @@ public class JsonGenerator {
         return jsonObject;
     }
 
-    private Class overrideReturnType(Class returnType, AnnotatedType in) {
+    private Class<?> overrideReturnType(Class<?> returnType, AnnotatedType in) {
         if (!this.useDeclaringClassAsTemplate) {
             // Shortcut.
             return returnType;
