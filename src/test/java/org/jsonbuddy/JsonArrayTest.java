@@ -66,11 +66,26 @@ public class JsonArrayTest {
     }
 
     @Test
+    public void shouldHandleArraysOfArrays() {
+        JsonArray subArray1 = new JsonArray().add(1).add(2).add(3);
+        JsonArray subArray2 = new JsonArray().add("a").add("b").add("c");
+        JsonArray subArray3 = new JsonArray().add(new JsonObject().put("name", "James"));
+
+        JsonArray array = new JsonArray().add(subArray1).add(subArray2).add(subArray3);
+        assertThat(array.requiredArray(1)).isEqualTo(subArray2);
+
+        assertThat(array.arrays()).isEqualTo(Arrays.asList(subArray1, subArray2, subArray3));
+        assertThat(array.arrayStream())
+            .isEqualTo(Arrays.asList(subArray1, subArray2, subArray3));
+    }
+
+    @Test
     public void shouldReturnValuesAsLong() throws Exception {
         JsonArray a = new JsonArray().add(123.4).add("3.14").add(42);
         assertThat(a.requiredLong(0)).isEqualTo(123);
         assertThat(a.requiredLong(1)).isEqualTo(3);
         assertThat(a.requiredLong(2)).isEqualTo(42);
+        assertThat(a.longs()).isEqualTo(Arrays.asList(123L, 3L, 42L));
     }
 
     @Test
@@ -79,6 +94,7 @@ public class JsonArrayTest {
         assertThat(a.requiredDouble(0)).isEqualTo(1234.5);
         assertThat(a.requiredDouble(1)).isEqualTo(3.25);
         assertThat(a.requiredDouble(2)).isEqualTo(42);
+        assertThat(a.doubles()).isEqualTo(Arrays.asList(1234.5, 3.25, 42.0));
     }
 
     @Test
@@ -90,7 +106,13 @@ public class JsonArrayTest {
         assertThat(a.requiredBoolean(2)).isEqualTo(false);
 
         assertThatThrownBy(() -> a.requiredBoolean(3))
-            .hasMessageContaining("3 is not boolean");
+            .hasMessageContaining("[] is not boolean");
+    }
+
+    @Test
+    public void shouldReturnValuesAsBooleanList() throws Exception {
+        JsonArray a = new JsonArray().add(1).add("TrUE").add(false);
+        assertThat(a.booleans()).isEqualTo(Arrays.asList(false, true, false));
     }
 
     @Test

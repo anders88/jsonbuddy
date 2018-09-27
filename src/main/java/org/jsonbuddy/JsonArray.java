@@ -110,6 +110,33 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         return stringStream().collect(Collectors.toList());
     }
 
+
+
+    /**
+     * If all members of the array are convertible to numbers, this method
+     * returns them as longs. Otherwise, it throws NumberFormatException
+     */
+    public List<Long> longs() {
+        return mapNodes(node -> asNumber(node).longValue());
+    }
+
+    /**
+     * If all members of the array are convertible to numbers, this method
+     * returns them as doubles. Otherwise, it throws NumberFormatException
+     */
+    public List<Double> doubles() {
+        return mapNodes(node -> asNumber(node).doubleValue());
+    }
+
+    /**
+     * If all members of the array are convertible to booleans, this method
+     * returns them as doubles. Otherwise, it throws NumberFormatException
+     */
+    public List<Boolean> booleans() {
+        return mapNodes(node -> asBoolean(node));
+    }
+
+
     /**
      * Returns a list of the members of this JsonArray mapped over the function.
      */
@@ -133,6 +160,26 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
                 .filter(ns -> ns instanceof JsonObject)
                 .map(ns -> (JsonObject) ns);
     }
+
+    /**
+     * Returns a list of children that are arrays. Children that are not JsonNode are skipped
+     * @return The jsonArrays list
+     */
+    public List<JsonArray> arrays() {
+        return arrayStream().collect(Collectors.toList());
+    }
+
+    /**
+     * Returns a stream of children that are arrays. Children that are not JsonNode are skipped
+     * @return The jsonArrays list
+     */
+    public Stream<JsonArray> arrayStream() {
+        return nodeStream()
+                .filter(n -> n instanceof JsonArray)
+                .map(n -> (JsonArray)n);
+    }
+
+
 
     /**
      * Returns a stream of all the string values of the members this JsonArray that
@@ -245,12 +292,16 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonConversionException if the value at the position is not a boolean
      */
     public boolean requiredBoolean(int pos) throws JsonConversionException {
-        if (get(pos) instanceof JsonBoolean) {
-            return ((JsonBoolean)get(pos)).booleanValue();
-        } else if (get(pos) instanceof JsonValue) {
-            return Boolean.parseBoolean(((JsonValue)get(pos)).stringValue());
+        return asBoolean(get(pos));
+    }
+
+    public boolean asBoolean(JsonNode jsonNode) {
+        if (jsonNode instanceof JsonBoolean) {
+            return ((JsonBoolean)jsonNode).booleanValue();
+        } else if (jsonNode instanceof JsonValue) {
+            return Boolean.parseBoolean(((JsonValue)jsonNode).stringValue());
         } else {
-            throw new JsonConversionException(pos + " is not boolean");
+            throw new JsonConversionException(jsonNode + " is not boolean");
         }
     }
 
@@ -279,16 +330,20 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonConversionException if the value at the position is not numeric
      */
     public Number requiredNumber(int pos) throws JsonConversionException {
-        if (get(pos) instanceof JsonNumber) {
-            return ((JsonNumber)get(pos)).javaObjectValue();
-        } else if (get(pos) instanceof JsonValue) {
+        return asNumber(get(pos));
+    }
+
+    private Number asNumber(JsonNode jsonNode) {
+        if (jsonNode instanceof JsonNumber) {
+            return ((JsonNumber)jsonNode).javaObjectValue();
+        } else if (jsonNode instanceof JsonValue) {
             try {
-                return Double.parseDouble(((JsonValue)get(pos)).stringValue());
+                return Double.parseDouble(((JsonValue)jsonNode).stringValue());
             } catch (NumberFormatException e) {
-                throw new JsonConversionException(pos + " is not numeric");
+                throw new JsonConversionException(jsonNode + " is not numeric");
             }
         } else {
-            throw new JsonConversionException(pos + " is not numeric");
+            throw new JsonConversionException(jsonNode + " is not numeric");
         }
     }
 
