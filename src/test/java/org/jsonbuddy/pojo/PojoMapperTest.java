@@ -376,6 +376,24 @@ public class PojoMapperTest {
     }
 
     @Test
+    public void shoudHandleNullValues() {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .put("myInterface", JsonFactory.jsonObject().put("publicvalue", null));
+        ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,new DynamicInterfaceMapper());
+        assertThat(classWithGetterInterface.getMyInterface()).isNotNull();
+        assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isNull();
+    }
+
+    @Test
+    public void shoulHandleAbsentValues() {
+        JsonObject jsonObject = JsonFactory.jsonObject()
+                .put("myInterface", JsonFactory.jsonObject());
+        ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,DynamicInterfaceMapper.mapperThatMapsAllGetters());
+        assertThat(classWithGetterInterface.getMyInterface()).isNotNull();
+        assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isNull();
+    }
+
+    @Test
     public void shouldHandleInterfaceInLists() throws Exception {
         JsonObject jsonObject = JsonFactory.jsonObject().put("myList", JsonArray.fromNodeList(Collections.singletonList(
                 JsonFactory.jsonObject().put("publicvalue", "A public value")
@@ -419,4 +437,5 @@ public class PojoMapperTest {
         assertThat(interfaceWithEnum.getName()).isEqualTo("Darth");
         assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
     }
+
 }

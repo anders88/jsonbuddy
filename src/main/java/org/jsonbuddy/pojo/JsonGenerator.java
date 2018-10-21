@@ -116,7 +116,7 @@ public class JsonGenerator {
         return handleSpecificClass(object, declaringClass);
     }
 
-    private static boolean isGetMethod(Method method) {
+    public static boolean isGetMethod(Method method) {
         if (!Modifier.isPublic(method.getModifiers())) {
             return false;
         }
@@ -174,7 +174,7 @@ public class JsonGenerator {
                 throw new RuntimeException(e);
             }
         });
-        Arrays.asList(theClass.getDeclaredMethods()).stream()
+        Arrays.stream(theClass.getDeclaredMethods())
                 .filter(JsonGenerator::isGetMethod)
                 .forEach(method -> {
                     try {
