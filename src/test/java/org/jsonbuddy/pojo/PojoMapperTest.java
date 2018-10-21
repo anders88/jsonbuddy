@@ -17,35 +17,7 @@ import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.pojo.testclasses.ClassContainingAnnotated;
-import org.jsonbuddy.pojo.testclasses.ClassContainingOverriddenAsSetter;
-import org.jsonbuddy.pojo.testclasses.ClassWithAnnotation;
-import org.jsonbuddy.pojo.testclasses.ClassWithBigNumbers;
-import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
-import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedGetSetMap;
-import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedMap;
-import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
-import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
-import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
-import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
-import org.jsonbuddy.pojo.testclasses.ClassWithList;
-import org.jsonbuddy.pojo.testclasses.ClassWithMap;
-import org.jsonbuddy.pojo.testclasses.ClassWithMapWithList;
-import org.jsonbuddy.pojo.testclasses.ClassWithNumberSet;
-import org.jsonbuddy.pojo.testclasses.ClassWithNumbers;
-import org.jsonbuddy.pojo.testclasses.ClassWithOptional;
-import org.jsonbuddy.pojo.testclasses.ClassWithOptionalProperty;
-import org.jsonbuddy.pojo.testclasses.ClassWithPojoOverride;
-import org.jsonbuddy.pojo.testclasses.ClassWithPrivateConstructor;
-import org.jsonbuddy.pojo.testclasses.ClassWithTime;
-import org.jsonbuddy.pojo.testclasses.CombinedClass;
-import org.jsonbuddy.pojo.testclasses.CombinedClassWithAnnotation;
-import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
-import org.jsonbuddy.pojo.testclasses.EnumClass;
-import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
-import org.jsonbuddy.pojo.testclasses.PojoMapperOverride;
-import org.jsonbuddy.pojo.testclasses.SimpleWithName;
-import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
+import org.jsonbuddy.pojo.testclasses.*;
 import org.junit.Test;
 
 public class PojoMapperTest {
@@ -438,5 +410,13 @@ public class PojoMapperTest {
         ClassWithNumberSet o = PojoMapper.map(jsonObject, ClassWithNumberSet.class);
         assertThat(o.numberSet).containsOnly(1L, 2L, 3L);
         assertThat(o.mapOfSetOfString.get("first")).containsOnly("4", "5", "6");
+    }
+
+    @Test
+    public void shoulHandleBothInterfaceAndEnum() {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("name","Darth").put("enumNumber",EnumClass.THREE.toString());
+        InterfaceWithEnum interfaceWithEnum = PojoMapper.map(jsonObject,InterfaceWithEnum.class,new DynamicInterfaceMapper(),new EnumMapper());
+        assertThat(interfaceWithEnum.getName()).isEqualTo("Darth");
+        assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
     }
 }

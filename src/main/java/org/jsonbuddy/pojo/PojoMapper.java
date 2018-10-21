@@ -90,6 +90,11 @@ public class PojoMapper {
                 throw new CanNotMapException(e);
             }
         }
+        for (PojoMappingRule pojoMappingRule : mappingRules) {
+            if (pojoMappingRule.isApplicableToClass(clazz,jsonNode)) {
+                return pojoMappingRule.mapClass(jsonNode, clazz, (n, c) -> mapValue(n, c, null));
+            }
+        }
         if (jsonNode instanceof JsonArray) {
             return mapArray((JsonArray) jsonNode, clazz, elementType);
         }
@@ -99,11 +104,7 @@ public class PojoMapper {
 
         JsonObject jsonObject = (JsonObject) jsonNode;
 
-        for (PojoMappingRule pojoMappingRule : mappingRules) {
-            if (pojoMappingRule.isApplicableToClass(clazz)) {
-                return pojoMappingRule.mapClass(jsonObject, clazz, (n, c) -> mapValue(n, c, null));
-            }
-        }
+
 
         if (clazz.isInterface()) {
             throw new CanNotMapException("Can not genereate instance of interfaces, Supply DynamicInterfaceMapper as rule to support this");

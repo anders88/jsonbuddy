@@ -4,6 +4,7 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonObject;
 
 import java.lang.reflect.Method;
@@ -17,12 +18,14 @@ import java.util.Optional;
  */
 public class DynamicInterfaceMapper implements PojoMappingRule {
     @Override
-    public boolean isApplicableToClass(Class<?> clazz) {
-        return clazz.isInterface();
+    public boolean isApplicableToClass(Class<?> clazz, JsonNode jsonNode) {
+        return clazz.isInterface() && (jsonNode instanceof JsonObject);
     }
 
+
     @Override
-    public <T> T mapClass(JsonObject jsonObject, Class<T> clazz, MapitFunction mapitfunc)  throws CanNotMapException {
+    public <T> T mapClass(JsonNode jsonnode, Class<T> clazz, MapitFunction mapitfunc)  throws CanNotMapException {
+        JsonObject jsonObject = (JsonObject) jsonnode;
         DynamicType.Builder<T> builder = new ByteBuddy()
                 .subclass(clazz);
 
