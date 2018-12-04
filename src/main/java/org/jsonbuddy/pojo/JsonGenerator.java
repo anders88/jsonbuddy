@@ -74,7 +74,7 @@ public class JsonGenerator {
         return new JsonGenerator(true).generateNode(object,Optional.of(classToUse));
     }
 
-    private JsonNode generateNode(Object object, Optional<Class<?>> declaringClass) {
+    private JsonNode generateNode(Object object, Optional<Class<?>> elementClass) {
         if (object == null) {
             return new JsonNull();
         }
@@ -96,15 +96,15 @@ public class JsonGenerator {
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
             JsonObject jsonObject = JsonFactory.jsonObject();
-            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue(),declaringClass)));
+            map.entrySet().stream().forEach(entry -> jsonObject.put(entry.getKey().toString(), generateNode(entry.getValue(),elementClass)));
 
             return jsonObject;
         }
         if (object instanceof Collection) {
-            return JsonArray.map((Collection<?>) object, ob -> generateNode(ob,declaringClass));
+            return JsonArray.map((Collection<?>) object, ob -> generateNode(ob, elementClass));
         }
         if (object.getClass().isArray()) {
-            return JsonArray.map(Arrays.asList((Object[])object), ob -> generateNode(ob,declaringClass));
+            return JsonArray.map(Arrays.asList((Object[])object), ob -> generateNode(ob, elementClass));
         }
         if (object instanceof Temporal) {
             return JsonFactory.jsonString(object.toString());
@@ -113,7 +113,7 @@ public class JsonGenerator {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
             return overridesJsonGenerator.jsonValue();
         }
-        return handleSpecificClass(object, declaringClass);
+        return handleSpecificClass(object, elementClass);
     }
 
     public static boolean isGetMethod(Method method) {
@@ -151,9 +151,9 @@ public class JsonGenerator {
      * public final field and accessor (getter) is included in the
      * result.
      */
-    private JsonObject handleSpecificClass(Object object, Optional<Class<?>> declaringClass) {
+    private JsonObject handleSpecificClass(Object object, Optional<Class<?>> elementType) {
         JsonObject jsonObject = JsonFactory.jsonObject();
-        Class<?> theClass = declaringClass.isPresent() && this.useDeclaringClassAsTemplate ? declaringClass.get() : object.getClass();
+        Class<?> theClass = elementType.isPresent() && this.useDeclaringClassAsTemplate ? elementType.get() : object.getClass();
         Arrays.asList(theClass.getFields()).stream()
         .filter(fi -> {
             int modifiers = fi.getModifiers();
@@ -165,10 +165,9 @@ public class JsonGenerator {
             try {
                 Object val = fi.get(object);
 
-                Class<?> type = fi.getType();
                 AnnotatedType annotatedType = fi.getAnnotatedType();
-                type = overrideReturnType(type,annotatedType);
-                JsonNode jsonNode = generateNode(val,Optional.of(type));
+                Class<?> type = overrideReturnType(fi.getType(), annotatedType);
+                JsonNode jsonNode = generateNode(val, Optional.of(type));
                 jsonObject.put(fi.getName(), jsonNode);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
@@ -183,7 +182,7 @@ public class JsonGenerator {
 
                         returnType = overrideReturnType(returnType, annotatedType);
                         Object result = method.invoke(object);
-                        JsonNode jsonNode = generateNode(result,Optional.of(returnType));
+                        JsonNode jsonNode = generateNode(result, Optional.of(returnType));
                         jsonObject.put(getFieldName(method), jsonNode);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
@@ -204,7 +203,7 @@ public class JsonGenerator {
         if (Collection.class.isAssignableFrom(returnType)) {
             Type listType = annotatedType.getAnnotatedActualTypeArguments()[0].getType();
             try {
-                return Class.forName(listType.getTypeName());
+                return getContainerClass(listType);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -212,11 +211,21 @@ public class JsonGenerator {
         if (Map.class.isAssignableFrom(returnType)) {
             Type valuetype = annotatedType.getAnnotatedActualTypeArguments()[1].getType();
             try {
-                return Class.forName(valuetype.getTypeName());
+                return getContainerClass(valuetype);
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
         }
         return returnType;
     }
+
+    private Class<?> getContainerClass(Type type) throws ClassNotFoundException {
+        String typeName = type.getTypeName();
+        int genericStart = typeName.indexOf("<");
+        if (genericStart != -1) {
+            typeName = typeName.substring(0, genericStart);
+        }
+        return Class.forName(typeName);
+    }
+
 }

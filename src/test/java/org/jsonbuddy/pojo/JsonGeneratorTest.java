@@ -311,4 +311,16 @@ public class JsonGeneratorTest {
         assertThat(generated.keys()).containsOnly("name");
     }
 
+    public static class TestClass {
+        public final Map<String, List<String>> properties = new HashMap<>();
+    }
+
+    @Test
+    public void shouldHandleNestedCollections() {
+        TestClass object = new TestClass();
+        object.properties.put("test", Arrays.asList("one", "two"));
+        assertThat(JsonGenerator.generate(object).toJson())
+            .isEqualTo("{\"properties\":{\"test\":[\"one\",\"two\"]}}");
+    }
+
 }
