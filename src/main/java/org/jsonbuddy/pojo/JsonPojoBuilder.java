@@ -4,9 +4,8 @@ import org.jsonbuddy.JsonNode;
 
 /**
  * A pluggable JSON deserializer for a class. You can override this
- * to control JSON deserialization. Install the class in
- * {@link PojoMapper#registerClassBuilder} or annotate the target class
- * with {@link OverrideMapper}.
+ * to control JSON deserialization. Annotate the target class
+ * with {@link OverrideMapper} to use.
  */
 public interface JsonPojoBuilder<T> {
 

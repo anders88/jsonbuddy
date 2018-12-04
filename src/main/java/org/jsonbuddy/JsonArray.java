@@ -184,7 +184,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     /**
      * Returns a stream of all the string values of the members this JsonArray that
      * are not JsonObjects or JsonArrays. Skips JsonObjects and JsonArrays.
-     * @return
+     * @return the filtered of values that are strings
      */
     public Stream<String> stringStream() {
         return nodeStream()
