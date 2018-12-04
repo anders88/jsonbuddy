@@ -32,7 +32,7 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> T map(JsonObject jsonObject, Class<T> clazz,PojoMappingRule... options) {
+    public static <T> T map(JsonObject jsonObject, Class<T> clazz, PojoMappingRule... options) {
         return new PojoMapper(options).mapToPojo(jsonObject,clazz);
     }
 
@@ -43,7 +43,7 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz,PojoMappingRule... options) {
+    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz, PojoMappingRule... options) {
         return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
     }
 
@@ -205,21 +205,35 @@ public class PojoMapper {
         return true;
     }
 
-    private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws Exception {
-        String typeName = genericType.getActualTypeArguments()[1].getTypeName();
-        String elementClassName = null;
-        int genericStart = typeName.indexOf("<");
-        if (genericStart != -1) {
-            elementClassName = typeName.substring(genericStart+1,typeName.indexOf(">"));
-            typeName = typeName.substring(0, genericStart);
-        }
-        Class<?> valueclass = Class.forName(typeName);
-        Class<?> valueElementClass = elementClassName != null ? Class.forName(elementClassName) : null;
+    private Map<String, Object> mapAsMap(ParameterizedType genericType, JsonObject nodeValue) throws ClassNotFoundException, CanNotMapException {
+        Type type = genericType.getActualTypeArguments()[1];
         Map<String, Object> result = new HashMap<>();
         for (String key : nodeValue.keys()) {
-            result.put(key, mapValue(nodeValue.value(key).get(), valueclass, valueElementClass));
+            result.put(key,
+                    mapValue(nodeValue.value(key).get(),
+                            getContainerClass(type),
+                            getElementClass(genericType.getActualTypeArguments()[1])));
         }
         return result;
+    }
+
+    private Class<?> getContainerClass(Type type) throws ClassNotFoundException {
+        String typeName = type.getTypeName();
+        int genericStart = typeName.indexOf("<");
+        if (genericStart != -1) {
+            typeName = typeName.substring(0, genericStart);
+        }
+        return Class.forName(typeName);
+    }
+
+    private Class<?> getElementClass(Type type) throws ClassNotFoundException {
+        String typeName = type.getTypeName();
+        int genericStart = typeName.indexOf("<");
+        if (genericStart != -1) {
+            String elementClassName = typeName.substring(genericStart+1,typeName.indexOf(">"));
+            return Class.forName(elementClassName);
+        }
+        return null;
     }
 
     private Object convertIfNecessary(Object value, Class<?> destinationType) {
@@ -325,13 +339,16 @@ public class PojoMapper {
             if (nodeValue.equals(new JsonNull())) {
                 optionalValue = Optional.empty();
             } else {
-                String typeName = method.getParameters()[0].getParameterizedType().getTypeName();
-                Class<?> optClass = Class.forName(typeName.substring("java.util.Optional<".length(), typeName.length() - 1));
-                optionalValue = Optional.of(mapValue(nodeValue, optClass, null));
+                optionalValue = Optional.of(mapValue(nodeValue,
+                        getElementClass(method.getParameters()[0].getParameterizedType()),
+                        null));
             }
             value = optionalValue;
         } else {
-            value = mapValue(jsonObject.value(key).get(),setterClass, null);
+            Type parameterType = method.getGenericParameterTypes()[0];
+            parameterType.getTypeName();
+            value = mapValue(jsonObject.value(key).get(),
+                    getContainerClass(parameterType), getElementClass(parameterType));
             value = convertIfNecessary(value, setterClass);
         }
         method.invoke(instance,value);

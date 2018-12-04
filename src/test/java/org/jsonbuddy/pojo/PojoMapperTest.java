@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +18,36 @@ import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.pojo.testclasses.*;
+import org.jsonbuddy.pojo.testclasses.ClassContainingAnnotated;
+import org.jsonbuddy.pojo.testclasses.ClassContainingOverriddenAsSetter;
+import org.jsonbuddy.pojo.testclasses.ClassWithAnnotation;
+import org.jsonbuddy.pojo.testclasses.ClassWithBigNumbers;
+import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
+import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedGetSetMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
+import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
+import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
+import org.jsonbuddy.pojo.testclasses.ClassWithList;
+import org.jsonbuddy.pojo.testclasses.ClassWithMap;
+import org.jsonbuddy.pojo.testclasses.ClassWithMapWithList;
+import org.jsonbuddy.pojo.testclasses.ClassWithNumberSet;
+import org.jsonbuddy.pojo.testclasses.ClassWithNumbers;
+import org.jsonbuddy.pojo.testclasses.ClassWithOptional;
+import org.jsonbuddy.pojo.testclasses.ClassWithOptionalProperty;
+import org.jsonbuddy.pojo.testclasses.ClassWithPojoOverride;
+import org.jsonbuddy.pojo.testclasses.ClassWithPrivateConstructor;
+import org.jsonbuddy.pojo.testclasses.ClassWithTime;
+import org.jsonbuddy.pojo.testclasses.CombinedClass;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithAnnotation;
+import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
+import org.jsonbuddy.pojo.testclasses.EnumClass;
+import org.jsonbuddy.pojo.testclasses.InterfaceWithEnum;
+import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
+import org.jsonbuddy.pojo.testclasses.PojoMapperOverride;
+import org.jsonbuddy.pojo.testclasses.SimpleWithName;
+import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
 
 public class PojoMapperTest {
@@ -69,6 +99,26 @@ public class PojoMapperTest {
 
         assertThat(combinedClassWithSetter.getPerson().name).isEqualTo("Darth Vader");
         assertThat(combinedClassWithSetter.getOccupation()).isEqualTo("Dark Lord of Sith");
+    }
+
+    public static class ClassWithGenericSetter {
+        private List<String> propertiesx = new ArrayList<>();
+
+        public void setProperties(List<String> properties) {
+            this.propertiesx = properties;
+        }
+
+        public List<String> getProperties() {
+            return propertiesx;
+        }
+    }
+
+    @Test
+    public void shouldHandleClassWithGenericSetter() {
+        JsonObject jsonObject = new JsonObject()
+                .put("properties", new JsonArray().add("one").add("two"));
+        assertThat(PojoMapper.map(jsonObject, ClassWithGenericSetter.class).getProperties())
+            .containsExactly("one", "two");
     }
 
 
