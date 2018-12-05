@@ -200,6 +200,7 @@ Version | Description
 0.11.0  | Using mappingrules instead of feature-enum to handle PojoMapping. Bytebuddy is optional dependency. Default use declaring classes when generating json.
 0.12.0  | PutAll feature and parse from Base64
 0.13.0  | Static fields are not used in JsonGeneration. PojoMapping rule supporting Enum. Better handling of null values in DynamicInterface mapping
+0.13.1  | Bugfix. Fixes issue #26 and #27
 
 
 # Licence
