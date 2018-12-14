@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.13.1</version>
+	<version>0.13.2</version>
 </dependency>
 ```
 
@@ -201,6 +201,7 @@ Version | Description
 0.12.0  | PutAll feature and parse from Base64
 0.13.0  | Static fields are not used in JsonGeneration. PojoMapping rule supporting Enum. Better handling of null values in DynamicInterface mapping
 0.13.1  | Bugfix. Fixes issue #26 and #27
+0.13.2  | Bugfix. Generate objects that overridesjsongeneration when putting to jsonobject
 
 
 # Licence
