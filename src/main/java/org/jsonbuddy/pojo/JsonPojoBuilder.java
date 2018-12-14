@@ -12,5 +12,5 @@ public interface JsonPojoBuilder<T> {
     /**
      * Implement to create an object from the JsonNode
      */
-    T build(JsonNode jsonObject);
+    T build(JsonNode jsonNode);
 }

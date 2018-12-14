@@ -323,4 +323,9 @@ public class JsonGeneratorTest {
             .isEqualTo("{\"properties\":{\"test\":[\"one\",\"two\"]}}");
     }
 
+    @Test
+    public void shouldHandeGenrationWithPut() {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("myNested",new JsonGeneratorOverrides());
+        assertThat(jsonObject.requiredObject("myNested").requiredLong("myOverriddenValue")).isEqualTo(42L);
+    }
 }

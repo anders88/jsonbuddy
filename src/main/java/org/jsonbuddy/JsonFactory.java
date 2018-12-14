@@ -1,5 +1,7 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.pojo.OverridesJsonGenerator;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -39,6 +41,8 @@ public class JsonFactory {
     public static JsonNode jsonNode(Object o) {
         if (o instanceof JsonNode) {
             return ((JsonNode)o);
+        } else if (o instanceof OverridesJsonGenerator) {
+            return ((OverridesJsonGenerator) o).jsonValue();
         } else if (o instanceof String) {
             return new JsonString((String)o);
         } else if (o instanceof Instant) {
