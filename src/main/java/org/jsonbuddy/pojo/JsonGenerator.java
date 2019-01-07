@@ -11,12 +11,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonBoolean;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonNumber;
 import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonString;
 
 /**
  * Convert an object to JSON by mapping fields for any object
@@ -82,16 +86,16 @@ public class JsonGenerator {
             return (JsonNode) object;
         }
         if (object instanceof String) {
-            return JsonFactory.jsonString((String) object);
+            return new JsonString((String) object);
         }
         if ((object instanceof Number))  {
-            return JsonFactory.jsonNumber(((Number)object));
+            return new JsonNumber(((Number)object));
         }
         if (object instanceof Boolean) {
-            return JsonFactory.jsonBoolean((Boolean) object);
+            return new JsonBoolean((Boolean) object);
         }
         if (object instanceof Enum) {
-            return JsonFactory.jsonString(object.toString());
+            return new JsonString(object.toString());
         }
         if (object instanceof Map) {
             Map<Object,Object> map = (Map<Object, Object>) object;
@@ -107,7 +111,10 @@ public class JsonGenerator {
             return JsonArray.map(Arrays.asList((Object[])object), ob -> generateNode(ob, elementClass));
         }
         if (object instanceof Temporal) {
-            return JsonFactory.jsonString(object.toString());
+            return new JsonString(object.toString());
+        }
+        if (object instanceof UUID) {
+            return new JsonString(object.toString());
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
@@ -158,7 +165,6 @@ public class JsonGenerator {
         .filter(fi -> {
             int modifiers = fi.getModifiers();
             return Modifier.isPublic(modifiers)
-                    && Modifier.isFinal(modifiers)
                     && !Modifier.isStatic(modifiers);
         })
         .forEach(fi -> {

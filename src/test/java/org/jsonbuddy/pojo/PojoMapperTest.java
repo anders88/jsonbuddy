@@ -12,10 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.pojo.testclasses.ClassContainingAnnotated;
@@ -26,8 +28,10 @@ import org.jsonbuddy.pojo.testclasses.ClassWithDifferentTypes;
 import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedGetSetMap;
 import org.jsonbuddy.pojo.testclasses.ClassWithEmbeddedMap;
 import org.jsonbuddy.pojo.testclasses.ClassWithEnum;
+import org.jsonbuddy.pojo.testclasses.ClassWithEnumCollection;
 import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
 import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
+import org.jsonbuddy.pojo.testclasses.ClassWithJdkValueTypes;
 import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
 import org.jsonbuddy.pojo.testclasses.ClassWithList;
 import org.jsonbuddy.pojo.testclasses.ClassWithMap;
@@ -261,26 +265,43 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithGetSetEmbeddedMap() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("names",
-                        JsonFactory.jsonObject()
-                                .put("darth", JsonFactory.jsonObject().put("name", "Darth Vader")));
+                        new JsonObject().put("darth", new JsonObject().put("name", "Darth Vader")));
         ClassWithEmbeddedGetSetMap withEmbeddedMap = PojoMapper.map(jsonObject, ClassWithEmbeddedGetSetMap.class);
         assertThat(withEmbeddedMap.getNames().get("darth").name).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldHandleClassWithEnum() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("enumNumber", "TWO");
+        JsonObject jsonObject = new JsonObject().put("enumNumber", "TWO");
         ClassWithEnum classWithEnum = PojoMapper.map(jsonObject, ClassWithEnum.class);
         assertThat(classWithEnum.enumNumber).isEqualTo(EnumClass.TWO);
     }
 
     @Test
+    public void shouldThrowExceptionOnInvalidEnum() {
+        JsonObject jsonObject = new JsonObject().put("enumNumber", "bad-value");
+        assertThatThrownBy(() -> PojoMapper.map(jsonObject, ClassWithEnum.class))
+            .isInstanceOf(CanNotMapException.class)
+            .hasMessageContaining("bad-value")
+            .hasMessageContaining("EnumClass")
+            .hasMessageContaining("ONE");
+    }
+
+    @Test
+    public void shouldHandleClassWithEnumCollection() {
+        JsonObject jsonObject = new JsonObject().put("enumCollection",
+                new JsonArray().add(EnumClass.THREE).add(EnumClass.ONE));
+        ClassWithEnumCollection o = PojoMapper.map(jsonObject, ClassWithEnumCollection.class);
+        assertThat(o.enumCollection).containsExactly(EnumClass.THREE, EnumClass.ONE);
+    }
+
+
+    @Test
     public void shouldHandleClassWithMapWithList() throws Exception {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("parentAndChildren",
-                        JsonFactory.jsonObject().put("Darth", JsonFactory.jsonArray().add("Luke").add("Leia")));
+        JsonObject jsonObject = new JsonObject()
+                .put("parentAndChildren", new JsonObject().put("Darth", new JsonArray().add("Luke").add("Leia")));
         ClassWithMapWithList withList = PojoMapper.map(jsonObject, ClassWithMapWithList.class);
         assertThat(withList.parentAndChildren.get("Darth")).containsExactly("Luke","Leia");
 
@@ -333,7 +354,6 @@ public class PojoMapperTest {
         JsonObject jsonObject = JsonFactory.jsonObject().put("name", "darth").put("children", arr);
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
         assertThat(classWithList.children.get(1)).isNull();
-
     }
 
     @Test
@@ -486,6 +506,17 @@ public class PojoMapperTest {
         InterfaceWithEnum interfaceWithEnum = PojoMapper.map(jsonObject,InterfaceWithEnum.class,new DynamicInterfaceMapper(),new EnumMapper());
         assertThat(interfaceWithEnum.getName()).isEqualTo("Darth");
         assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
+    }
+
+    @Test
+    public void shouldMapJdkValueTypes() {
+        ClassWithJdkValueTypes o = new ClassWithJdkValueTypes();
+        o.uuids = Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
+        o.localDate = LocalDate.now();
+        o.instant = Instant.now();
+        JsonNode json = JsonGenerator.generate(o);
+        ClassWithJdkValueTypes deserialized = PojoMapper.map((JsonObject)json, ClassWithJdkValueTypes.class);
+        assertThat(deserialized).isEqualToComparingFieldByField(o);
     }
 
 }

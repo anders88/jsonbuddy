@@ -1,6 +1,6 @@
 package org.jsonbuddy.pojo;
 
-public class CanNotMapException extends RuntimeException {
+public class CanNotMapException extends JsonException {
     public CanNotMapException(String message) {
         super(message);
     }

@@ -6,6 +6,7 @@ import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -110,29 +111,18 @@ public class PojoMapper {
             throw new CanNotMapException("Can not genereate instance of interfaces, Supply DynamicInterfaceMapper as rule to support this");
         }
 
-        Object result;
-        Constructor<?>[] declaredConstructors = Optional.ofNullable(clazz.getDeclaredConstructors()).orElse(new Constructor[0]);
-        result = null;
-        for (Constructor<?> constructor : declaredConstructors) {
-            if (constructor.getParameterCount() == 0) {
-                boolean accessible = constructor.isAccessible();
-                if (!accessible) {
-                    constructor.setAccessible(true);
-                }
-                try {
-                    result = constructor.newInstance();
-                } catch (Exception e) {
-                    throw new CanNotMapException(e);
-                }
-                if (!accessible) {
-                    constructor.setAccessible(false);
-
-                }
-                break;
-            }
-        }
-        if (result == null) {
+        Constructor<?> constructor;
+        try {
+            constructor = clazz.getDeclaredConstructor();
+        } catch (NoSuchMethodException | SecurityException e1) {
             throw new CanNotMapException(String.format("Class %s has no default constructor",clazz.getName()));
+        }
+        constructor.setAccessible(true);
+        Object result;
+        try {
+            result = constructor.newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            throw new CanNotMapException(e.getMessage());
         }
         for (String key : jsonObject.keys()) {
             try {
@@ -142,6 +132,10 @@ public class PojoMapper {
                 if (tryToSetProperty(jsonObject, clazz, result, key)) {
                     continue;
                 }
+            } catch (CanNotMapException e) {
+                throw e;
+            } catch (JsonConversionException e) {
+                throw new CanNotMapException("Cannot set " + key + ": " + e.getMessage());
             } catch (Exception e) {
                 throw new CanNotMapException(e);
             }
@@ -152,7 +146,7 @@ public class PojoMapper {
 
     private Object mapArray(JsonArray jsonArray, Class<?> collectionType, Class<?> elementType) {
         Stream<Object> stream = jsonArray.nodeStream()
-                .map(element -> mapValue(element, elementType, null));
+                .map(element -> convertIfNecessary(mapValue(element, elementType, null), elementType));
         if (List.class.isAssignableFrom(collectionType)) {
             return stream.collect(Collectors.toList());
         } else if (Set.class.isAssignableFrom(collectionType)) {
@@ -197,7 +191,7 @@ public class PojoMapper {
             Class<?> mappedClass = declaredField.getType();
             Class<?> elementType = nodeValue instanceof JsonArray ? computeElementType(declaredField) : null;
             value = mapValue(nodeValue, mappedClass, elementType);
-            value = convertIfNecessary(value,declaredField.getType());
+            value = convertIfNecessary(value, declaredField.getType());
         }
         declaredField.setAccessible(true);
         declaredField.set(result,value);
@@ -267,14 +261,37 @@ public class PojoMapper {
         if (Long.class.equals(destinationType) && (value instanceof String)) {
             return Long.parseLong((String) value);
         }
-        if (destinationType.isEnum() && (value instanceof String)) {
-            String stringValue = (String) value;
-            Object[] enumConstants = destinationType.getEnumConstants();
-            return Arrays.asList(enumConstants).stream()
-                    .filter(o -> stringValue.equals(o.toString()))
-                    .findAny().get();
+        if (destinationType.isEnum() && (value instanceof CharSequence)) {
+            return convertEnumValue(value, destinationType);
         }
-        return value;
+        if (UUID.class.equals(destinationType)) {
+            return UUID.fromString(value.toString());
+        }
+        if (Temporal.class.isAssignableFrom(destinationType)) {
+            try {
+                Method parseMethod = destinationType.getMethod("parse", CharSequence.class);
+                return parseMethod.invoke(null, value.toString());
+            } catch (NoSuchMethodException|SecurityException|IllegalAccessException e) {
+                throw new CanNotMapException("Could not find " + destinationType.getName() + "::parse");
+            } catch (InvocationTargetException e) {
+                if (e.getTargetException() instanceof RuntimeException) {
+                    throw (RuntimeException)e.getTargetException();
+                } else {
+                    throw new CanNotMapException("Cannot map to " + destinationType + ": " + e);
+                }
+            }
+        }
+
+        throw new JsonConversionException("Cannot convert to " + destinationType + ": " + value);
+    }
+
+    protected Object convertEnumValue(Object value, Class<?> destinationType) {
+        String stringValue = value.toString();
+        Object[] enumConstants = destinationType.getEnumConstants();
+        return Arrays.asList(enumConstants).stream()
+                .filter(o -> stringValue.equals(o.toString()))
+                .findAny()
+                .orElseThrow(() -> new CanNotMapException("Illegal value " + value + " for " + destinationType.getSimpleName() + ". Valid options are " + Arrays.asList(enumConstants)));
     }
 
     private static class OverriddenVal {

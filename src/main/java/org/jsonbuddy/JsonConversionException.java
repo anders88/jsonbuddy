@@ -1,6 +1,8 @@
 package org.jsonbuddy;
 
-public class JsonConversionException extends RuntimeException {
+import org.jsonbuddy.pojo.JsonException;
+
+public class JsonConversionException extends JsonException {
 
     public JsonConversionException(String message) {
         super(message);
