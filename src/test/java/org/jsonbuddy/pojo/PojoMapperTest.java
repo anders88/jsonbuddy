@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,6 +42,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithNumbers;
 import org.jsonbuddy.pojo.testclasses.ClassWithOptional;
 import org.jsonbuddy.pojo.testclasses.ClassWithOptionalProperty;
 import org.jsonbuddy.pojo.testclasses.ClassWithPojoOverride;
+import org.jsonbuddy.pojo.testclasses.ClassWithPrimitiveValues;
 import org.jsonbuddy.pojo.testclasses.ClassWithPrivateConstructor;
 import org.jsonbuddy.pojo.testclasses.ClassWithTime;
 import org.jsonbuddy.pojo.testclasses.CombinedClass;
@@ -172,7 +174,6 @@ public class PojoMapperTest {
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
         assertThat(classWithList.children).containsExactly("Luke", "Leia");
     }
-
 
     @Test
     public void shouldHandleClassWithInstant() throws Exception {
@@ -508,6 +509,8 @@ public class PojoMapperTest {
         assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
     }
 
+
+
     @Test
     public void shouldMapJdkValueTypes() {
         ClassWithJdkValueTypes o = new ClassWithJdkValueTypes();
@@ -516,6 +519,23 @@ public class PojoMapperTest {
         o.instant = Instant.now();
         JsonNode json = JsonGenerator.generate(o);
         ClassWithJdkValueTypes deserialized = PojoMapper.map((JsonObject)json, ClassWithJdkValueTypes.class);
+        assertThat(deserialized).isEqualToComparingFieldByField(o);
+    }
+
+    @Test
+    public void shouldRoundtripPrimitives() {
+        Random random = new Random();
+        ClassWithPrimitiveValues o = new ClassWithPrimitiveValues();
+        o.boolValue = random.nextBoolean();
+        o.byteValue = (byte) random.nextInt(0xff);
+        o.shortValue = (short) random.nextInt(0x8fff);
+        o.intValue = random.nextInt();
+        o.longValue = random.nextLong();
+        o.doubleValue = random.nextDouble();
+        o.floatValue = random.nextInt();
+
+        JsonNode json = JsonGenerator.generate(o);
+        ClassWithPrimitiveValues deserialized = PojoMapper.map((JsonObject)json, ClassWithPrimitiveValues.class);
         assertThat(deserialized).isEqualToComparingFieldByField(o);
     }
 

@@ -1,15 +1,34 @@
 package org.jsonbuddy.pojo;
 
-import org.jsonbuddy.*;
-
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedParameterizedType;
+import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.Instant;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonConversionException;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting
@@ -230,6 +249,47 @@ public class PojoMapper {
         return null;
     }
 
+    private static Map<Class<?>, Function<Number, Object>> numberConverters = new HashMap<>();
+    static {
+        numberConverters.put(BigInteger.class, n -> new BigInteger(n.toString()));
+        numberConverters.put(Long.class, n -> n.longValue());
+        numberConverters.put(Long.TYPE, n -> n.longValue());
+        numberConverters.put(Integer.class, n -> n.intValue());
+        numberConverters.put(Integer.TYPE, n -> n.intValue());
+        numberConverters.put(Short.class, n -> n.shortValue());
+        numberConverters.put(Short.TYPE, n -> n.shortValue());
+        numberConverters.put(Byte.class, n -> n.byteValue());
+        numberConverters.put(Byte.TYPE, n -> n.byteValue());
+        numberConverters.put(BigDecimal.class, n -> new BigDecimal(n.toString()));
+        numberConverters.put(Double.class, n -> n.doubleValue());
+        numberConverters.put(Double.TYPE, n -> n.doubleValue());
+        numberConverters.put(Float.class, n -> n.floatValue());
+        numberConverters.put(Float.TYPE, n -> n.floatValue());
+        numberConverters.put(String.class, n -> n.toString());
+    }
+
+    private static Map<Class<?>, Function<String, Object>> stringConverters = new HashMap<>();
+    static {
+        stringConverters.put(UUID.class, s -> UUID.fromString(s));
+
+        stringConverters.put(BigInteger.class, s -> new BigInteger(s));
+        stringConverters.put(Long.class, s -> Long.parseLong(s));
+        stringConverters.put(Long.TYPE, s -> Long.parseLong(s));
+        stringConverters.put(Integer.class, s -> Integer.parseInt(s));
+        stringConverters.put(Integer.TYPE, s -> Integer.parseInt(s));
+        stringConverters.put(Short.class, s -> Short.parseShort(s));
+        stringConverters.put(Short.TYPE, s -> Short.parseShort(s));
+        stringConverters.put(Byte.class, s -> Byte.parseByte(s));
+        stringConverters.put(Byte.TYPE, s -> Byte.parseByte(s));
+        stringConverters.put(BigDecimal.class, s -> new BigDecimal(s));
+        stringConverters.put(Double.class, s -> Double.parseDouble(s));
+        stringConverters.put(Double.TYPE, s -> Double.parseDouble(s));
+        stringConverters.put(Float.class, s -> Float.parseFloat(s));
+        stringConverters.put(Float.TYPE, s -> Float.parseFloat(s));
+        stringConverters.put(String.class, s -> s);
+        stringConverters.put(Boolean.class, s -> Boolean.parseBoolean(s));
+    }
+
     private Object convertIfNecessary(Object value, Class<?> destinationType) {
         if (value == null) {
             return null;
@@ -237,35 +297,17 @@ public class PojoMapper {
         if (destinationType.isAssignableFrom(value.getClass())) {
             return value;
         }
-        if (value instanceof String && Instant.class.isAssignableFrom(destinationType)) {
-            return Instant.parse(value.toString());
+        if (value instanceof Boolean && destinationType == Boolean.TYPE) {
+            return value;
         }
-        if (value instanceof Number && BigInteger.class.equals(destinationType)) {
-            return new BigInteger(value.toString());
+        if (value instanceof Number && numberConverters.containsKey(destinationType)) {
+            return numberConverters.get(destinationType).apply((Number)value);
         }
-        if (value instanceof Number && BigDecimal.class.equals(destinationType)) {
-            return new BigDecimal(value.toString());
-        }
-        if (value instanceof Number && Integer.class.equals(destinationType)) {
-            return ((Number) value).intValue();
-        }
-        if (value instanceof Number && Float.class.equals(destinationType)) {
-            return ((Number) value).floatValue();
-        }
-        if (value instanceof Number && Double.class.equals(destinationType)) {
-            return ((Number) value).doubleValue();
-        }
-        if (Integer.class.equals(destinationType) && (value instanceof String)) {
-            return Integer.parseInt((String) value);
-        }
-        if (Long.class.equals(destinationType) && (value instanceof String)) {
-            return Long.parseLong((String) value);
+        if (value instanceof CharSequence && stringConverters.containsKey(destinationType)) {
+            return stringConverters.get(destinationType).apply(value.toString());
         }
         if (destinationType.isEnum() && (value instanceof CharSequence)) {
             return convertEnumValue(value, destinationType);
-        }
-        if (UUID.class.equals(destinationType)) {
-            return UUID.fromString(value.toString());
         }
         if (Temporal.class.isAssignableFrom(destinationType)) {
             try {
@@ -363,7 +405,6 @@ public class PojoMapper {
             value = optionalValue;
         } else {
             Type parameterType = method.getGenericParameterTypes()[0];
-            parameterType.getTypeName();
             value = mapValue(jsonObject.value(key).get(),
                     getContainerClass(parameterType), getElementClass(parameterType));
             value = convertIfNecessary(value, setterClass);
