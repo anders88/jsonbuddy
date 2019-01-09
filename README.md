@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.14.0</version>
+	<version>0.14.1</version>
 </dependency>
 ```
 
@@ -203,6 +203,7 @@ Version | Description
 0.13.1  | Bugfix. Fixes issue #26 and #27
 0.13.2  | Bugfix. Generate objects that overridesjsongeneration when putting to jsonobject
 0.14.0  | Support for UUID and fix for temporals
+0.14.1  | Bugfix
 
 
 # Licence
