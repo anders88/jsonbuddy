@@ -4,6 +4,7 @@ import org.jsonbuddy.pojo.OverridesJsonGenerator;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public class JsonFactory {
     public static JsonObject jsonObject() {
@@ -43,8 +44,8 @@ public class JsonFactory {
             return ((JsonNode)o);
         } else if (o instanceof OverridesJsonGenerator) {
             return ((OverridesJsonGenerator) o).jsonValue();
-        } else if (o instanceof String) {
-            return new JsonString((String)o);
+        } else if (o instanceof CharSequence) {
+            return new JsonString(o.toString());
         } else if (o instanceof Instant) {
             return jsonInstant((Instant)o);
         } else if (o instanceof Boolean) {
@@ -55,7 +56,7 @@ public class JsonFactory {
             return new JsonNumber((Number)o);
         } else if (o instanceof List) {
             return new JsonArray().addAll((List<String>)o);
-        } else if (o instanceof Enum) {
+        } else if (o instanceof Enum || o instanceof  UUID) {
             return new JsonString(o.toString());
         } else if (o == null) {
             return new JsonNull();
