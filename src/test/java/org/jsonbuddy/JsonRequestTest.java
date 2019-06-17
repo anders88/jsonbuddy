@@ -10,8 +10,9 @@ import java.net.URLConnection;
 import org.assertj.core.api.AbstractThrowableAssert;
 import org.jsonbuddy.parse.JsonHttpException;
 import org.jsonbuddy.parse.JsonParser;
+import org.junit.Ignore;
 import org.junit.Test;
-
+@Ignore("Using external https. NONONO!!!")
 public class JsonRequestTest {
 
     @Test
