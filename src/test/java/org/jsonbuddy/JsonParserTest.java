@@ -1,6 +1,7 @@
 package org.jsonbuddy;
 
 
+import org.assertj.core.data.Offset;
 import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
@@ -238,6 +239,12 @@ public class JsonParserTest {
         JsonObject expected = new JsonObject().put("one", "two");
         assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(expected.toJson()))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void shouldHandleNumbersWithExponent() {
+        JsonObject parsed = JsonParser.parseToObject("{\"numval\" : 0e+1}");
+        assertThat(parsed.requiredDouble("numval")).isCloseTo(0d, Offset.offset(0.00001d));
     }
 
     private static String fixQuotes(String content) {

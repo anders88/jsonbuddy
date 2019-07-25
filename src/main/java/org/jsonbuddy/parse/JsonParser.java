@@ -237,7 +237,7 @@ public class JsonParser {
     private JsonValue parseNumberValue() {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
-        while (!finished && (Character.isDigit(lastRead) || ".eE-".contains("" + lastRead))) {
+        while (!finished && (Character.isDigit(lastRead) || ".eE-+".contains("" + lastRead))) {
             isDouble = isDouble || ".eE".contains("" + lastRead);
             val.append(lastRead);
             readNext();
