@@ -127,7 +127,7 @@ public class PojoMapper {
 
 
         if (clazz.isInterface()) {
-            throw new CanNotMapException("Can not genereate instance of interfaces, Supply DynamicInterfaceMapper as rule to support this");
+            throw new CanNotMapException("Can not generate instance of interfaces " + clazz.getName()  + ", Supply DynamicInterfaceMapper as rule to support this");
         }
 
         Constructor<?> constructor;
