@@ -31,12 +31,17 @@
             <email>karlsenanders@gmail.com</email>
             <organizationUrl>https://github.com/anders88</organizationUrl>
         </developer>
+        <developer>
+            <name>Johannes Brodwall</name>
+            <email>jhannes@gmail.com</email>
+            <organizationUrl>https://github.com/jhannes</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:anders88/jsonbuddy.git</connection>
-        <developerConnection>scm:git:git@github.com:anders88/jsonbuddy.git</developerConnection>
-        <url>git@github.com:anders88/jsonbuddy.git</url>
+        <connection>scm:git:https://github.com/anders88/jsonbuddy.git</connection>
+        <developerConnection>scm:git:https://github.com/anders88/jsonbuddy.git</developerConnection>
+        <url>https://github.com/anders88/jsonbuddy.git</url>
     </scm>
 
     <dependencies>
