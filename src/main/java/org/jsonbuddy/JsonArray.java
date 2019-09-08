@@ -1,6 +1,18 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.parse.JsonHttpException;
+import org.jsonbuddy.parse.JsonParseException;
+import org.jsonbuddy.parse.JsonParser;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +53,77 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     private JsonArray(List<? extends JsonNode> nodes) {
         this.values = new ArrayList<>(nodes);
+    }
+
+    /**
+     * Parse the Reader as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
+    public static JsonArray parse(Reader reader) throws IOException {
+        JsonNode result = JsonParser.parseNode(reader);
+        if (result instanceof JsonArray) {
+            return (JsonArray)result;
+        }
+        if (result == null) {
+            throw new JsonParseException("Expected JSON array got null");
+        }
+        throw new JsonParseException("Expected JSON array got " + result.getClass());
+    }
+
+    /**
+     * Parse the String as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
+    public static JsonArray parse(String input) {
+        try {
+            return parse(new StringReader(input));
+        } catch (IOException e) {
+            throw new RuntimeException("Should never happen with StringReader", e);
+        }
+    }
+
+    /**
+     * Parse the InputStream as a JsonArray
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     */
+    public static JsonArray parse(InputStream inputStream) throws JsonParseException, IOException {
+        return parse(new InputStreamReader(inputStream));
+    }
+
+    /**
+     * GET the contents of the url as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     * @throws IOException if there was a communication error
+     */
+    public static JsonArray parse(URL url) throws IOException {
+        return parse(url.openConnection());
+    }
+
+    /**
+     * GET the contents of the URLConnection as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonArray
+     * @throws JsonHttpException if the endpoint returned a 4xx error
+     * @throws IOException if there was a communication error
+     */
+    public static JsonArray parse(URLConnection connection) throws IOException {
+        HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (httpConnection.getResponseCode() < 400) {
+            try (InputStream input = connection.getInputStream()) {
+                return parse(input);
+            }
+        } else {
+            throw new JsonHttpException(httpConnection);
+        }
     }
 
     /**
@@ -188,8 +271,8 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      */
     public Stream<String> stringStream() {
         return nodeStream()
-                .filter(no -> no instanceof JsonValue)
-                .map(no -> ((JsonValue) no).stringValue());
+                .filter(node -> node instanceof JsonValue)
+                .map(JsonNode::stringValue);
     }
 
     /**
@@ -299,7 +382,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         if (jsonNode instanceof JsonBoolean) {
             return ((JsonBoolean)jsonNode).booleanValue();
         } else if (jsonNode instanceof JsonValue) {
-            return Boolean.parseBoolean(((JsonValue)jsonNode).stringValue());
+            return Boolean.parseBoolean(jsonNode.stringValue());
         } else {
             throw new JsonConversionException(jsonNode + " is not boolean");
         }
@@ -338,7 +421,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
             return ((JsonNumber)jsonNode).javaObjectValue();
         } else if (jsonNode instanceof JsonValue) {
             try {
-                return Double.parseDouble(((JsonValue)jsonNode).stringValue());
+                return Double.parseDouble(jsonNode.stringValue());
             } catch (NumberFormatException e) {
                 throw new JsonConversionException(jsonNode + " is not numeric");
             }

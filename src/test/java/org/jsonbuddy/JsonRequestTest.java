@@ -44,7 +44,7 @@ public class JsonRequestTest {
             }
             exchange.close();
         });
-        JsonArray a = JsonParser.parseToArray(new URL("http://localhost:" + httpServer.getAddress().getPort()));
+        JsonArray a = JsonArray.parse(new URL("http://localhost:" + httpServer.getAddress().getPort()));
         assertThat(a.strings()).contains("slideshow", "corn");
     }
 
@@ -81,7 +81,7 @@ public class JsonRequestTest {
 
         URL url = new URL("http://localhost:" + serverPort);
 
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonParser.parseToArray(url))
+        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonArray.parse(url))
             .isInstanceOf(JsonHttpException.class)
             .hasMessageContaining("404 Not Found")
             .hasMessageContaining(url.toString());

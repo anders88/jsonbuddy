@@ -35,10 +35,10 @@ public class JsonParser {
      * or a JsonValue.
      *
      * @throws JsonParseException if a JSON syntax error was encountered
+     * @throws IOException if there was an error reading the data from the Reader
      */
-    public static JsonNode parse(Reader reader) throws JsonParseException, IOException {
-        JsonParser jsonParser = new JsonParser(reader);
-        return jsonParser.parseValue();
+    public static JsonNode parseNode(Reader reader) throws IOException, JsonParseException {
+        return new JsonParser(reader).parseValue();
     }
 
     /**
@@ -49,12 +49,11 @@ public class JsonParser {
      */
     public static JsonNode parse(String input) throws JsonParseException  {
         try {
-            return parse(new StringReader(input));
+            return parseNode(new StringReader(input));
         } catch (IOException e) {
             throw new RuntimeException("Should never happen with StringReader", e);
         }
     }
-
 
     /**
      * Parse the InputStream as a JsonNode. Will return a JsonArray, JsonArray
@@ -63,7 +62,7 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered
      */
     public static JsonNode parse(InputStream inputStream) throws JsonParseException, IOException {
-        return parse(new InputStreamReader(inputStream));
+        return parseNode(new InputStreamReader(inputStream));
     }
 
 
@@ -133,76 +132,42 @@ public class JsonParser {
     }
 
     /**
-     * GET the contents of the URLConnection as a JSON array
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
-     * @throws JsonHttpException if the endpoint returned a 4xx error
-     * @throws IOException if there was a communication error
+     * @see JsonArray#parse(String)
+     * @deprecated Use {@link JsonArray#parse} instead
      */
-    public static JsonArray parseToArray(URLConnection connection) throws IOException {
-        HttpURLConnection httpConnection = (HttpURLConnection) connection;
-        if (httpConnection.getResponseCode() < 400) {
-            try (InputStream input = connection.getInputStream()) {
-                return parseToArray(input);
-            }
-        } else {
-            throw new JsonHttpException(httpConnection);
+    public static JsonArray parseToArray(String input) throws JsonParseException  {
+        return JsonArray.parse(input);
+    }
+
+    /**
+     * @see JsonArray#parse(InputStream)
+     * @deprecated Use {@link JsonArray#parse} instead
+     */
+    public static JsonArray parseToArray(InputStream input) throws JsonParseException  {
+        try {
+            return JsonArray.parse(input);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     /**
-     * GET the contents of the url as a JSON array
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
-     * @throws IOException if there was a communication error
+     * @see JsonArray#parse(String)
+     * @deprecated Use {@link JsonArray#parse} instead
      */
-    public static JsonArray parseToArray(URL url) throws IOException {
-        return parseToArray(url.openConnection());
+    public static JsonArray parseToArray(Reader input) throws JsonParseException {
+        try {
+            return JsonArray.parse(input);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
 
     private static JsonObject toObject(JsonNode result) {
         if (!(result instanceof JsonObject)) {
             throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
         }
         return (JsonObject) result;
-    }
-
-    /**
-     * Parse the String as a JsonArray
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonArray
-     */
-    public static JsonArray parseToArray(String input) throws JsonParseException  {
-        try {
-            return parseToArray(new StringReader(input));
-        } catch (IOException e) {
-            throw new RuntimeException("Should never happen with StringReader", e);
-        }
-    }
-
-    /**
-     * Parse the InputStream as a JsonArray
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonArray
-     */
-    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException, IOException {
-        return parseToArray(new InputStreamReader(inputStream));
-    }
-
-    /**
-     * Parse the Reader as a JsonArray
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonArray
-     */
-    public static JsonArray parseToArray(Reader reader) throws JsonParseException, IOException {
-        JsonParser jsonParser = new JsonParser(reader);
-        return toArray(jsonParser.parseValue());
     }
 
     /**

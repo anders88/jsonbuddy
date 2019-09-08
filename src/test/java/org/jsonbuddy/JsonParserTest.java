@@ -23,41 +23,42 @@ public class JsonParserTest {
 
     @Test
     public void shouldParseEmptyObject() throws IOException {
-        JsonNode jsonNode = JsonParser.parse(new StringReader("{}"));
+        JsonNode jsonNode = JsonParser.parseNode(new StringReader("{}"));
+        assertThat(jsonNode.isObject()).isTrue();
         assertThat(jsonNode instanceof JsonObject).isTrue();
     }
 
     @Test
     public void shouldParseObjectWithStringValue() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'name':'Darth Vader'}"));
-        JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
+        JsonObject jsonObject = (JsonObject) JsonParser.parseNode(input);
         assertThat(jsonObject.stringValue("name")).isPresent().contains("Darth Vader");
     }
 
     @Test
     public void shouldHandleMultipleValuesInObject() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'firstname':'Darth', 'lastname': 'Vader'}"));
-        JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
+        JsonObject jsonObject = (JsonObject) JsonParser.parseNode(input);
         assertThat(jsonObject.stringValue("firstname")).isPresent().contains("Darth");
         assertThat(jsonObject.stringValue("lastname")).isPresent().contains("Vader");
     }
 
     @Test
     public void shouldHandleArrays() {
-        JsonArray array = JsonParser.parseToArray(fixQuotes("['one','two','three']"));
+        JsonArray array = JsonArray.parse(fixQuotes("['one','two','three']"));
         assertThat(array.strings()).containsExactly("one", "two", "three");
     }
 
     @Test
     public void shouldHandleEmptyArrays() {
-        JsonArray jsonArray = JsonParser.parseToArray("[  \n\n ]");
+        JsonArray jsonArray = JsonArray.parse("[  \n\n ]");
         assertThat(jsonArray).isEmpty();
     }
 
     @Test
     public void shouldWarnOnWrongParseType() {
-        assertThatThrownBy(() -> JsonParser.parseToArray(fixQuotes("{'foo':'bar'}")))
-                .hasMessageContaining("Expected json array got class org.jsonbuddy.JsonObject");
+        assertThatThrownBy(() -> JsonArray.parse(fixQuotes("{'foo':'bar'}")))
+                .hasMessageContaining("Expected JSON array got class org.jsonbuddy.JsonObject");
         assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("['foo', 'bar']")))
             .hasMessageContaining("Expected json object got class org.jsonbuddy.JsonArray");
     }
@@ -65,7 +66,7 @@ public class JsonParserTest {
     @Test
     public void shouldHandleObjectWithArray() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'name':'Anakin','children':['Luke','Leia']}"));
-        JsonObject vader = (JsonObject) JsonParser.parse(input);
+        JsonObject vader = (JsonObject) JsonParser.parseNode(input);
         List<String> children = vader.requiredArray("children").stringStream()
                 .collect(Collectors.toList());
         assertThat(children).containsExactly("Luke", "Leia");
@@ -120,10 +121,10 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleSpecialCharacters() {
-        String input = fixQuotes("{'aval':'quote:\\\" backslash\\\\ \\/slash \\f bell\\b tab\\t newline\\nrest'}");
+        String input = fixQuotes("{'eval':'quote:\\\" backslash\\\\ \\/slash \\f bell\\b tab\\t newline\\nrest'}");
         JsonObject val = JsonParser.parseToObject(input);
 
-        assertThat(val.stringValue("aval").get()).isEqualTo("quote:\" backslash\\ /slash \f bell\b tab\t newline\nrest");
+        assertThat(val.stringValue("eval").get()).isEqualTo("quote:\" backslash\\ /slash \f bell\b tab\t newline\nrest");
     }
 
     @Test
@@ -214,7 +215,7 @@ public class JsonParserTest {
     @Test
     public void shouldHandleNullElementsInArray() {
         String json = fixQuotes("['one',null,'two']");
-        JsonArray jsonArray = JsonParser.parseToArray(json);
+        JsonArray jsonArray = JsonArray.parse(json);
         assertThat(jsonArray.size()).isEqualTo(3);
         assertThat(jsonArray.get(1, JsonNull.class)).isEqualTo(new JsonNull());
     }
