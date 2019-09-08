@@ -1,7 +1,14 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.parse.JsonHttpException;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Common superclass of all JSON elements. A JsonNode can be
@@ -24,6 +31,19 @@ public abstract class JsonNode {
         return res.toString();
     }
 
+    /**
+     * Writes this JSON object to the specified HttpURLConnection
+     */
+    public void postJson(URLConnection connection) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) connection;
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json");
+        try (OutputStream outputStream = conn.getOutputStream()) {
+            outputStream.write(toJson().getBytes(StandardCharsets.UTF_8));
+        }
+        JsonHttpException.verifyResponseCode(conn);
+    }
 
     /**
      * Writes this objects as JSON to the given writer

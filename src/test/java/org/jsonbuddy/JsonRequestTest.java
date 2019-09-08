@@ -47,6 +47,26 @@ public class JsonRequestTest {
         assertThat(a.strings()).contains("slideshow", "corn");
     }
 
+    private JsonObject postedObject;
+
+    @Test
+    public void shouldPostJson() throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        httpServer.start();
+        httpServer.createContext("/", exchange -> {
+            postedObject = JsonObject.parse(exchange.getRequestBody());
+            exchange.getResponseHeaders().add("Content-type", "application/json; charset=utf-8");
+            exchange.sendResponseHeaders(200, 0);
+            exchange.close();
+        });
+        URL url = new URL("http://localhost:" + httpServer.getAddress().getPort());
+
+        JsonObject postingObject = new JsonObject().put("Hello", "World");
+        postingObject.postJson(url.openConnection());
+
+        assertThat(postedObject).isEqualTo(postingObject);
+    }
+
 
     @Test
     public void shouldHandleJsonInErrors() throws IOException {

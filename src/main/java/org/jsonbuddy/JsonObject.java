@@ -126,9 +126,7 @@ public class JsonObject extends JsonNode {
      */
     public static JsonObject parse(URLConnection connection) throws IOException {
         HttpURLConnection httpConnection = (HttpURLConnection) connection;
-        if (httpConnection.getResponseCode() >= 400) {
-            throw new JsonHttpException(httpConnection);
-        }
+        JsonHttpException.verifyResponseCode(httpConnection);
         try (InputStream input = connection.getInputStream()) {
             return parse(input);
         }
@@ -368,7 +366,8 @@ public class JsonObject extends JsonNode {
         if (!indentationAmount.isEmpty()) printWriter.append("\n");
         for (Iterator<Entry<String, JsonNode>> iterator = values.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String,JsonNode> entry = iterator.next();
-            printWriter.append(currentIntentation + indentationAmount);
+            printWriter.append(currentIntentation);
+            printWriter.append(indentationAmount);
             printWriter.append('"');
             printWriter.append(entry.getKey());
             printWriter.append("\":");
@@ -380,7 +379,8 @@ public class JsonObject extends JsonNode {
 
             if (!indentationAmount.isEmpty()) printWriter.append("\n");
         }
-        printWriter.append(currentIntentation + "}");
+        printWriter.append(currentIntentation);
+        printWriter.append("}");
     }
 
     /**

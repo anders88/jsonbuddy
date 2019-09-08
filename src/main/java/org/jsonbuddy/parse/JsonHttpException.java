@@ -33,6 +33,12 @@ public class JsonHttpException extends RuntimeException {
         }
     }
 
+    public static void verifyResponseCode(HttpURLConnection conn) throws IOException {
+        if (conn.getResponseCode() >= 400) {
+            throw new JsonHttpException(conn);
+        }
+    }
+
     private String asString(InputStream error) throws IOException {
         try (Reader reader = new InputStreamReader(error)) {
             StringBuilder builder = new StringBuilder();

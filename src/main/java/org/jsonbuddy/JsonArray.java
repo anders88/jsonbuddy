@@ -117,12 +117,9 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      */
     public static JsonArray parse(URLConnection connection) throws IOException {
         HttpURLConnection httpConnection = (HttpURLConnection) connection;
-        if (httpConnection.getResponseCode() < 400) {
-            try (InputStream input = connection.getInputStream()) {
-                return parse(input);
-            }
-        } else {
-            throw new JsonHttpException(httpConnection);
+        JsonHttpException.verifyResponseCode(httpConnection);
+        try (InputStream input = connection.getInputStream()) {
+            return parse(input);
         }
     }
 
@@ -170,7 +167,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Maps the values over the function and returns a JsonArray with the results
      */
     public static <T> JsonArray map(Collection<T> values, Function<T, JsonNode> f) {
-        return fromNodeStream(values.stream().map(o -> f.apply(o)));
+        return fromNodeStream(values.stream().map(f::apply));
     }
 
     /**
@@ -216,7 +213,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * returns them as doubles. Otherwise, it throws NumberFormatException
      */
     public List<Boolean> booleans() {
-        return mapNodes(node -> asBoolean(node));
+        return mapNodes(this::asBoolean);
     }
 
 
