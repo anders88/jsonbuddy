@@ -189,7 +189,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleLineshifts() {
-        JsonObject.parse(fixQuotes("{'tablevalues':\n['one','two']}"))
+        JsonObject.parse(fixQuotes("{'tablevalues':\n['one','two']}"));
     }
 
     @Test
