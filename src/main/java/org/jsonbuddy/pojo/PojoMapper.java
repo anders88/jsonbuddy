@@ -123,9 +123,6 @@ public class PojoMapper {
         }
 
         JsonObject jsonObject = (JsonObject) jsonNode;
-
-
-
         if (clazz.isInterface()) {
             throw new CanNotMapException("Can not generate instance of interfaces " + clazz.getName()  + ", Supply DynamicInterfaceMapper as rule to support this");
         }

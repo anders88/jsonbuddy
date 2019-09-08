@@ -2,6 +2,7 @@ package org.jsonbuddy;
 
 import org.jsonbuddy.pojo.OverridesJsonGenerator;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +57,7 @@ public class JsonFactory {
             return new JsonNumber((Number)o);
         } else if (o instanceof List) {
             return new JsonArray().addAll((List<String>)o);
-        } else if (o instanceof Enum || o instanceof  UUID) {
+        } else if (o instanceof Enum || o instanceof UUID || o instanceof URL) {
             return new JsonString(o.toString());
         } else if (o == null) {
             return new JsonNull();
