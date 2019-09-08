@@ -36,7 +36,7 @@ public class JsonParser {
      *
      * @throws JsonParseException if a JSON syntax error was encountered
      */
-    public static JsonNode parse(Reader reader) throws JsonParseException {
+    public static JsonNode parse(Reader reader) throws JsonParseException, IOException {
         JsonParser jsonParser = new JsonParser(reader);
         return jsonParser.parseValue();
     }
@@ -48,7 +48,11 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered
      */
     public static JsonNode parse(String input) throws JsonParseException  {
-        return parse(new StringReader(input));
+        try {
+            return parse(new StringReader(input));
+        } catch (IOException e) {
+            throw new RuntimeException("Should never happen with StringReader", e);
+        }
     }
 
 
@@ -58,7 +62,7 @@ public class JsonParser {
      *
      * @throws JsonParseException if a JSON syntax error was encountered
      */
-    public static JsonNode parse(InputStream inputStream) throws JsonParseException  {
+    public static JsonNode parse(InputStream inputStream) throws JsonParseException, IOException {
         return parse(new InputStreamReader(inputStream));
     }
 
@@ -70,7 +74,11 @@ public class JsonParser {
      *             or if the JSON was not a JsonObject
      */
     public static JsonObject parseToObject(String input) throws JsonParseException  {
-        return parseToObject(new StringReader(input));
+        try {
+            return parseToObject(new StringReader(input));
+        } catch (IOException e) {
+            throw new RuntimeException("Should never happen with StringReader", e);
+        }
     }
 
     /**
@@ -79,7 +87,7 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonObject
      */
-    public static JsonObject parseToObject(Reader reader) throws JsonParseException {
+    public static JsonObject parseToObject(Reader reader) throws JsonParseException, IOException {
         JsonParser jsonParser = new JsonParser(reader);
         return toObject(jsonParser.parseValue());
     }
@@ -90,7 +98,7 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonObject
      */
-    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException {
+    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException, IOException {
         return parseToObject(new InputStreamReader(inputStream));
     }
 
@@ -124,6 +132,36 @@ public class JsonParser {
         }
     }
 
+    /**
+     * GET the contents of the URLConnection as a JSON array
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws JsonHttpException if the endpoint returned a 4xx error
+     * @throws IOException if there was a communication error
+     */
+    public static JsonArray parseToArray(URLConnection connection) throws IOException {
+        HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (httpConnection.getResponseCode() < 400) {
+            try (InputStream input = connection.getInputStream()) {
+                return parseToArray(input);
+            }
+        } else {
+            throw new JsonHttpException(httpConnection);
+        }
+    }
+
+    /**
+     * GET the contents of the url as a JSON array
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws IOException if there was a communication error
+     */
+    public static JsonArray parseToArray(URL url) throws IOException {
+        return parseToArray(url.openConnection());
+    }
+
 
     private static JsonObject toObject(JsonNode result) {
         if (!(result instanceof JsonObject)) {
@@ -139,7 +177,11 @@ public class JsonParser {
      *             or if the JSON was not a JsonArray
      */
     public static JsonArray parseToArray(String input) throws JsonParseException  {
-        return parseToArray(new StringReader(input));
+        try {
+            return parseToArray(new StringReader(input));
+        } catch (IOException e) {
+            throw new RuntimeException("Should never happen with StringReader", e);
+        }
     }
 
     /**
@@ -148,7 +190,7 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonArray
      */
-    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException  {
+    public static JsonArray parseToArray(InputStream inputStream) throws JsonParseException, IOException {
         return parseToArray(new InputStreamReader(inputStream));
     }
 
@@ -158,7 +200,7 @@ public class JsonParser {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonArray
      */
-    public static JsonArray parseToArray(Reader reader) throws JsonParseException {
+    public static JsonArray parseToArray(Reader reader) throws JsonParseException, IOException {
         JsonParser jsonParser = new JsonParser(reader);
         return toArray(jsonParser.parseValue());
     }
@@ -186,18 +228,13 @@ public class JsonParser {
     private char lastRead;
     private boolean finished;
 
-    private JsonParser(Reader reader) {
+    private JsonParser(Reader reader) throws IOException {
         this.reader = reader;
         readNext();
     }
 
-    private void readNext()  {
-        int read;
-        try {
-            read = reader.read();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void readNext() throws IOException {
+        int read = reader.read();
         if (read == -1) {
             finished = true;
             return;
@@ -205,9 +242,7 @@ public class JsonParser {
         this.lastRead = (char) read;
     }
 
-
-
-    private JsonNode parseValue() {
+    private JsonNode parseValue() throws IOException {
         while (!finished) {
             switch (lastRead) {
                 case '{':
@@ -234,7 +269,7 @@ public class JsonParser {
     }
 
 
-    private JsonValue parseNumberValue() {
+    private JsonValue parseNumberValue() throws IOException {
         StringBuilder val = new StringBuilder();
         boolean isDouble = false;
         while (!finished && (Character.isDigit(lastRead) || ".eE-+".contains("" + lastRead))) {
@@ -255,19 +290,19 @@ public class JsonParser {
     }
 
 
-    private JsonNull parseNullValue() {
+    private JsonNull parseNullValue() throws IOException {
         expectValue("null");
         return new JsonNull();
     }
 
-    private JsonValue parseBooleanValue() {
+    private JsonValue parseBooleanValue() throws IOException {
         boolean isTrue = (lastRead == 't');
         String expect = isTrue ? "true" : "false";
         expectValue(expect);
         return new JsonBoolean(isTrue);
     }
 
-    private void expectValue(String value) {
+    private void expectValue(String value) throws IOException {
         StringBuilder res = new StringBuilder();
         for (int i=0;i<value.length() && !finished;i++) {
             res.append(lastRead);
@@ -278,7 +313,7 @@ public class JsonParser {
         }
     }
 
-    private JsonArray parseArray() {
+    private JsonArray parseArray() throws IOException {
         JsonArray jsonArray = new JsonArray();
         while (lastRead != ']') {
             do {
@@ -295,13 +330,13 @@ public class JsonParser {
         return jsonArray;
     }
 
-    private JsonValue parseStringValue() {
+    private JsonValue parseStringValue() throws IOException {
         readNext();
         String value = readText();
         return JsonFactory.jsonString(value);
     }
 
-    private JsonObject parseObject() {
+    private JsonObject parseObject() throws IOException {
         JsonObject jsonObject = new JsonObject();
         while (lastRead != '}') {
             readSpaceUntil("JsonObject not closed. Expected }", '}', '"');
@@ -324,7 +359,7 @@ public class JsonParser {
         return jsonObject;
     }
 
-    private String readText() {
+    private String readText() throws IOException {
         StringBuilder res = new StringBuilder();
         while (!(finished || lastRead == '"')) {
             if (lastRead == '\\') {
@@ -369,7 +404,7 @@ public class JsonParser {
         return res.toString();
     }
 
-    private String readUnicodeValue() {
+    private String readUnicodeValue() throws IOException {
         StringBuilder code = new StringBuilder();
         for (int i=0;i<4;i++) {
             readNext();
@@ -385,11 +420,10 @@ public class JsonParser {
         } catch (NumberFormatException e) {
             throw new JsonParseException("Illegal unicode sequence " + code);
         }
-        String s = Character.toString((char)unicode);
-        return s;
+        return Character.toString((char)unicode);
     }
 
-    private void readSpaceUntil(String errormessage, Character... readUntil) {
+    private void readSpaceUntil(String errormessage, Character... readUntil) throws IOException {
         List<Character> until = Arrays.asList(readUntil);
         if (until.contains(lastRead)) {
             return;

@@ -6,6 +6,7 @@ import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -21,20 +22,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class JsonParserTest {
 
     @Test
-    public void shouldParseEmptyObject() {
+    public void shouldParseEmptyObject() throws IOException {
         JsonNode jsonNode = JsonParser.parse(new StringReader("{}"));
         assertThat(jsonNode instanceof JsonObject).isTrue();
     }
 
     @Test
-    public void shouldParseObjectWithStringValue() {
+    public void shouldParseObjectWithStringValue() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'name':'Darth Vader'}"));
         JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
         assertThat(jsonObject.stringValue("name")).isPresent().contains("Darth Vader");
     }
 
     @Test
-    public void shouldHandleMultipleValuesInObject() {
+    public void shouldHandleMultipleValuesInObject() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'firstname':'Darth', 'lastname': 'Vader'}"));
         JsonObject jsonObject = (JsonObject) JsonParser.parse(input);
         assertThat(jsonObject.stringValue("firstname")).isPresent().contains("Darth");
@@ -62,7 +63,7 @@ public class JsonParserTest {
     }
 
     @Test
-    public void shouldHandleObjectWithArray() {
+    public void shouldHandleObjectWithArray() throws IOException {
         StringReader input = new StringReader(fixQuotes("{'name':'Anakin','children':['Luke','Leia']}"));
         JsonObject vader = (JsonObject) JsonParser.parse(input);
         List<String> children = vader.requiredArray("children").stringStream()
