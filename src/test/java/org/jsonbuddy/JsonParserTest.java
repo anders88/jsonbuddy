@@ -47,6 +47,12 @@ public class JsonParserTest {
     }
 
     @Test
+    public void shouldHandleEmptyArrays() {
+        JsonArray jsonArray = JsonParser.parseToArray("[  \n\n ]");
+        assertThat(jsonArray).isEmpty();
+    }
+
+    @Test
     public void shouldWarnOnWrongParseType() throws Exception {
         assertThatThrownBy(() -> JsonParser.parseToArray(fixQuotes("{'foo':'bar'}")))
                 .hasMessageContaining("Expected json array got class org.jsonbuddy.JsonObject");

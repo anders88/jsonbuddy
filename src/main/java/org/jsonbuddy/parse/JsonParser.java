@@ -281,7 +281,9 @@ public class JsonParser {
     private JsonArray parseArray() {
         JsonArray jsonArray = new JsonArray();
         while (lastRead != ']') {
-            readNext();
+            do {
+                readNext();
+            } while (Character.isWhitespace(lastRead));
             if (lastRead == ']') {
                 break;
             }
