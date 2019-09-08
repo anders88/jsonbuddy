@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.14.2</version>
+	<version>0.15</version>
 </dependency>
 ```
 
@@ -42,29 +42,29 @@ Jsononbuddy is on maven central. Add to your pom
 
 Convert from     | Convert to       | Use
 -----------------|------------------|--------------------------------------------
-String or Reader | JsonNode         | JsonParser.parse(input)
+String or Reader | JsonNode         | JsonParser.parseNode(input)
 JsonNode         | String or Writer | jsonNode.toJson(writer) or JsonNode.toString()
 JsonNode         | POJO             | PojoMapper.map(jsonNode,POJO.class)
 POJO             | JsonNode         | JsonGenerator.generate(pojo)
 
 ### Parsing JSON (String to JsonNode)
 
-Parsing a string to a JsonNode
+Parsing a string to a JsonObject
 
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
-JsonObject o = (JsonObject)JsonParser.parse(jsonString);
+JsonObject o = JsonObject.parse(jsonString);
 String name = node.requiredString("name"); // = Darth Vader
 ```
 
-You can also parse from a Reader. If you expect the json to be an object you can use the convenience method parseToObject.
+You can also parse from a Reader.
 
 ```java
 String jsonString = "{\"name\":\"Darth Vader\"}";
-JsonObject jsonObject = JsonJsonParser.parseToObject(jsonString);
+JsonObject jsonObject = JsonObject.parse(jsonString);
 ```
 
-This will cast an exception if the result is not an object. You can similary use parseToArray to get a JsonArray.
+This will cast an exception if the result is not an object. You can similary use `JsonArray.parse` to get a `JsonArray`.
 
 ### Building JSON (JsonNode to String)
 
@@ -103,11 +103,11 @@ JsonObject orderJson = new JsonObject()
     .put("date", order.getOrderDate())
     .put("status", order.getStatus())
     .put("tags", JsonArray.fromStringList(order.getTagList()))
-    .put("orderLines", JsonArray.map(order.getOrderLines(), line -> {
-            return new JsonObject()
-                    .put("productId", line.getProductId())
-                    .put("amount", line.getAmount());
-    }));
+    .put("orderLines", JsonArray.map(order.getOrderLines(), line ->
+            new JsonObject()
+                .put("productId", line.getProductId())
+                .put("amount", line.getAmount())
+    ));
 ```
 
 
@@ -156,7 +156,8 @@ darth.getName(); // Returns "Darth Vader"
 ```
 
 ### Mapping to interfaces
-You can map Json to an interface using the DynamincInterfaceMapper mapping rule.
+You can map Json to an interface using the DynamicInterfaceMapper mapping rule.
+
 ```java
 public interface NameInterface {
     String getName();
@@ -205,6 +206,7 @@ Version | Description
 0.14.0  | Support for UUID and fix for temporals
 0.14.1  | Bugfix
 0.14.2  | Bugfix parse exponential number
+0.15    | Better support for reading and writing to the network, e.g. `JsonObject.parse(HttpURLConnection)`. Bugfix on parsing `"[  ]"`
 
 
 # Licence
