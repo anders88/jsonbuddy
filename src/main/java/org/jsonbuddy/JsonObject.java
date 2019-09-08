@@ -1,6 +1,18 @@
 package org.jsonbuddy;
 
+import org.jsonbuddy.parse.JsonHttpException;
+import org.jsonbuddy.parse.JsonParseException;
+import org.jsonbuddy.parse.JsonParser;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -50,6 +62,76 @@ public class JsonObject extends JsonNode {
 
     private JsonObject(Map<String,JsonNode> values) {
         this.values = values;
+    }
+
+    /**
+     * Parse the Reader as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
+    public static JsonObject parse(Reader reader) throws IOException {
+        JsonNode result = JsonParser.parseNode(reader);
+        if (result instanceof JsonObject) {
+            return (JsonObject)result;
+        }
+        if (result == null) {
+            throw new JsonParseException("Expected JSON object got null");
+        }
+        throw new JsonParseException("Expected JSON object got " + result.getClass());
+    }
+
+    /**
+     * Parse the String as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
+    public static JsonObject parse(String input) {
+        try {
+            return parse(new StringReader(input));
+        } catch (IOException e) {
+            throw new RuntimeException("Should never happen with StringReader", e);
+        }
+    }
+
+    /**
+     * Parse the InputStream as a JsonObject
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     */
+    public static JsonObject parse(InputStream inputStream) throws JsonParseException, IOException {
+        return parse(new InputStreamReader(inputStream));
+    }
+
+    /**
+     * GET the contents of the url as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws IOException if there was a communication error
+     */
+    public static JsonObject parse(URL url) throws IOException {
+        return parse(url.openConnection());
+    }
+
+    /**
+     * GET the contents of the URLConnection as a JSON object
+     *
+     * @throws JsonParseException if a JSON syntax error was encountered,
+     *             or if the JSON was not a JsonObject
+     * @throws JsonHttpException if the endpoint returned a 4xx error
+     * @throws IOException if there was a communication error
+     */
+    public static JsonObject parse(URLConnection connection) throws IOException {
+        HttpURLConnection httpConnection = (HttpURLConnection) connection;
+        if (httpConnection.getResponseCode() >= 400) {
+            throw new JsonHttpException(httpConnection);
+        }
+        try (InputStream input = connection.getInputStream()) {
+            return parse(input);
+        }
     }
 
     /**
@@ -197,7 +279,7 @@ public class JsonObject extends JsonNode {
      * @throws DateTimeParseException if the text cannot be parsed as an Instant
      */
     public Optional<Instant> instantValue(String key) {
-        return stringValue(key).map(s -> Instant.parse(s));
+        return stringValue(key).map(Instant::parse);
     }
 
     /**
@@ -339,9 +421,8 @@ public class JsonObject extends JsonNode {
     @Override
     public JsonObject deepClone() {
         Map<String, JsonNode> cloned = values.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().deepClone()));
-        Map<String, JsonNode> newValues = new HashMap<>();
-        newValues.putAll(cloned);
+                .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().deepClone()));
+        Map<String, JsonNode> newValues = new HashMap<>(cloned);
         return new JsonObject(newValues);
     }
 

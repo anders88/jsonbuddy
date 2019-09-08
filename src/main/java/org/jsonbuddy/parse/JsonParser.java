@@ -67,67 +67,34 @@ public class JsonParser {
 
 
     /**
-     * Parse the String as a JsonObject
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
+     * @see JsonObject#parse(String)
+     * @deprecated Use {@link JsonObject#parse} instead
      */
     public static JsonObject parseToObject(String input) throws JsonParseException  {
+        return JsonObject.parse(input);
+    }
+
+    /**
+     * @see JsonObject#parse(Reader)
+     * @deprecated Use {@link JsonObject#parse} instead
+     */
+    public static JsonObject parseToObject(Reader reader) throws JsonParseException {
         try {
-            return parseToObject(new StringReader(input));
+            return JsonObject.parse(reader);
         } catch (IOException e) {
-            throw new RuntimeException("Should never happen with StringReader", e);
+            throw new RuntimeException(e);
         }
     }
 
     /**
-     * Parse the Reader as a JsonObject
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
+     * @see JsonObject#parse(InputStream)
+     * @deprecated Use {@link JsonObject#parse} instead
      */
-    public static JsonObject parseToObject(Reader reader) throws JsonParseException, IOException {
-        JsonParser jsonParser = new JsonParser(reader);
-        return toObject(jsonParser.parseValue());
-    }
-
-    /**
-     * Parse the InputStream as a JsonObject
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
-     */
-    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException, IOException {
-        return parseToObject(new InputStreamReader(inputStream));
-    }
-
-    /**
-     * GET the contents of the url as a JSON object
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
-     * @throws IOException if there was a communication error
-     */
-    public static JsonObject parseToObject(URL url) throws IOException {
-        return parseToObject(url.openConnection());
-    }
-
-    /**
-     * GET the contents of the URLConnection as a JSON object
-     *
-     * @throws JsonParseException if a JSON syntax error was encountered,
-     *             or if the JSON was not a JsonObject
-     * @throws JsonHttpException if the endpoint returned a 4xx error
-     * @throws IOException if there was a communication error
-     */
-    public static JsonObject parseToObject(URLConnection connection) throws IOException {
-        HttpURLConnection httpConnection = (HttpURLConnection) connection;
-        if (httpConnection.getResponseCode() < 400) {
-            try (InputStream input = connection.getInputStream()) {
-                return parseToObject(input);
-            }
-        } else {
-            throw new JsonHttpException(httpConnection);
+    public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException {
+        try {
+            return JsonObject.parse(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

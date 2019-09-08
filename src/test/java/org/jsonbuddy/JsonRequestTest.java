@@ -1,18 +1,17 @@
 package org.jsonbuddy;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.sun.net.httpserver.HttpServer;
+import org.assertj.core.api.AbstractThrowableAssert;
+import org.jsonbuddy.parse.JsonHttpException;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.URL;
 
-import com.sun.net.httpserver.HttpServer;
-import org.assertj.core.api.AbstractThrowableAssert;
-import org.jsonbuddy.parse.JsonHttpException;
-import org.jsonbuddy.parse.JsonParser;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JsonRequestTest {
 
@@ -28,7 +27,7 @@ public class JsonRequestTest {
             }
             exchange.close();
         });
-        JsonObject o = JsonParser.parseToObject(new URL("http://localhost:" + httpServer.getAddress().getPort()));
+        JsonObject o = JsonObject.parse(new URL("http://localhost:" + httpServer.getAddress().getPort()));
         assertThat(o.keys()).contains("slideshow");
     }
 
@@ -66,7 +65,7 @@ public class JsonRequestTest {
 
         URL url = new URL("http://localhost:" + serverPort);
 
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonParser.parseToObject(url))
+        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonObject.parse(url))
             .isInstanceOf(JsonHttpException.class);
         exception
             .extracting("jsonError")

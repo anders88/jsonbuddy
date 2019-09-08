@@ -59,8 +59,8 @@ public class JsonParserTest {
     public void shouldWarnOnWrongParseType() {
         assertThatThrownBy(() -> JsonArray.parse(fixQuotes("{'foo':'bar'}")))
                 .hasMessageContaining("Expected JSON array got class org.jsonbuddy.JsonObject");
-        assertThatThrownBy(() -> JsonParser.parseToObject(fixQuotes("['foo', 'bar']")))
-            .hasMessageContaining("Expected json object got class org.jsonbuddy.JsonArray");
+        assertThatThrownBy(() -> JsonObject.parse(fixQuotes("['foo', 'bar']")))
+            .hasMessageContaining("Expected JSON object got class org.jsonbuddy.JsonArray");
     }
 
     @Test
@@ -97,7 +97,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleInteger() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'theMeaning':42}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'theMeaning':42}"));
         JsonNode theMeaning = jsonObject.value("theMeaning").get();
         assertThat(theMeaning).isInstanceOf(JsonNumber.class);
         JsonNumber intVal = (JsonNumber) theMeaning;
@@ -113,7 +113,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleComplexNumbers() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'a':-1,'b':3.14,'c':2.5e3}"));
         assertThat(jsonObject.requiredLong("a")).isEqualTo(-1);
         assertThat(jsonObject.requiredDouble("b")).isEqualTo(3.14d);
         assertThat(jsonObject.requiredDouble("c")).isEqualTo(2500d);
@@ -122,7 +122,7 @@ public class JsonParserTest {
     @Test
     public void shouldHandleSpecialCharacters() {
         String input = fixQuotes("{'eval':'quote:\\\" backslash\\\\ \\/slash \\f bell\\b tab\\t newline\\nrest'}");
-        JsonObject val = JsonParser.parseToObject(input);
+        JsonObject val = JsonObject.parse(input);
 
         assertThat(val.stringValue("eval").get()).isEqualTo("quote:\" backslash\\ /slash \f bell\b tab\t newline\nrest");
     }
@@ -166,7 +166,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldParseToInstant() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'time':'2015-08-30T11:21:12.314Z'}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'time':'2015-08-30T11:21:12.314Z'}"));
         Optional<JsonNode> time = jsonObject.value("time");
         assertThat(time).isPresent().containsInstanceOf(JsonString.class);
 
@@ -177,38 +177,38 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleEmptyArray() {
-        JsonObject jsonObject = JsonParser.parseToObject("{\"properties\":{\"myEmptyList\":[]}}");
+        JsonObject jsonObject = JsonObject.parse("{\"properties\":{\"myEmptyList\":[]}}");
         assertThat(jsonObject.requiredObject("properties").requiredArray("myEmptyList")).isEmpty();
     }
 
     @Test
     public void shouldHandleNestedObjectFollowedByAnotherProperty() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'objone':{'color':'blue'},'name':'Darth Vader'}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'objone':{'color':'blue'},'name':'Darth Vader'}"));
         assertThat(jsonObject.requiredString("name")).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldHandleLineshifts() {
-        JsonParser.parseToObject(fixQuotes("{'tablevalues':\n['one','two']}"));
+        JsonObject.parse(fixQuotes("{'tablevalues':\n['one','two']}"))
     }
 
     @Test
     public void shouldHandleSpecialCharsAfterNumbers() {
         String val = "{\"id\":4326\r}";
-        JsonObject jsonObject = JsonParser.parseToObject(val);
+        JsonObject jsonObject = JsonObject.parse(val);
         assertThat(jsonObject.requiredLong("id")).isEqualTo(4326);
     }
 
     @Test
     public void shouldHandleEmptyString() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'emptyString':''}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'emptyString':''}"));
         assertThat(jsonObject.requiredString("emptyString")).isEqualTo("");
     }
 
     @Test
     public void shouldHandleNestedArrays() {
         String json = "{\"coordinates\":[[9.0, 80.0]]}";
-        JsonObject jsonObject = JsonParser.parseToObject(json);
+        JsonObject jsonObject = JsonObject.parse(json);
         assertThat(jsonObject).isNotNull();
     }
 
@@ -222,7 +222,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleUnicode() {
-        JsonObject jsonObject = JsonParser.parseToObject(fixQuotes("{'value':'with\\u22A1xx'}"));
+        JsonObject jsonObject = JsonObject.parse(fixQuotes("{'value':'with\\u22A1xx'}"));
         assertThat(jsonObject.requiredString("value")).isEqualTo("with\u22A1xx");
 
     }
@@ -252,7 +252,7 @@ public class JsonParserTest {
 
     @Test
     public void shouldHandleNumbersWithExponent() {
-        JsonObject parsed = JsonParser.parseToObject("{\"numval\" : 0e+1}");
+        JsonObject parsed = JsonObject.parse("{\"numval\" : 0e+1}");
         assertThat(parsed.requiredDouble("numval")).isCloseTo(0d, Offset.offset(0.00001d));
     }
 
