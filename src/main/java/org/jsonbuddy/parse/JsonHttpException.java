@@ -19,7 +19,7 @@ public class JsonHttpException extends RuntimeException {
     private String errorContent;
 
     public JsonHttpException(HttpURLConnection conn) throws IOException {
-        super(conn.getResponseCode() + " " + conn.getResponseMessage() + " when accessing " + conn.getURL());
+        super(conn.getResponseCode() + " " + conn.getResponseMessage() + " on " + conn.getRequestMethod() + " " + conn.getURL());
         if (conn.getContentType() == null || conn.getErrorStream() == null) {
             return;
         }
