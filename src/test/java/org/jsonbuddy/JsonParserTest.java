@@ -239,14 +239,14 @@ public class JsonParserTest {
     public void shouldThrowExceptionWhenInputNotJson() {
         String notJsonString = "Some value";
         String base64EncodedString = Base64.getEncoder().encodeToString(notJsonString.getBytes());
-        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(base64EncodedString))
+        assertThatThrownBy(() -> JsonObject.parseFromBase64encodedString(base64EncodedString))
                 .isInstanceOf(JsonParseException.class);
     }
 
     @Test
     public void shouldThrowExceptionWhenInputNotBase64Encoded() {
         JsonObject expected = new JsonObject().put("one", "two");
-        assertThatThrownBy(() -> JsonParser.parseFromBase64encodedString(expected.toJson()))
+        assertThatThrownBy(() -> JsonObject.parseFromBase64encodedString(expected.toJson()))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

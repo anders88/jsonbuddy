@@ -16,6 +16,7 @@ import java.net.URLConnection;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +62,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonArray
      */
-    public static JsonArray parse(Reader reader) throws IOException {
+    public static JsonArray read(Reader reader) throws IOException {
         JsonNode result = JsonParser.parseNode(reader);
         if (result instanceof JsonArray) {
             return (JsonArray)result;
@@ -80,10 +81,20 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      */
     public static JsonArray parse(String input) {
         try {
-            return parse(new StringReader(input));
+            return read(new StringReader(input));
         } catch (IOException e) {
             throw new RuntimeException("Should never happen with StringReader", e);
         }
+    }
+
+    /**
+     * Parse base64encoded JSON string to JsonArray. Useful for OpenID Connect usage.
+
+     * @throws JsonParseException if a JSON syntax error was encountered
+     * @throws IllegalArgumentException if input not base64encoded
+     */
+    public static JsonArray parseFromBase64encodedString(String base64encodedJson) throws IllegalArgumentException {
+        return parse(new String(Base64.getUrlDecoder().decode(base64encodedJson)));
     }
 
     /**
@@ -92,8 +103,8 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonArray
      */
-    public static JsonArray parse(InputStream inputStream) throws JsonParseException, IOException {
-        return parse(new InputStreamReader(inputStream));
+    public static JsonArray read(InputStream inputStream) throws JsonParseException, IOException {
+        return read(new InputStreamReader(inputStream));
     }
 
     /**
@@ -103,8 +114,8 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *             or if the JSON was not a JsonArray
      * @throws IOException if there was a communication error
      */
-    public static JsonArray parse(URL url) throws IOException {
-        return parse(url.openConnection());
+    public static JsonArray read(URL url) throws IOException {
+        return read(url.openConnection());
     }
 
     /**
@@ -115,11 +126,11 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * @throws JsonHttpException if the endpoint returned a 4xx error
      * @throws IOException if there was a communication error
      */
-    public static JsonArray parse(URLConnection connection) throws IOException {
+    public static JsonArray read(URLConnection connection) throws IOException {
         HttpURLConnection httpConnection = (HttpURLConnection) connection;
         JsonHttpException.verifyResponseCode(httpConnection);
         try (InputStream input = connection.getInputStream()) {
-            return parse(input);
+            return read(input);
         }
     }
 

@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -70,7 +71,7 @@ public class JsonObject extends JsonNode {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonObject
      */
-    public static JsonObject parse(Reader reader) throws IOException {
+    public static JsonObject read(Reader reader) throws IOException {
         JsonNode result = JsonParser.parseNode(reader);
         if (result instanceof JsonObject) {
             return (JsonObject)result;
@@ -89,10 +90,20 @@ public class JsonObject extends JsonNode {
      */
     public static JsonObject parse(String input) {
         try {
-            return parse(new StringReader(input));
+            return read(new StringReader(input));
         } catch (IOException e) {
             throw new RuntimeException("Should never happen with StringReader", e);
         }
+    }
+
+    /**
+     * Parse base64encoded JSON string to JsonObject. Useful for OpenID Connect usage.
+
+     * @throws JsonParseException if a JSON syntax error was encountered
+     * @throws IllegalArgumentException if input not base64encoded
+     */
+    public static JsonObject parseFromBase64encodedString(String base64encodedJson) throws IllegalArgumentException {
+        return parse(new String(Base64.getUrlDecoder().decode(base64encodedJson)));
     }
 
     /**
@@ -101,8 +112,8 @@ public class JsonObject extends JsonNode {
      * @throws JsonParseException if a JSON syntax error was encountered,
      *             or if the JSON was not a JsonObject
      */
-    public static JsonObject parse(InputStream inputStream) throws JsonParseException, IOException {
-        return parse(new InputStreamReader(inputStream));
+    public static JsonObject read(InputStream inputStream) throws JsonParseException, IOException {
+        return read(new InputStreamReader(inputStream));
     }
 
     /**
@@ -112,8 +123,8 @@ public class JsonObject extends JsonNode {
      *             or if the JSON was not a JsonObject
      * @throws IOException if there was a communication error
      */
-    public static JsonObject parse(URL url) throws IOException {
-        return parse(url.openConnection());
+    public static JsonObject read(URL url) throws IOException {
+        return read(url.openConnection());
     }
 
     /**
@@ -124,11 +135,11 @@ public class JsonObject extends JsonNode {
      * @throws JsonHttpException if the endpoint returned a 4xx error
      * @throws IOException if there was a communication error
      */
-    public static JsonObject parse(URLConnection connection) throws IOException {
+    public static JsonObject read(URLConnection connection) throws IOException {
         HttpURLConnection httpConnection = (HttpURLConnection) connection;
         JsonHttpException.verifyResponseCode(httpConnection);
         try (InputStream input = connection.getInputStream()) {
-            return parse(input);
+            return read(input);
         }
     }
 

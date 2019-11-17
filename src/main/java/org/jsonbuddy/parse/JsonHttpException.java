@@ -26,7 +26,7 @@ public class JsonHttpException extends RuntimeException {
         String contentType = conn.getContentType().split(";")[0].trim();
         try (InputStream error = conn.getErrorStream()) {
             if (contentType.equals("application/json")) {
-                jsonError = JsonObject.parse(error);
+                jsonError = JsonObject.read(error);
             } else {
                 errorContent = asString(error);
             }

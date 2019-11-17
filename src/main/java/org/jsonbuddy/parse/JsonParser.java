@@ -6,9 +6,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
@@ -68,31 +65,31 @@ public class JsonParser {
 
     /**
      * @see JsonObject#parse(String)
-     * @deprecated Use {@link JsonObject#parse} instead
+     * @deprecated Use {@link JsonObject#read} instead
      */
     public static JsonObject parseToObject(String input) throws JsonParseException  {
         return JsonObject.parse(input);
     }
 
     /**
-     * @see JsonObject#parse(Reader)
-     * @deprecated Use {@link JsonObject#parse} instead
+     * @see JsonObject#read(Reader)
+     * @deprecated Use {@link JsonObject#read} instead
      */
     public static JsonObject parseToObject(Reader reader) throws JsonParseException {
         try {
-            return JsonObject.parse(reader);
+            return JsonObject.read(reader);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * @see JsonObject#parse(InputStream)
-     * @deprecated Use {@link JsonObject#parse} instead
+     * @see JsonObject#read(InputStream)
+     * @deprecated Use {@link JsonObject#read} instead
      */
     public static JsonObject parseToObject(InputStream inputStream) throws JsonParseException {
         try {
-            return JsonObject.parse(inputStream);
+            return JsonObject.read(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -107,12 +104,12 @@ public class JsonParser {
     }
 
     /**
-     * @see JsonArray#parse(InputStream)
+     * @see JsonArray#read(InputStream)
      * @deprecated Use {@link JsonArray#parse} instead
      */
     public static JsonArray parseToArray(InputStream input) throws JsonParseException  {
         try {
-            return JsonArray.parse(input);
+            return JsonArray.read(input);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -124,7 +121,7 @@ public class JsonParser {
      */
     public static JsonArray parseToArray(Reader input) throws JsonParseException {
         try {
-            return JsonArray.parse(input);
+            return JsonArray.read(input);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

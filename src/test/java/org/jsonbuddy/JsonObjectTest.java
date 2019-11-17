@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Base64;
 
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
@@ -210,6 +211,18 @@ public class JsonObjectTest {
 
         assertThat(target.toJson())
             .isEqualTo(source.toJson());
+    }
+
+    @Test
+    public void shouldConvertFromBase64() {
+        JsonObject source = new JsonObject()
+                .put("firstName", "Darth")
+                .put("lastName", "Vader")
+                .put("forcePowers", new JsonArray()
+                        .add("shock").add("lightning"));
+        String base64EncodedString = Base64.getEncoder().encodeToString(source.toJson().getBytes());
+        assertThat(JsonObject.parseFromBase64encodedString(base64EncodedString))
+                .isEqualTo(source);
     }
 
 }

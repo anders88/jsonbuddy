@@ -27,7 +27,7 @@ public class JsonRequestTest {
             }
             exchange.close();
         });
-        JsonObject o = JsonObject.parse(new URL("http://localhost:" + httpServer.getAddress().getPort()));
+        JsonObject o = JsonObject.read(new URL("http://localhost:" + httpServer.getAddress().getPort()));
         assertThat(o.keys()).contains("slideshow");
     }
 
@@ -43,7 +43,7 @@ public class JsonRequestTest {
             }
             exchange.close();
         });
-        JsonArray a = JsonArray.parse(new URL("http://localhost:" + httpServer.getAddress().getPort()));
+        JsonArray a = JsonArray.read(new URL("http://localhost:" + httpServer.getAddress().getPort()));
         assertThat(a.strings()).contains("slideshow", "corn");
     }
 
@@ -54,7 +54,7 @@ public class JsonRequestTest {
         HttpServer httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         httpServer.start();
         httpServer.createContext("/", exchange -> {
-            postedObject = JsonObject.parse(exchange.getRequestBody());
+            postedObject = JsonObject.read(exchange.getRequestBody());
             exchange.getResponseHeaders().add("Content-type", "application/json; charset=utf-8");
             exchange.sendResponseHeaders(200, 0);
             exchange.close();
@@ -85,7 +85,7 @@ public class JsonRequestTest {
 
         URL url = new URL("http://localhost:" + serverPort);
 
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonObject.parse(url))
+        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonObject.read(url))
             .isInstanceOf(JsonHttpException.class);
         exception
             .extracting("jsonError")
@@ -100,7 +100,7 @@ public class JsonRequestTest {
 
         URL url = new URL("http://localhost:" + serverPort);
 
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonArray.parse(url))
+        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonArray.read(url))
             .isInstanceOf(JsonHttpException.class)
             .hasMessageContaining("404 Not Found")
             .hasMessageContaining(url.toString());
