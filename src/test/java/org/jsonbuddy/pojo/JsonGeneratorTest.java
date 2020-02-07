@@ -2,6 +2,7 @@ package org.jsonbuddy.pojo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.OffsetDateTime;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
@@ -40,16 +42,16 @@ import org.junit.Test;
 public class JsonGeneratorTest {
 
     @Test
-    public void shouldHandleSimpleClass() throws Exception {
+    public void shouldHandleSimpleClass() {
         SimpleWithName simpleWithName = new SimpleWithName("Darth Vader");
         JsonNode generated = JsonGenerator.generateUsingImplementationAsTemplate(simpleWithName);
         assertThat(generated).isInstanceOf(JsonObject.class);
         JsonObject jsonObject = (JsonObject) generated;
-        assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
+        assertThat(jsonObject.requiredString("name")).isEqualTo("Darth Vader");
     }
 
     @Test
-    public void shouldHandleSimpleValues() throws Exception {
+    public void shouldHandleSimpleValues() {
         assertThat(JsonGenerator.generateUsingImplementationAsTemplate(null)).isEqualTo(new JsonNull());
         assertThat(JsonGenerator.generateUsingImplementationAsTemplate("Darth")).isEqualTo(JsonFactory.jsonString("Darth"));
         assertThat(JsonGenerator.generateUsingImplementationAsTemplate(42)).isEqualTo(JsonFactory.jsonNumber(42));
@@ -57,14 +59,14 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shoulHandleFloats() throws Exception {
+    public void shoulHandleFloats() {
         JsonNode jsonNode = JsonGenerator.generateUsingImplementationAsTemplate(3.14f);
         JsonNumber jsonDouble = (JsonNumber) jsonNode;
         assertThat(new Double(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
     }
 
     @Test
-    public void shouldHandleList() throws Exception {
+    public void shouldHandleList() {
         List<String> stringlist = Arrays.asList("one", "two", "three");
 
         JsonNode generate = JsonGenerator.generateUsingImplementationAsTemplate(stringlist);
@@ -74,7 +76,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleArray() throws Exception {
+    public void shouldHandleArray() {
         String[] stringarray = { "one", "two", "three" };
 
         JsonNode generate = JsonGenerator.generateUsingImplementationAsTemplate(stringarray);
@@ -84,14 +86,14 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleListWithClasses() throws Exception {
+    public void shouldHandleListWithClasses() {
         List<SimpleWithName> simpleWithNames = Arrays.asList(new SimpleWithName("Darth"), new SimpleWithName("Anakin"));
         JsonArray array = (JsonArray) JsonGenerator.generateUsingImplementationAsTemplate(simpleWithNames);
 
         List<JsonObject> objects = array.objects(o -> o);
 
-        assertThat(objects.get(0).stringValue("name").get()).isEqualTo("Darth");
-        assertThat(objects.get(1).stringValue("name").get()).isEqualTo("Anakin");
+        assertThat(objects.get(0).requiredString("name")).isEqualTo("Darth");
+        assertThat(objects.get(1).requiredString("name")).isEqualTo("Anakin");
     }
 
     @Test
@@ -105,14 +107,14 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleClassWithGetter() throws Exception {
+    public void shouldHandleClassWithGetter() {
         CombinedClassWithSetter combinedClassWithSetter = new CombinedClassWithSetter();
         combinedClassWithSetter.setPerson(new SimpleWithName("Darth Vader"));
         combinedClassWithSetter.setOccupation("Dark Lord");
 
         JsonObject jsonObject = (JsonObject) JsonGenerator.generateUsingImplementationAsTemplate(combinedClassWithSetter);
 
-        assertThat(jsonObject.stringValue("occupation").get()).isEqualTo("Dark Lord");
+        assertThat(jsonObject.requiredString("occupation")).isEqualTo("Dark Lord");
         Optional<JsonObject> person = jsonObject.objectValue("person");
 
         assertThat(person).isPresent();
@@ -123,7 +125,7 @@ public class JsonGeneratorTest {
 
 
     @Test
-    public void shouldHandleOverriddenValues() throws Exception {
+    public void shouldHandleOverriddenValues() {
         JsonGeneratorOverrides overrides = new JsonGeneratorOverrides();
         JsonObject generate = (JsonObject) JsonGenerator.generateUsingImplementationAsTemplate(overrides);
 
@@ -132,7 +134,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shoulHandleEmbeddedJson() throws Exception {
+    public void shoulHandleEmbeddedJson() {
         ClassWithJsonElements classWithJsonElements = new ClassWithJsonElements("Darth Vader",
                 JsonFactory.jsonObject().put("title", "Dark Lord"),
                 JsonFactory.jsonArray().add("Luke").add("Leia"));
@@ -144,7 +146,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldMakeMapsIntoObjects() throws Exception {
+    public void shouldMakeMapsIntoObjects() {
         Map<String, String> map = new HashMap<>();
         map.put("name", "Darth Vader");
         ClassWithMap classWithMap = new ClassWithMap(map);
@@ -153,7 +155,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleDifferentSimpleTypes() throws Exception {
+    public void shouldHandleDifferentSimpleTypes() {
         ClassWithDifferentTypes classWithDifferentTypes = new ClassWithDifferentTypes("my text", 42, true, false);
         JsonObject generated = (JsonObject) JsonGenerator.generateUsingImplementationAsTemplate(classWithDifferentTypes);
         assertThat(generated.requiredString("text")).isEqualTo("my text");
@@ -162,7 +164,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleClassWithTime() throws Exception {
+    public void shouldHandleClassWithTime() {
         OffsetDateTime dateTime = OffsetDateTime.of(2015, 8, 13, 21, 14, 18, 321, ZoneOffset.UTC);
         ClassWithTime classWithTime = new ClassWithTime();
         classWithTime.setTime(dateTime.toInstant());
@@ -172,20 +174,20 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleClassWithEnum() throws Exception {
+    public void shouldHandleClassWithEnum() {
         ClassWithEnum classWithEnum = new ClassWithEnum();
         JsonObject jso = (JsonObject) JsonGenerator.generateUsingImplementationAsTemplate(classWithEnum);
         assertThat(jso.requiredString("enumNumber")).isEqualTo("ONE");
     }
 
     @Test
-    public void shouldHandleNumbers() throws Exception {
+    public void shouldHandleNumbers() {
         assertThat(JsonGenerator.generateUsingImplementationAsTemplate(12L)).isEqualTo(new JsonNumber(12L));
         assertThat(JsonGenerator.generateUsingImplementationAsTemplate(12)).isEqualTo(new JsonNumber(12));
     }
 
     @Test
-    public void shouldHandleMapWithKeyOtherThanString() throws Exception {
+    public void shouldHandleMapWithKeyOtherThanString() {
         Map<Long,String> myLongMap = new HashMap<>();
         myLongMap.put(42L, "Meaning of life");
         JsonNode generated = JsonGenerator.generateUsingImplementationAsTemplate(myLongMap);
@@ -195,7 +197,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleBigInteger() throws Exception {
+    public void shouldHandleBigInteger() {
         ClassWithBigNumbers bn = new ClassWithBigNumbers();
         bn.setOneBigInt(BigInteger.valueOf(42L));
 
@@ -207,7 +209,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleBigDecimal() throws Exception {
+    public void shouldHandleBigDecimal() {
         ClassWithBigNumbers bn = new ClassWithBigNumbers();
         bn.setOneBigDec(BigDecimal.valueOf(3.14d));
 
@@ -219,7 +221,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldMaskMethodsNotInInterfaceWhenUsingGetter() throws Exception {
+    public void shouldMaskMethodsNotInInterfaceWhenUsingGetter() {
         InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
         ClassWithGetterInterface classWithGetterInterface = new ClassWithGetterInterface(myInterface);
         JsonNode generated = JsonGenerator.generate(classWithGetterInterface);
@@ -231,7 +233,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldMaskMethodsNotInInterfaceWhenUsingField() throws Exception {
+    public void shouldMaskMethodsNotInInterfaceWhenUsingField() {
         InterfaceWithMethod myInterface = new ClassImplementingInterface("myPublic", "mySecret");
         ClassWithFieldInterface classWithFieldInterface = new ClassWithFieldInterface(myInterface);
         JsonNode generated = JsonGenerator.generate(classWithFieldInterface);
@@ -243,7 +245,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldBeAbleToSpesifyGeneratorClass() throws Exception {
+    public void shouldBeAbleToSpecifyGeneratorClass() {
         InterfaceWithMethod interfaceWithMethod = new ClassImplementingInterface("myPublic", "mySecret");
         JsonNode generated = JsonGenerator.generateWithSpecifyingClass(interfaceWithMethod, InterfaceWithMethod.class);
         JsonObject jsonObject = (JsonObject) generated;
@@ -252,7 +254,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleAnonymousClass() throws Exception {
+    public void shouldHandleAnonymousClass() {
         InterfaceWithMethod interfaceWithMethod = new InterfaceWithMethod() {
             @Override
             public String getPublicvalue() {
@@ -265,7 +267,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandleInterfaceTypesInMethodList() throws Exception {
+    public void shouldHandleInterfaceTypesInMethodList() {
         ClassWithInterfaceListAndMapMethods classWithInterfaceListAndMapMethods = new ClassWithInterfaceListAndMapMethods();
         List<InterfaceWithMethod> myList = new ArrayList<>();
         myList.add(new ClassImplementingInterface("mypub","myPriv"));
@@ -284,10 +286,10 @@ public class JsonGeneratorTest {
    }
 
     @Test
-    public void shouldHandleInterfaceTypesInMethodMaps() throws Exception {
+    public void shouldHandleInterfaceTypesInMethodMaps() {
         ClassWithInterfaceListAndMapMethods classWithInterfaceListAndMapMethods = new ClassWithInterfaceListAndMapMethods();
         Map<String,InterfaceWithMethod> myMap = new HashMap<>();
-        myMap.put("mykey",new ClassImplementingInterface("mypub","myPriv"));
+        myMap.put("mykey", new ClassImplementingInterface("mypub","myPriv"));
         classWithInterfaceListAndMapMethods.setMyMap(myMap);
 
         JsonNode generated = JsonGenerator.generate(classWithInterfaceListAndMapMethods);
@@ -321,6 +323,24 @@ public class JsonGeneratorTest {
         object.properties.put("test", Arrays.asList("one", "two"));
         assertThat(JsonGenerator.generate(object).toJson())
             .isEqualTo("{\"properties\":{\"test\":[\"one\",\"two\"]}}");
+    }
+
+    @Test
+    public void shouldHandleStreams() {
+        JsonArray array = (JsonArray) JsonGenerator.generate(Stream.of("one", "two", 3));
+        assertThat(array.strings()).containsExactly("one", "two", "3");
+        assertThat(array.requiredLong(2)).isEqualTo(3);
+    }
+
+    @Test
+    public void shouldHandleStreamOfObjects() throws NoSuchMethodException {
+        Type streamType = JsonGeneratorTest.class.getMethod("getStream").getGenericReturnType();
+        JsonArray array = (JsonArray) new JsonGenerator().generateNode(getStream(), Optional.of(streamType));
+        assertThat(array.requiredObject(0).requiredString("name")).isEqualTo("Darth Vader");
+    }
+
+    public Stream<SimpleWithName> getStream() {
+        return Stream.of(new SimpleWithName("Darth Vader"));
     }
 
     @Test

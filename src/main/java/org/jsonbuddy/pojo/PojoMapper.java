@@ -63,7 +63,7 @@ public class PojoMapper {
      *
      * @throws CanNotMapException if there is no appropriate constructor
      */
-    public static <T> List<T> map(JsonArray jsonArray,Class<T> listClazz, PojoMappingRule... options) {
+    public static <T> List<T> map(JsonArray jsonArray, Class<T> listClazz, PojoMappingRule... options) {
         return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
     }
 
@@ -74,6 +74,16 @@ public class PojoMapper {
 
     public static PojoMapper create(PojoMappingRule... options) {
         return new PojoMapper(options);
+    }
+
+    public static <T> T mapType(JsonNode json, Type type) {
+        if (type instanceof ParameterizedType && List.class.isAssignableFrom((Class<?>) ((ParameterizedType)type).getRawType())) {
+            return (T)map((JsonArray)json,(Class<?>)((ParameterizedType)type).getActualTypeArguments()[0]);
+        }
+        if (type instanceof Class<?> && JsonNode.class.isAssignableFrom((Class<?>)type)) {
+            return (T) json;
+        }
+        return map((JsonObject)json, (Class<T>)type);
     }
 
 
@@ -160,6 +170,22 @@ public class PojoMapper {
         return result;
     }
 
+    private String fieldName(String key) {
+        return fromUnderscoreToCamelCase(key);
+    }
+
+    private String fromUnderscoreToCamelCase(String key) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < key.length(); i++) {
+            if (i < key.length() -1 && key.charAt(i) == '_') {
+                result.append(Character.toUpperCase(key.charAt(++i)));
+            } else {
+                result.append(key.charAt(i));
+            }
+        }
+        return result.toString();
+    }
+
     private Object mapArray(JsonArray jsonArray, Class<?> collectionType, Class<?> elementType) {
         Stream<Object> stream = jsonArray.nodeStream()
                 .map(element -> convertIfNecessary(mapValue(element, elementType, null), elementType));
@@ -173,9 +199,9 @@ public class PojoMapper {
     }
 
     private boolean tryToSetField(Class<?> clazz, JsonObject jsonObject, Object result, String key) throws Exception {
-        Field declaredField = null;
+        Field declaredField;
         try {
-            declaredField = clazz.getDeclaredField(key);
+            declaredField = clazz.getDeclaredField(fieldName(key));
         } catch (NoSuchFieldException e) {
             return false;
         }
@@ -371,8 +397,9 @@ public class PojoMapper {
         if (key.isEmpty()) {
             return false;
         }
-        String setterName = "set" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
-        Optional<Method> setter = Arrays.asList(clazz.getMethods()).stream()
+        String fieldName = fieldName(key);
+        String setterName = "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+        Optional<Method> setter = Arrays.stream(clazz.getMethods())
                 .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
                 .findAny();
         if (!setter.isPresent()) {
