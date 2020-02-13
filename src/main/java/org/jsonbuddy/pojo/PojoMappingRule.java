@@ -18,7 +18,6 @@ public interface PojoMappingRule {
 
     /**
      * Provide a mapping for the given class
-     * @param <T>
      * @param jsonNode The provided json
      * @param clazz  The class that should be mapped
      * @param mapitfunc A callback function to map nested objets

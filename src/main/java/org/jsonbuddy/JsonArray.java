@@ -178,7 +178,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Maps the values over the function and returns a JsonArray with the results
      */
     public static <T> JsonArray map(Collection<T> values, Function<T, JsonNode> f) {
-        return fromNodeStream(values.stream().map(f::apply));
+        return fromNodeStream(values.stream().map(f));
     }
 
     /**
@@ -298,7 +298,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
             if (iterator.hasNext()) printWriter.append(",");
             if (!indentationAmount.isEmpty()) printWriter.append("\n");
         }
-        printWriter.append(currentIntentation + "]");
+        printWriter.append(currentIntentation).append("]");
     }
 
     /**
@@ -488,7 +488,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
     /**
      * Removes the value at the specified position. Returns the value that was removed.
      * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     *         (<code>index &lt; 0 || index &gt;= size()</code>)
      */
     public JsonNode remove(int i) {
         return values.remove(i);
@@ -505,7 +505,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Replaces the value at the specified position.
      *
      * @throws IndexOutOfBoundsException if the index is out of range
-     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+     *         (<code>index &lt; 0 || index &gt;= size()</code>)
      */
     public void set(int i, Object o) {
         values.set(i, JsonFactory.jsonNode(o));
@@ -513,11 +513,11 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
 
     /**
      * Returns a view of the portion of this list between the specified
-     * <tt>fromIndex</tt>, inclusive, and <tt>toIndex</tt>, exclusive
+     * <code>fromIndex</code>, inclusive, and <code>toIndex</code>, exclusive
      *
      * @throws IndexOutOfBoundsException for an illegal endpoint index value
-     *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
-     *         fromIndex &gt; toIndex</tt>)
+     *         (<code>fromIndex &lt; 0 || toIndex &gt; size ||
+     *         fromIndex &gt; toIndex</code>)
      */
     public JsonArray subList(int fromIndex, int toIndex) {
         return new JsonArray(values.subList(fromIndex, toIndex));
