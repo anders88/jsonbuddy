@@ -384,6 +384,20 @@ public class PojoMapperTest {
     }
 
     @Test
+    public void shouldMapListOfNumber() {
+        assertThat(PojoMapper.map(new JsonArray().add(1L).add(3L), Long.class))
+                .isEqualTo(Arrays.asList(1L, 3L));
+    }
+
+    @Test
+    public void shouldMapListOfUUID() {
+        UUID uuid1 = UUID.randomUUID();
+        UUID uuid2 = UUID.randomUUID();
+        assertThat(PojoMapper.map(new JsonArray().add(uuid1.toString()).add(uuid2.toString()), UUID.class))
+                .isEqualTo(Arrays.asList(uuid1, uuid2));
+    }
+
+    @Test
     public void shouldHandleCombined() {
         JsonObject jsonObject = JsonFactory.jsonObject()
                 .put("name", "Darth Vader")

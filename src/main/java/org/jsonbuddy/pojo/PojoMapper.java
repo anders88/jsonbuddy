@@ -106,10 +106,9 @@ public class PojoMapper {
      *
      * @return a new object of the specified class
      */
-    public <T> List<T> mapToPojo(JsonArray jsonArray ,Class<T> listClazz) throws CanNotMapException {
-        return jsonArray.objects(node -> mapToPojo(node,listClazz));
+    public <T> List<T> mapToPojo(JsonArray jsonArray, Class<T> listClazz) throws CanNotMapException {
+        return mapArray(jsonArray, List.class, listClazz);
     }
-
 
     private Object mapValue(JsonNode jsonNode, Class<?> clazz, Class<?> elementType) throws CanNotMapException {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
@@ -186,13 +185,13 @@ public class PojoMapper {
         return result.toString();
     }
 
-    private Object mapArray(JsonArray jsonArray, Class<?> collectionType, Class<?> elementType) {
+    private <T> T mapArray(JsonArray jsonArray, Class<T> collectionType, Class<?> elementType) {
         Stream<Object> stream = jsonArray.nodeStream()
                 .map(element -> convertIfNecessary(mapValue(element, elementType, null), elementType));
         if (List.class.isAssignableFrom(collectionType)) {
-            return stream.collect(Collectors.toList());
+            return (T)stream.collect(Collectors.toList());
         } else if (Set.class.isAssignableFrom(collectionType)) {
-            return stream.collect(Collectors.toSet());
+            return (T)stream.collect(Collectors.toSet());
         } else {
             throw new CanNotMapException("Cannot map JsonArray to " + collectionType);
         }
@@ -275,42 +274,41 @@ public class PojoMapper {
     private static Map<Class<?>, Function<Number, Object>> numberConverters = new HashMap<>();
     static {
         numberConverters.put(BigInteger.class, n -> new BigInteger(n.toString()));
-        numberConverters.put(Long.class, n -> n.longValue());
-        numberConverters.put(Long.TYPE, n -> n.longValue());
-        numberConverters.put(Integer.class, n -> n.intValue());
-        numberConverters.put(Integer.TYPE, n -> n.intValue());
-        numberConverters.put(Short.class, n -> n.shortValue());
-        numberConverters.put(Short.TYPE, n -> n.shortValue());
-        numberConverters.put(Byte.class, n -> n.byteValue());
-        numberConverters.put(Byte.TYPE, n -> n.byteValue());
+        numberConverters.put(Long.class, Number::longValue);
+        numberConverters.put(Long.TYPE, Number::longValue);
+        numberConverters.put(Integer.class, Number::intValue);
+        numberConverters.put(Integer.TYPE, Number::intValue);
+        numberConverters.put(Short.class, Number::shortValue);
+        numberConverters.put(Short.TYPE, Number::shortValue);
+        numberConverters.put(Byte.class, Number::byteValue);
+        numberConverters.put(Byte.TYPE, Number::byteValue);
         numberConverters.put(BigDecimal.class, n -> new BigDecimal(n.toString()));
-        numberConverters.put(Double.class, n -> n.doubleValue());
-        numberConverters.put(Double.TYPE, n -> n.doubleValue());
-        numberConverters.put(Float.class, n -> n.floatValue());
-        numberConverters.put(Float.TYPE, n -> n.floatValue());
-        numberConverters.put(String.class, n -> n.toString());
+        numberConverters.put(Double.class, Number::doubleValue);
+        numberConverters.put(Double.TYPE, Number::doubleValue);
+        numberConverters.put(Float.class, Number::floatValue);
+        numberConverters.put(Float.TYPE, Number::floatValue);
+        numberConverters.put(String.class, Object::toString);
     }
 
     private static Map<Class<?>, Function<String, Object>> stringConverters = new HashMap<>();
     static {
-        stringConverters.put(UUID.class, s -> UUID.fromString(s));
-
-        stringConverters.put(BigInteger.class, s -> new BigInteger(s));
-        stringConverters.put(Long.class, s -> Long.parseLong(s));
-        stringConverters.put(Long.TYPE, s -> Long.parseLong(s));
-        stringConverters.put(Integer.class, s -> Integer.parseInt(s));
-        stringConverters.put(Integer.TYPE, s -> Integer.parseInt(s));
-        stringConverters.put(Short.class, s -> Short.parseShort(s));
-        stringConverters.put(Short.TYPE, s -> Short.parseShort(s));
-        stringConverters.put(Byte.class, s -> Byte.parseByte(s));
-        stringConverters.put(Byte.TYPE, s -> Byte.parseByte(s));
-        stringConverters.put(BigDecimal.class, s -> new BigDecimal(s));
-        stringConverters.put(Double.class, s -> Double.parseDouble(s));
-        stringConverters.put(Double.TYPE, s -> Double.parseDouble(s));
-        stringConverters.put(Float.class, s -> Float.parseFloat(s));
-        stringConverters.put(Float.TYPE, s -> Float.parseFloat(s));
+        stringConverters.put(UUID.class, UUID::fromString);
+        stringConverters.put(BigInteger.class, BigInteger::new);
+        stringConverters.put(Long.class, Long::parseLong);
+        stringConverters.put(Long.TYPE, Long::parseLong);
+        stringConverters.put(Integer.class, Integer::parseInt);
+        stringConverters.put(Integer.TYPE, Integer::parseInt);
+        stringConverters.put(Short.class, Short::parseShort);
+        stringConverters.put(Short.TYPE, Short::parseShort);
+        stringConverters.put(Byte.class, Byte::parseByte);
+        stringConverters.put(Byte.TYPE, Byte::parseByte);
+        stringConverters.put(BigDecimal.class, BigDecimal::new);
+        stringConverters.put(Double.class, Double::parseDouble);
+        stringConverters.put(Double.TYPE, Double::parseDouble);
+        stringConverters.put(Float.class, Float::parseFloat);
+        stringConverters.put(Float.TYPE, Float::parseFloat);
         stringConverters.put(String.class, s -> s);
-        stringConverters.put(Boolean.class, s -> Boolean.parseBoolean(s));
+        stringConverters.put(Boolean.class, Boolean::parseBoolean);
     }
 
     private Object convertIfNecessary(Object value, Class<?> destinationType) {
@@ -353,7 +351,7 @@ public class PojoMapper {
     protected Object convertEnumValue(Object value, Class<?> destinationType) {
         String stringValue = value.toString();
         Object[] enumConstants = destinationType.getEnumConstants();
-        return Arrays.asList(enumConstants).stream()
+        return Arrays.stream(enumConstants)
                 .filter(o -> stringValue.equals(o.toString()))
                 .findAny()
                 .orElseThrow(() -> new CanNotMapException("Illegal value " + value + " for " + destinationType.getSimpleName() + ". Valid options are " + Arrays.asList(enumConstants)));
