@@ -100,13 +100,25 @@ public class PojoMapper {
      * @throws CanNotMapException if there is no appropriate constructor
      */
     public <T> T mapToPojo(JsonNode json, Type type) {
-        if (type instanceof ParameterizedType && Collection.class.isAssignableFrom((Class<?>) ((ParameterizedType)type).getRawType())) {
-            return (T) mapArray((JsonArray) json, (Class<?>) ((ParameterizedType) type).getRawType(), (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0]);
+        if (isCollectible(type)) {
+            return (T) mapArray((JsonArray) json, getClassType(type), getClassType(((ParameterizedType) type).getActualTypeArguments()[0]));
         }
         if (type instanceof Class<?> && JsonNode.class.isAssignableFrom((Class<?>)type)) {
             return (T) json;
         }
         return mapToPojo((JsonObject)json, (Class<T>)type);
+    }
+
+    private boolean isCollectible(Type type) {
+        Class<?> rawType = getClassType(type);
+        return Collection.class.isAssignableFrom(rawType) || Stream.class.isAssignableFrom(rawType);
+    }
+
+    private Class<?> getClassType(Type type) {
+        if (type instanceof ParameterizedType) {
+            return getClassType(((ParameterizedType)type).getRawType());
+        }
+        return (Class<?>) type;
     }
 
     /**
@@ -212,10 +224,12 @@ public class PojoMapper {
     private <T> T mapArray(JsonArray jsonArray, Class<T> collectionType, Class<?> elementType) {
         Stream<Object> stream = jsonArray.nodeStream()
                 .map(element -> convertIfNecessary(mapValue(element, elementType, null), elementType));
-        if (List.class.isAssignableFrom(collectionType)) {
-            return (T)stream.collect(Collectors.toList());
-        } else if (Set.class.isAssignableFrom(collectionType)) {
+        if (Stream.class.isAssignableFrom(collectionType)) {
+            return (T)stream;
+        } else if (Set.class == collectionType) {
             return (T)stream.collect(Collectors.toSet());
+        } else if (List.class == collectionType || Collection.class == collectionType) {
+            return (T)stream.collect(Collectors.toList());
         } else {
             throw new CanNotMapException("Cannot map JsonArray to " + collectionType);
         }

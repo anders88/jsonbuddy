@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
@@ -576,7 +577,24 @@ public class PojoMapperTest {
                 .contains("Johannes", "Anders");
     }
 
+    @Test
+    public void shouldMapStreams() throws NoSuchMethodException {
+        JsonNode list = new JsonArray()
+                .add(new JsonObject().put("name", "Johannes"))
+                .add(new JsonObject().put("name", "Anders"));
+        Type type = getClass().getMethod("streamFactory").getGenericReturnType();
+        Stream<SimpleWithName> result = PojoMapper.mapType(list, type);
+        assertThat(result)
+                .extracting("name")
+                .contains("Johannes", "Anders");
+
+    }
+
     public List<SimpleWithName> listFactory() {
+        return null;
+    }
+
+    public Stream<SimpleWithName> streamFactory() {
         return null;
     }
 
