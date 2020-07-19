@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +68,15 @@ public class PojoMapper {
         return new PojoMapper(options).mapToPojo(jsonArray,listClazz);
     }
 
+    /**
+     * Converts the argument JsonNode into any parameterized or plain type of the specified type.
+     * The JsonNode is mapped according to {@link #mapToPojo(JsonNode, Type)}.
+     *
+     * @throws CanNotMapException if there is no appropriate constructor
+     */
+    public static <T> T mapType(JsonNode json, Type type, PojoMappingRule... options) {
+        return new PojoMapper(options).mapToPojo(json, type);
+    }
 
     private PojoMapper(PojoMappingRule[] options) {
         this.mappingRules = options == null ? Collections.emptyList() : Arrays.asList(options);
@@ -76,16 +86,28 @@ public class PojoMapper {
         return new PojoMapper(options);
     }
 
-    public static <T> T mapType(JsonNode json, Type type) {
-        if (type instanceof ParameterizedType && List.class.isAssignableFrom((Class<?>) ((ParameterizedType)type).getRawType())) {
-            return (T)map((JsonArray)json,(Class<?>)((ParameterizedType)type).getActualTypeArguments()[0]);
+    /**
+     * Converts the argument JsonNode into an object of the specified type.
+     *
+     * <ul>
+     *   <li>If the type is a collection, map each element according to #mapToPojo
+     *   (only supports {@link List} and {@link Set})
+     *   <li>If the type is subclass of JsonNode, the json is returned directly
+     *   <li>If the class is annotated with an {@link OverrideMapper}, this deserializer is used
+     *   <li>Otherwise, try to instantiate the class by reflection, set fields and call setters
+     * </ul>
+     *
+     * @throws CanNotMapException if there is no appropriate constructor
+     */
+    public <T> T mapToPojo(JsonNode json, Type type) {
+        if (type instanceof ParameterizedType && Collection.class.isAssignableFrom((Class<?>) ((ParameterizedType)type).getRawType())) {
+            return (T) mapArray((JsonArray) json, (Class<?>) ((ParameterizedType) type).getRawType(), (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0]);
         }
         if (type instanceof Class<?> && JsonNode.class.isAssignableFrom((Class<?>)type)) {
             return (T) json;
         }
-        return map((JsonObject)json, (Class<T>)type);
+        return mapToPojo((JsonObject)json, (Class<T>)type);
     }
-
 
     /**
      * Try to convert the argument into the specified class. See {@link #map(JsonObject, Class, PojoMappingRule...)}
@@ -102,7 +124,8 @@ public class PojoMapper {
 
     /**
      * Try to convert the argument JsonArray into a list of the specified class.
-     * See {@link #map(JsonObject, Class, PojoMappingRule...)} (JsonArray, Class)}
+     * See {@link #map(JsonObject, Class, PojoMappingRule...)} (JsonArray, Class)}.
+     * Only supports {@link List} and {@link Set}
      *
      * @return a new object of the specified class
      */
@@ -110,7 +133,8 @@ public class PojoMapper {
         return mapArray(jsonArray, List.class, listClazz);
     }
 
-    private Object mapValue(JsonNode jsonNode, Class<?> clazz, Class<?> elementType) throws CanNotMapException {
+    private Object
+    mapValue(JsonNode jsonNode, Class<?> clazz, Class<?> elementType) throws CanNotMapException {
         if (clazz.isAnnotationPresent(OverrideMapper.class)) {
             OverrideMapper[] annotationsByType = clazz.getAnnotationsByType(OverrideMapper.class);
             try {
