@@ -37,7 +37,6 @@ public class DynamicInterfaceMapper implements PojoMappingRule {
         return clazz.isInterface() && (jsonNode instanceof JsonObject);
     }
 
-
     @Override
     public <T> T mapClass(JsonNode jsonnode, Class<T> clazz, MapitFunction mapitfunc)  throws CanNotMapException {
         JsonObject jsonObject = (JsonObject) jsonnode;

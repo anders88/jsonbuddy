@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -72,14 +71,7 @@ public class JsonObject extends JsonNode {
      *             or if the JSON was not a JsonObject
      */
     public static JsonObject read(Reader reader) throws IOException {
-        JsonNode result = JsonParser.parseNode(reader);
-        if (result instanceof JsonObject) {
-            return (JsonObject)result;
-        }
-        if (result == null) {
-            throw new JsonParseException("Expected JSON object got null");
-        }
-        throw new JsonParseException("Expected JSON object got " + result.getClass());
+        return asJsonObject(JsonParser.parseNode(reader));
     }
 
     /**
@@ -89,11 +81,7 @@ public class JsonObject extends JsonNode {
      *             or if the JSON was not a JsonObject
      */
     public static JsonObject parse(String input) {
-        try {
-            return read(new StringReader(input));
-        } catch (IOException e) {
-            throw new RuntimeException("Should never happen with StringReader", e);
-        }
+        return asJsonObject(JsonParser.parse(input));
     }
 
     /**
@@ -141,6 +129,16 @@ public class JsonObject extends JsonNode {
         try (InputStream input = connection.getInputStream()) {
             return read(input);
         }
+    }
+
+    private static JsonObject asJsonObject(JsonNode result) {
+        if (result instanceof JsonObject) {
+            return (JsonObject)result;
+        }
+        if (result == null) {
+            throw new JsonParseException("Expected JSON object got null");
+        }
+        throw new JsonParseException("Expected JSON object got " + result.getClass());
     }
 
     /**

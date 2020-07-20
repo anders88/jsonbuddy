@@ -212,6 +212,7 @@ public class JsonArrayTest {
         JsonArray a = new JsonArray();
         assertThat(a.size()).isZero();
         assertThat(a.isEmpty()).isTrue();
+        assertThat(a.isArray()).isTrue();
     }
 
     @Test

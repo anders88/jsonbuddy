@@ -63,14 +63,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *             or if the JSON was not a JsonArray
      */
     public static JsonArray read(Reader reader) throws IOException {
-        JsonNode result = JsonParser.parseNode(reader);
-        if (result instanceof JsonArray) {
-            return (JsonArray)result;
-        }
-        if (result == null) {
-            throw new JsonParseException("Expected JSON array got null");
-        }
-        throw new JsonParseException("Expected JSON array got " + result.getClass());
+        return asJsonArray(JsonParser.parseNode(reader));
     }
 
     /**
@@ -80,11 +73,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      *             or if the JSON was not a JsonArray
      */
     public static JsonArray parse(String input) {
-        try {
-            return read(new StringReader(input));
-        } catch (IOException e) {
-            throw new RuntimeException("Should never happen with StringReader", e);
-        }
+        return asJsonArray(JsonParser.parse(input));
     }
 
     /**
@@ -132,6 +121,16 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         try (InputStream input = connection.getInputStream()) {
             return read(input);
         }
+    }
+
+    private static JsonArray asJsonArray(JsonNode jsonNode) {
+        if (jsonNode instanceof JsonArray) {
+            return (JsonArray) jsonNode;
+        }
+        if (jsonNode == null) {
+            throw new JsonParseException("Expected JSON array got null");
+        }
+        throw new JsonParseException("Expected JSON array got " + jsonNode.getClass());
     }
 
     /**
@@ -186,11 +185,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
      * Skips values that are not JsonObjects.
      */
     public <T> List<T> objects(Function<JsonObject,T> mapFunc) {
-        return nodeStream()
-                .filter(n -> n instanceof JsonObject)
-                .map(n -> (JsonObject) n)
-                .map(mapFunc)
-                .collect(Collectors.toList());
+        return objectStream().map(mapFunc).collect(Collectors.toList());
     }
 
     /**

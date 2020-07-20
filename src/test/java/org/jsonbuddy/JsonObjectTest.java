@@ -22,6 +22,8 @@ public class JsonObjectTest {
         assertThat(obj.longValue("missing")).isEmpty();
         assertThat(obj.doubleValue("missing")).isEmpty();
         assertThat(obj.doubleValue("null")).isEmpty();
+        assertThat(obj.isArray()).isFalse();
+        assertThat(obj.isObject()).isTrue();
     }
 
     @Test

@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonBoolean;
@@ -61,7 +60,6 @@ public class JsonParser {
     public static JsonNode parse(InputStream inputStream) throws JsonParseException, IOException {
         return parseNode(new InputStreamReader(inputStream));
     }
-
 
     /**
      * @see JsonObject#parse(String)
@@ -127,13 +125,6 @@ public class JsonParser {
         }
     }
 
-    private static JsonObject toObject(JsonNode result) {
-        if (!(result instanceof JsonObject)) {
-            throw new JsonParseException("Expected json object got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
-        }
-        return (JsonObject) result;
-    }
-
     /**
      * Parse base64encoded JSON string to JSONNode. Will return a JsonArray, JsonArray
      * or a JsonValue.
@@ -144,14 +135,6 @@ public class JsonParser {
     public static JsonNode parseFromBase64encodedString(String base64encodedJson) throws IllegalArgumentException {
         return parse(new String(Base64.getUrlDecoder().decode(base64encodedJson)));
     }
-
-    private static JsonArray toArray(JsonNode result) {
-        if (!(result instanceof JsonArray)) {
-            throw new JsonParseException("Expected json array got " + Optional.ofNullable(result).map(Object::getClass).map(Object::toString).orElse("null"));
-        }
-        return (JsonArray) result;
-    }
-
 
     private Reader reader;
     private char lastRead;

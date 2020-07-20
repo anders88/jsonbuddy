@@ -6,6 +6,7 @@ import org.jsonbuddy.parse.JsonParseException;
 import org.jsonbuddy.parse.JsonParser;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
@@ -22,10 +23,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class JsonParserTest {
 
     @Test
-    public void shouldParseEmptyObject() throws IOException {
-        JsonNode jsonNode = JsonParser.parseNode(new StringReader("{}"));
-        assertThat(jsonNode.isObject()).isTrue();
-        assertThat(jsonNode instanceof JsonObject).isTrue();
+    public void shouldParseEmptyObject() {
+        assertThat(JsonParser.parseToObject(new StringReader("{}")).isObject()).isTrue();
+        assertThat(JsonParser.parseToArray(new StringReader("[]")).isArray()).isTrue();
+    }
+
+    @Test
+    public void shouldParseEmptyStream() {
+        assertThat(JsonParser.parseToObject(new ByteArrayInputStream("{}".getBytes())).isObject()).isTrue();
+        assertThat(JsonParser.parseToArray(new ByteArrayInputStream("[]".getBytes())).isArray()).isTrue();
+    }
+
+    @Test
+    public void shouldParseEmptyString() {
+        assertThat(JsonParser.parseToObject("{}").isObject()).isTrue();
+        assertThat(JsonParser.parseToArray("[]").isArray()).isTrue();
     }
 
     @Test
@@ -59,8 +71,12 @@ public class JsonParserTest {
     public void shouldWarnOnWrongParseType() {
         assertThatThrownBy(() -> JsonArray.parse(fixQuotes("{'foo':'bar'}")))
                 .hasMessageContaining("Expected JSON array got class org.jsonbuddy.JsonObject");
+        assertThatThrownBy(() -> JsonArray.parse(""))
+                .hasMessageContaining("Expected JSON array got null");
         assertThatThrownBy(() -> JsonObject.parse(fixQuotes("['foo', 'bar']")))
             .hasMessageContaining("Expected JSON object got class org.jsonbuddy.JsonArray");
+        assertThatThrownBy(() -> JsonObject.parse(""))
+            .hasMessageContaining("Expected JSON object got null");
     }
 
     @Test

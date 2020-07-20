@@ -53,8 +53,6 @@ public class JsonGenerator {
      * </ul>
      *
      * @param object The object that will be converted to json
-     *
-     *
      */
     public static JsonNode generate(Object object) {
         return new JsonGenerator(true).generateNode(object,Optional.empty());

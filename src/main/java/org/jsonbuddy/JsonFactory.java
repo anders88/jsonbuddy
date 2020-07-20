@@ -46,11 +46,11 @@ public class JsonFactory {
         } else if (o instanceof OverridesJsonGenerator) {
             return ((OverridesJsonGenerator) o).jsonValue();
         } else if (o instanceof CharSequence) {
-            return new JsonString(o.toString());
+            return jsonString(o.toString());
         } else if (o instanceof Instant) {
             return jsonInstant((Instant)o);
         } else if (o instanceof Boolean) {
-            return new JsonBoolean((Boolean)o);
+            return jsonBoolean((Boolean)o);
         } else if (o instanceof Integer) {
             return new JsonNumber(((Integer)o).longValue());
         } else if (o instanceof Number) {
