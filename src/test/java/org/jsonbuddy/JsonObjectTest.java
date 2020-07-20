@@ -13,7 +13,7 @@ import org.junit.Test;
 public class JsonObjectTest {
 
     @Test
-    public void shouldGiveStringAsDouble() throws Exception {
+    public void shouldGiveStringAsDouble() {
         JsonObject obj = JsonFactory.jsonObject()
                 .put("pi", "3.14")
                 .put("null", new JsonNull());
@@ -27,12 +27,12 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldHandleEmptyNumericStrings() throws Exception {
+    public void shouldHandleEmptyNumericStrings() {
         assertThat(new JsonObject().put("value", "").longValue("value")).isEmpty();
     }
 
     @Test
-    public void instantValues() throws Exception {
+    public void instantValues() {
         Instant instant = Instant.now();
         JsonObject o = new JsonObject().put("instant", instant);
         assertThat(o.requiredInstant("instant")).isEqualTo(instant);
@@ -40,7 +40,7 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void requiredDoubleThrowsOnNonNumeric() throws Exception {
+    public void requiredDoubleThrowsOnNonNumeric() {
         assertThatThrownBy(() -> new JsonObject().put("nan", "test").requiredDouble("nan"))
             .hasMessageContaining("nan is not numeric");
         assertThatThrownBy(() -> new JsonObject().put("obj", new JsonObject()).requiredDouble("obj"))
@@ -54,7 +54,7 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldRemove() throws Exception {
+    public void shouldRemove() {
         JsonObject o = new JsonObject().put("key", "value");
         assertThat(o.remove("key")).contains(new JsonString("value"));
         assertThat(o.stringValue("key")).isEmpty();
@@ -66,16 +66,16 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldDealSensiblyWithNulls() throws Exception {
+    public void shouldDealSensiblyWithNulls() {
         JsonObject o = new JsonObject()
                 .put("jsonNull", new JsonNull())
-                .put("objectNull", (JsonObject)null);
+                .put("objectNull", null);
         assertThat(o.containsKey("jsonNull")).isTrue();
         assertThat(o.keys()).contains("jsonNull", "objectNull");
     }
 
     @Test
-    public void shouldHandleEnumValues() throws Exception {
+    public void shouldHandleEnumValues() {
         JsonObject o = new JsonObject().put("state", Thread.State.WAITING);
         assertThat(o.requiredString("state")).isEqualTo("WAITING");
         assertThat(o.requiredEnum("state", Thread.State.class))
@@ -83,7 +83,7 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldHandleBigDecimalValues() throws Exception {
+    public void shouldHandleBigDecimalValues() {
         StringBuilder numberAsString = new StringBuilder();
         for (int i = 0; i < 40; i++) {
             numberAsString.append("910");
@@ -93,13 +93,13 @@ public class JsonObjectTest {
         BigDecimal largeNumber = new BigDecimal(numberAsString.toString());
 
         JsonObject o = new JsonObject().put("largeNumber", largeNumber);
-        o = JsonParser.parseToObject(o.toJson());
+        o = JsonObject.parse(o.toJson());
         assertThat(o.numberValue("largeNumber")).contains(largeNumber);
         assertThat(o.requiredString("largeNumber")).isEqualTo(numberAsString.toString());
     }
 
     @Test
-    public void shouldClearObject() throws Exception {
+    public void shouldClearObject() {
         JsonObject o = new JsonObject().put("string", "value");
         o.clear();
         assertThat(o.isEmpty()).isTrue();
@@ -107,7 +107,7 @@ public class JsonObjectTest {
 
 
     @Test
-    public void shouldSupportAllValueTypes() throws Exception {
+    public void shouldSupportAllValueTypes() {
         Instant instant = Instant.now();
         JsonObject object = new JsonObject()
                 .put("bool", true)
@@ -124,7 +124,7 @@ public class JsonObjectTest {
         assertThat(object)
             .isEqualTo(object)
             .isEqualTo(object.deepClone())
-            .isEqualTo(JsonParser.parseToObject(object.toString()))
+            .isEqualTo(JsonObject.parse(object.toString()))
             .isNotEqualTo(object.toJson());
 
         assertThat(object.keys())
@@ -132,12 +132,12 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldGiveValuesAsString() throws Exception {
-        assertThat(new JsonObject().put("pi", "3.14").stringValue("pi").get())
+    public void shouldGiveValuesAsString() {
+        assertThat(new JsonObject().put("pi", "3.14").stringValue("pi")).get()
             .isEqualTo("3.14");
         assertThat(new JsonObject().put("pi", "3.14").requiredString("pi"))
             .isEqualTo("3.14");
-        assertThat(new JsonObject().put("number", 42.5).stringValue("number").get())
+        assertThat(new JsonObject().put("number", 42.5).stringValue("number")).get()
             .isEqualTo("42.5");
         assertThat(new JsonObject().put("number", 42.5).requiredString("number"))
             .isEqualTo("42.5");
@@ -148,8 +148,8 @@ public class JsonObjectTest {
 
     @Test
     public void shouldHandleNullStrings() {
-        assertThat(new JsonObject().put("nullValue", (String)null).stringValue("nullValue")).isEmpty();
-        assertThatThrownBy(() -> new JsonObject().put("nullValue", (String)null).requiredString("nullValue"))
+        assertThat(new JsonObject().put("nullValue", null).stringValue("nullValue")).isEmpty();
+        assertThatThrownBy(() -> new JsonObject().put("nullValue", null).requiredString("nullValue"))
             .isInstanceOf(JsonValueNotPresentException.class)
             .hasMessageContaining("nullValue");
 
@@ -160,7 +160,7 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void booleanShouldReturnAsString() throws Exception {
+    public void booleanShouldReturnAsString() {
         JsonObject jsonObject = JsonFactory.jsonObject().put("abool", true);
         assertThat(jsonObject.stringValue("abool")).isPresent().contains("true");
 
@@ -174,19 +174,19 @@ public class JsonObjectTest {
     }
 
     @Test
-    public void shouldThrowOnTypeMismatch() throws Exception {
+    public void shouldThrowOnTypeMismatch() {
         assertThatThrownBy(() -> new JsonObject().put("a", "a").objectValue("a"))
             .isInstanceOf(JsonConversionException.class);
     }
 
     @Test
-    public void shouldReturnBoolean() throws Exception {
+    public void shouldReturnBoolean() {
         JsonObject o = new JsonObject()
                 .put("boolean", true)
                 .put("string", "TRuE")
                 .put("nonsense", "maybe")
                 .put("object", new JsonObject())
-                .put("null", (JsonObject)null)
+                .put("null", null)
                 .put("number", 0);
         assertThat(o.requiredBoolean("boolean")).isTrue();
         assertThat(o.booleanValue("string")).isPresent().contains(true);

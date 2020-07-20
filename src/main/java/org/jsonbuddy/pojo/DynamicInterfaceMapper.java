@@ -9,6 +9,7 @@ import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -100,8 +101,8 @@ public class DynamicInterfaceMapper implements PojoMappingRule {
 
     private static <T> T createInstance(Class<? extends T> loaded) {
         try {
-            return loaded.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return loaded.getConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }

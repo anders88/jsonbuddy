@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
@@ -444,6 +443,7 @@ public class JsonArray extends JsonNode implements Iterable<JsonNode> {
         if (!jsonClass.isAssignableFrom(jsonNode.getClass())) {
             throw new JsonConversionException(String.format("Object in array (%s) is not %s",jsonNode.getClass().getName(),jsonClass.getName()));
         }
+        //noinspection unchecked
         return (T) jsonNode;
     }
 

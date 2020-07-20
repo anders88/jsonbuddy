@@ -34,7 +34,7 @@ public class JsonArrayTest {
 
         assertThat(a)
             .isEqualTo(a).isEqualTo(a.deepClone())
-            .isEqualTo(JsonParser.parseToArray(a.toString()))
+            .isEqualTo(JsonArray.parse(a.toString()))
             .isNotEqualTo(a.toString());
         assertThat(a.isEmpty()).isFalse();
         assertThat(a.size()).isEqualTo(9);

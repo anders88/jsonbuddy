@@ -368,6 +368,7 @@ public class JsonObject extends JsonNode {
         if (value.isPresent() && !t.isAssignableFrom(value.get().getClass())) {
             throw new JsonConversionException("Can't convert " + key + " to " + t);
         }
+        //noinspection unchecked
         return value.map(node -> (T) node);
     }
 

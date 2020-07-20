@@ -1,5 +1,12 @@
 package org.jsonbuddy.pojo;
 
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonConversionException;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -9,25 +16,19 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.temporal.Temporal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonConversionException;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonValue;
 
 /**
  * Deserializes a JsonObject or JsonArray into plain Java objects by setting
@@ -129,16 +130,25 @@ public class PojoMapper {
         if (getClassType(collectionType) == JsonArray.class) {
             return (T) jsonArray;
         }
-        Stream<?> stream = jsonArray.nodeStream().map(element -> mapValue(element, elementType));
         if (getClassType(collectionType) == Stream.class) {
-            return (T)stream;
+            return (T) mapToStream(jsonArray, elementType);
         } else if (getClassType(collectionType) == Set.class) {
-            return (T)stream.collect(Collectors.toSet());
+            return (T) addToCollection(jsonArray, elementType, new HashSet<>());
         } else if (getClassType(collectionType) == List.class || collectionType == Collection.class) {
-            return (T)stream.collect(Collectors.toList());
+            return (T) addToCollection(jsonArray, elementType, new ArrayList<>());
         } else {
             throw new CanNotMapException("Cannot map JsonArray to " + collectionType);
         }
+    }
+
+    public <T> Collection<T> addToCollection(JsonArray jsonArray, Type elementType, Collection<T> collection) {
+        //noinspection unchecked
+        mapToStream(jsonArray, elementType).forEach(e -> collection.add((T)e));
+        return collection;
+    }
+
+    public Stream<Object> mapToStream(JsonArray jsonArray, Type elementType) {
+        return jsonArray.nodeStream().map(element -> mapValue(element, elementType));
     }
 
     /**

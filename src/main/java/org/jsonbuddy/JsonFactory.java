@@ -56,6 +56,7 @@ public class JsonFactory {
         } else if (o instanceof Number) {
             return new JsonNumber((Number)o);
         } else if (o instanceof List) {
+            //noinspection unchecked
             return new JsonArray().addAll((List<String>)o);
         } else if (o instanceof Enum || o instanceof UUID || o instanceof URL) {
             return new JsonString(o.toString());
