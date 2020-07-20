@@ -349,6 +349,15 @@ public class JsonObject extends JsonNode {
     }
 
     /**
+     * Returns the value of the argument key
+     *
+     * @throws JsonValueNotPresentException if the key is not present or not JsonArray
+     */
+    public JsonNode requiredValue(String key) {
+        return value(key).orElseThrow(throwKeyNotPresent(key));
+    }
+
+    /**
      * Returns the value of the argument key as the argument type or an empty Optional
      * if the key is not present.
      *

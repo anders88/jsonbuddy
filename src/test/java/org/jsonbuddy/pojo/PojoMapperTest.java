@@ -1,23 +1,6 @@
 package org.jsonbuddy.pojo;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.jsonbuddy.JsonArray;
 import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
@@ -58,6 +41,26 @@ import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
 
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+@SuppressWarnings("ConstantConditions")
 public class PojoMapperTest {
     @Test
     public void shouldHandleEmptyClass() {
@@ -193,6 +196,15 @@ public class PojoMapperTest {
     }
 
     @Test
+    public void shouldThrowOnInvalidInstant() {
+        JsonObject jsonObject = JsonFactory.jsonObject().put("time", "noon tomorrow");
+        assertThatThrownBy(() -> PojoMapper.map(jsonObject, ClassWithTime.class))
+                .isInstanceOf(CanNotMapException.class)
+                .hasMessageContaining(DateTimeParseException.class.getName())
+                .hasMessageContaining("noon tomorrow");
+    }
+
+    @Test
     public void shouldMapToPojoFromArray() {
         assertThat(PojoMapper.map(JsonFactory.jsonArray(), String.class)).isEmpty();
     }
@@ -208,7 +220,6 @@ public class PojoMapperTest {
         assertThat(classWithJsonElements.name).isEqualTo("Darth Vader");
         assertThat(classWithJsonElements.myObject.requiredString("title")).isEqualTo("Dark Lord");
         assertThat(classWithJsonElements.myArray.stringStream().collect(Collectors.toList())).containsExactly("Luke", "Leia");
-
     }
 
     @Test
@@ -323,7 +334,7 @@ public class PojoMapperTest {
         assertThat(classWithOptional.optStr).isNull();
 
         classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr",new JsonNull()), ClassWithOptional.class);
-        assertThat(classWithOptional.optStr.isPresent()).isFalse();
+        assertThat(classWithOptional.optStr).isEmpty();
 
         classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptional.class);
         assertThat(classWithOptional.optStr).isPresent().contains("abc");
@@ -502,7 +513,7 @@ public class PojoMapperTest {
     public void shouldHandleInterfaceInMaps() {
         JsonObject jsonObject = JsonFactory.jsonObject().put("myMap", JsonFactory.jsonObject().put("intkey",
                 JsonFactory.jsonObject().put("publicvalue", "A public value")));
-        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,new DynamicInterfaceMapper());
+        ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class, new DynamicInterfaceMapper());
         assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
     }
 
@@ -527,7 +538,7 @@ public class PojoMapperTest {
     @Test
     public void shoulHandleBothInterfaceAndEnum() {
         JsonObject jsonObject = JsonFactory.jsonObject().put("name","Darth").put("enumNumber",EnumClass.THREE.toString());
-        InterfaceWithEnum interfaceWithEnum = PojoMapper.map(jsonObject,InterfaceWithEnum.class,new DynamicInterfaceMapper(),new EnumMapper());
+        InterfaceWithEnum interfaceWithEnum = PojoMapper.map(jsonObject, InterfaceWithEnum.class, new DynamicInterfaceMapper(), new EnumMapper());
         assertThat(interfaceWithEnum.getName()).isEqualTo("Darth");
         assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
     }
@@ -587,7 +598,31 @@ public class PojoMapperTest {
         assertThat(result)
                 .extracting("name")
                 .contains("Johannes", "Anders");
+    }
 
+    @Test
+    public void shouldHandleMapOfObjects() throws NoSuchMethodException {
+        JsonNode list = new JsonObject()
+                .put("johannes", new JsonObject().put("name", "Johannes"))
+                .put("anders", new JsonObject().put("name", "Anders"));
+        Type type = getClass().getMethod("mapFactory").getGenericReturnType();
+        Map<String, SimpleWithName> result = PojoMapper.mapType(list, type);
+        assertThat(result.get("johannes").name)
+                .contains("Johannes");
+    }
+
+    @Test
+    public void shouldReturnArrayForArray() {
+        JsonArray array = new JsonArray().add("one").add("two");
+        assertThat((Object)PojoMapper.mapType(array, JsonArray.class)).isEqualTo(array);
+    }
+
+    @Test
+    public void shouldThrowOnUnsupportedCollectionType() {
+        JsonArray array = new JsonArray().add("one").add("two");
+        assertThatThrownBy(() -> PojoMapper.create().mapToPojo(array, ArrayList.class, String.class))
+            .isInstanceOf(CanNotMapException.class)
+            .hasMessageContaining(ArrayList.class.getName());
     }
 
     public List<SimpleWithName> listFactory() {
@@ -597,6 +632,11 @@ public class PojoMapperTest {
     public Stream<SimpleWithName> streamFactory() {
         return null;
     }
+
+    public Map<String, SimpleWithName> mapFactory() {
+        return null;
+    }
+
 
     @Test
     public void shouldDecodeJsonArray() {
