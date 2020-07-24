@@ -6,12 +6,17 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +36,6 @@ import org.jsonbuddy.JsonString;
 public class JsonGenerator {
 
     private final boolean useDeclaringClassAsTemplate;
-
 
     protected JsonGenerator(boolean useDeclaringClassAsTemplate) {
         this.useDeclaringClassAsTemplate = useDeclaringClassAsTemplate;
@@ -82,6 +86,24 @@ public class JsonGenerator {
         return new JsonGenerator(true).generateNode(object,Optional.of(classToUse));
     }
 
+    private final Map<Class<?>, Function<Object, JsonNode>> converters = new HashMap<>();
+    {
+        addConverter(String.class, JsonString::new);
+        addConverter(Number.class, JsonNumber::new);
+        addConverter(Boolean.class, JsonBoolean::new);
+        addConverter(Enum.class, o -> new JsonString(o.toString()));
+        addConverter(UUID.class, o -> new JsonString(o.toString()));
+        addConverter(URL.class, o -> new JsonString(o.toString()));
+        addConverter(URI.class, o -> new JsonString(o.toString()));
+        addConverter(InetAddress.class, o -> new JsonString(o.getHostName()));
+        addConverter(Temporal.class, o -> new JsonString(o.toString()));
+    }
+
+    public <T> void addConverter(Class<T> sourceClass, Function<T, JsonNode> converter) {
+        //noinspection unchecked
+        converters.put(sourceClass,  (Function<Object, JsonNode>) converter);
+    }
+
     public JsonNode generateNode(Object object, Optional<Type> objectType) {
         if (object == null) {
             return new JsonNull();
@@ -89,17 +111,10 @@ public class JsonGenerator {
         if (object instanceof JsonNode) {
             return (JsonNode) object;
         }
-        if (object instanceof String) {
-            return new JsonString((String) object);
-        }
-        if ((object instanceof Number))  {
-            return new JsonNumber(((Number)object));
-        }
-        if (object instanceof Boolean) {
-            return new JsonBoolean((Boolean) object);
-        }
-        if (object instanceof Enum) {
-            return new JsonString(object.toString());
+        for (Class<?> converterClass : converters.keySet()) {
+            if (converterClass.isAssignableFrom(object.getClass())) {
+                return converters.get(converterClass).apply(object);
+            }
         }
         if (object instanceof Map) {
             JsonObject jsonObject = JsonFactory.jsonObject();
@@ -115,12 +130,6 @@ public class JsonGenerator {
         }
         if (object.getClass().isArray()) {
             return JsonArray.map(Arrays.asList((Object[])object), ob -> generateNode(ob, objectType.map(this::getElementClass)));
-        }
-        if (object instanceof Temporal) {
-            return new JsonString(object.toString());
-        }
-        if (object instanceof UUID) {
-            return new JsonString(object.toString());
         }
         if (object instanceof OverridesJsonGenerator) {
             OverridesJsonGenerator overridesJsonGenerator = (OverridesJsonGenerator) object;
@@ -178,15 +187,15 @@ public class JsonGenerator {
         return jsonObject;
     }
 
-    private Type getElementClass(Type returnType) {
+    private Type getElementClass(Type type) {
         if (!this.useDeclaringClassAsTemplate) {
             // Shortcut.
-            return getRawType(returnType);
+            return getRawType(type);
         }
-        if (!(returnType instanceof ParameterizedType)) {
-            return getRawType(returnType);
+        if (!(type instanceof ParameterizedType)) {
+            return getRawType(type);
         }
-        ParameterizedType genericReturnType = (ParameterizedType) returnType;
+        ParameterizedType genericReturnType = (ParameterizedType) type;
         if (Collection.class.isAssignableFrom(getRawType(genericReturnType))) {
             return getRawType(genericReturnType.getActualTypeArguments()[0]);
         }

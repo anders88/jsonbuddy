@@ -59,10 +59,10 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shoulHandleFloats() {
+    public void shouldHandleFloats() {
         JsonNode jsonNode = JsonGenerator.generateUsingImplementationAsTemplate(3.14f);
         JsonNumber jsonDouble = (JsonNumber) jsonNode;
-        assertThat(new Double(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
+        assertThat(Double.valueOf(jsonDouble.doubleValue()).floatValue()).isEqualTo(3.14f);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shoulHandleEmbeddedJson() {
+    public void shouldHandleEmbeddedJson() {
         ClassWithJsonElements classWithJsonElements = new ClassWithJsonElements("Darth Vader",
                 JsonFactory.jsonObject().put("title", "Dark Lord"),
                 JsonFactory.jsonArray().add("Luke").add("Leia"));

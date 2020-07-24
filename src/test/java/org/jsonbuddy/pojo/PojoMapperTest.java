@@ -44,6 +44,12 @@ import org.junit.Test;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -544,11 +550,14 @@ public class PojoMapperTest {
     }
 
     @Test
-    public void shouldMapJdkValueTypes() {
+    public void shouldMapJdkValueTypes() throws MalformedURLException, URISyntaxException, UnknownHostException {
         ClassWithJdkValueTypes o = new ClassWithJdkValueTypes();
         o.uuids = Arrays.asList(UUID.randomUUID(), UUID.randomUUID());
         o.localDate = LocalDate.now();
         o.instant = Instant.now();
+        o.url = new URL("https://github.com/anders88/jsonbuddy");
+        o.uri = new URI("https://github.com/jhannes/");
+        o.inetAddress = InetAddress.getByName("127.0.0.1");
         JsonNode json = JsonGenerator.generate(o);
         ClassWithJdkValueTypes deserialized = PojoMapper.mapType(json, ClassWithJdkValueTypes.class);
         assertThat(deserialized).isEqualToComparingFieldByField(o);
@@ -614,6 +623,7 @@ public class PojoMapperTest {
     @Test
     public void shouldReturnArrayForArray() {
         JsonArray array = new JsonArray().add("one").add("two");
+        assertThat((Object)PojoMapper.create().mapToPojo(array, JsonArray.class, String.class)).isEqualTo(array);
         assertThat((Object)PojoMapper.mapType(array, JsonArray.class)).isEqualTo(array);
     }
 

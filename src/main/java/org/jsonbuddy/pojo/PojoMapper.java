@@ -15,6 +15,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,7 +38,6 @@ import java.util.stream.Stream;
  * fields and calling setters on the target object.
  */
 public class PojoMapper {
-
 
     public static PojoMapper create(PojoMappingRule... options) {
         return new PojoMapper(options);
@@ -355,43 +357,55 @@ public class PojoMapper {
         return result.toString();
     }
 
-    private static final Map<Class<?>, Function<Number, Object>> numberConverters = new HashMap<>();
-    static {
-        numberConverters.put(BigInteger.class, n -> new BigInteger(n.toString()));
-        numberConverters.put(Long.class, Number::longValue);
-        numberConverters.put(Long.TYPE, Number::longValue);
-        numberConverters.put(Integer.class, Number::intValue);
-        numberConverters.put(Integer.TYPE, Number::intValue);
-        numberConverters.put(Short.class, Number::shortValue);
-        numberConverters.put(Short.TYPE, Number::shortValue);
-        numberConverters.put(Byte.class, Number::byteValue);
-        numberConverters.put(Byte.TYPE, Number::byteValue);
-        numberConverters.put(BigDecimal.class, n -> new BigDecimal(n.toString()));
-        numberConverters.put(Double.class, Number::doubleValue);
-        numberConverters.put(Double.TYPE, Number::doubleValue);
-        numberConverters.put(Float.class, Number::floatValue);
-        numberConverters.put(Float.TYPE, Number::floatValue);
-        numberConverters.put(String.class, Object::toString);
+    private final Map<Class<?>, Function<Number, ?>> numberConverters = new HashMap<>();
+    {
+        addNumberConverter(Long.class, Number::longValue);
+        addNumberConverter(Long.TYPE, Number::longValue);
+        addNumberConverter(BigInteger.class, n -> new BigInteger(n.toString()));
+        addNumberConverter(Integer.class, Number::intValue);
+        addNumberConverter(Integer.TYPE, Number::intValue);
+        addNumberConverter(Short.class, Number::shortValue);
+        addNumberConverter(Short.TYPE, Number::shortValue);
+        addNumberConverter(Byte.class, Number::byteValue);
+        addNumberConverter(Byte.TYPE, Number::byteValue);
+        addNumberConverter(BigDecimal.class, n -> new BigDecimal(n.toString()));
+        addNumberConverter(Double.class, Number::doubleValue);
+        addNumberConverter(Double.TYPE, Number::doubleValue);
+        addNumberConverter(Float.class, Number::floatValue);
+        addNumberConverter(Float.TYPE, Number::floatValue);
+        addNumberConverter(String.class, Object::toString);
     }
 
-    private static final Map<Class<?>, Function<String, Object>> stringConverters = new HashMap<>();
-    static {
-        stringConverters.put(UUID.class, UUID::fromString);
-        stringConverters.put(BigInteger.class, BigInteger::new);
-        stringConverters.put(Long.class, Long::parseLong);
-        stringConverters.put(Long.TYPE, Long::parseLong);
-        stringConverters.put(Integer.class, Integer::parseInt);
-        stringConverters.put(Integer.TYPE, Integer::parseInt);
-        stringConverters.put(Short.class, Short::parseShort);
-        stringConverters.put(Short.TYPE, Short::parseShort);
-        stringConverters.put(Byte.class, Byte::parseByte);
-        stringConverters.put(Byte.TYPE, Byte::parseByte);
-        stringConverters.put(BigDecimal.class, BigDecimal::new);
-        stringConverters.put(Double.class, Double::parseDouble);
-        stringConverters.put(Double.TYPE, Double::parseDouble);
-        stringConverters.put(Float.class, Float::parseFloat);
-        stringConverters.put(Float.TYPE, Float::parseFloat);
-        stringConverters.put(String.class, s -> s);
-        stringConverters.put(Boolean.class, Boolean::parseBoolean);
+    public <T> void addNumberConverter(Class<T> targetClass, Function<Number, T> converter) {
+        numberConverters.put(targetClass, converter);
     }
+
+    private final Map<Class<?>, Function<String, ?>> stringConverters = new HashMap<>();
+    {
+        addStringConverter(BigInteger.class, BigInteger::new);
+        addStringConverter(Long.class, Long::parseLong);
+        addStringConverter(Long.TYPE, Long::parseLong);
+        addStringConverter(Integer.class, Integer::parseInt);
+        addStringConverter(Integer.TYPE, Integer::parseInt);
+        addStringConverter(Short.class, Short::parseShort);
+        addStringConverter(Short.TYPE, Short::parseShort);
+        addStringConverter(Byte.class, Byte::parseByte);
+        addStringConverter(Byte.TYPE, Byte::parseByte);
+        addStringConverter(BigDecimal.class, BigDecimal::new);
+        addStringConverter(Double.class, Double::parseDouble);
+        addStringConverter(Double.TYPE, Double::parseDouble);
+        addStringConverter(Float.class, Float::parseFloat);
+        addStringConverter(Float.TYPE, Float::parseFloat);
+        addStringConverter(String.class, s -> s);
+        addStringConverter(Boolean.class, Boolean::parseBoolean);
+        addStringConverter(UUID.class, UUID::fromString);
+        addStringConverter(URI.class, ExceptionUtil.softenFunction(URI::new));
+        addStringConverter(URL.class, ExceptionUtil.softenFunction(URL::new));
+        addStringConverter(InetAddress.class, ExceptionUtil.softenFunction(InetAddress::getByName));
+    }
+
+    public <T> void addStringConverter(Class<T> targetClass, Function<String, T> converter) {
+        stringConverters.put(targetClass, converter);
+    }
+
 }
