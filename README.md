@@ -34,7 +34,7 @@ Jsononbuddy is on maven central. Add to your pom
 <dependency>
 	<groupId>org.jsonbuddy</groupId>
 	<artifactId>jsonbuddy</artifactId>
-	<version>0.15</version>
+	<version>0.17</version>
 </dependency>
 ```
 
@@ -207,10 +207,12 @@ Version | Description
 0.14.1  | Bugfix
 0.14.2  | Bugfix parse exponential number
 0.15    | Better support for reading and writing to the network, e.g. `JsonObject.parse(HttpURLConnection)`. Bugfix on parsing `"[  ]"`
+0.16    | Bugfix
+0.17    | More flexible generation and mapping with POJOs. Automatically map to any parametrized type with PojoMapper#mapToType. Customize mapping and generation work JsonGenerator#addConverter, PojoMapper#addStringConverter and PojoMapper#addNumberConverter
 
 
 # Licence
 
-Copyright © 2015-2019 Anders Karlsen
+Copyright © 2015-2020 Anders Karlsen
 
 Distributed under the Apache License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0)
