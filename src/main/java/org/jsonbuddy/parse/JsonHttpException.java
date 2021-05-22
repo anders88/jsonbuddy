@@ -15,11 +15,13 @@ import org.jsonbuddy.JsonObject;
  */
 public class JsonHttpException extends RuntimeException {
 
+    private final int responseCode;
     private JsonObject jsonError;
     private String errorContent;
 
     public JsonHttpException(HttpURLConnection conn) throws IOException {
         super(conn.getResponseCode() + " " + conn.getResponseMessage() + " on " + conn.getRequestMethod() + " " + conn.getURL());
+        this.responseCode = conn.getResponseCode();
         if (conn.getContentType() == null || conn.getErrorStream() == null) {
             return;
         }
@@ -37,6 +39,10 @@ public class JsonHttpException extends RuntimeException {
         if (conn.getResponseCode() >= 400) {
             throw new JsonHttpException(conn);
         }
+    }
+
+    public int getResponseCode() {
+        return responseCode;
     }
 
     private String asString(InputStream error) throws IOException {

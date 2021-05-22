@@ -1,7 +1,7 @@
 package org.jsonbuddy;
 
 import com.sun.net.httpserver.HttpServer;
-import org.assertj.core.api.AbstractThrowableAssert;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.jsonbuddy.parse.JsonHttpException;
 import org.junit.Test;
 
@@ -85,11 +85,10 @@ public class JsonRequestTest {
 
         URL url = new URL("http://localhost:" + serverPort);
 
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonObject.read(url))
-            .isInstanceOf(JsonHttpException.class);
-        exception
-            .extracting("jsonError")
-            .containsOnly(new JsonObject().put("error", "invalid_request"));
+        assertThatThrownBy(() -> JsonObject.read(url))
+            .asInstanceOf(InstanceOfAssertFactories.type(JsonHttpException.class))
+            .extracting(JsonHttpException::getJsonError)
+            .isEqualTo(new JsonObject().put("error", "invalid_request"));
     }
 
     @Test
@@ -99,14 +98,29 @@ public class JsonRequestTest {
         int serverPort = httpServer.getAddress().getPort();
 
         URL url = new URL("http://localhost:" + serverPort);
-
-        AbstractThrowableAssert<?,?> exception = assertThatThrownBy(() -> JsonArray.read(url))
-            .isInstanceOf(JsonHttpException.class)
+        
+        
+        assertThatThrownBy(() -> JsonArray.read(url))
             .hasMessageContaining("404 Not Found")
-            .hasMessageContaining(url.toString());
-        exception
-            .extracting("errorContent")
-            .anyMatch(s -> s.toString().contains("<h1>404 Not Found</h1>No context found for request"));
+            .hasMessageContaining(url.toString())
+            .asInstanceOf(InstanceOfAssertFactories.type(JsonHttpException.class))
+            .extracting(JsonHttpException::getErrorContent)
+            .asString()
+            .contains("<h1>404 Not Found</h1>No context found for request");
+    }
+    
+    @Test
+    public void shouldHandleErrorCode() throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        httpServer.start();
+        int serverPort = httpServer.getAddress().getPort();
+
+        URL url = new URL("http://localhost:" + serverPort);
+
+        assertThatThrownBy(() -> JsonArray.read(url))
+            .asInstanceOf(InstanceOfAssertFactories.type(JsonHttpException.class))
+            .extracting(JsonHttpException::getResponseCode)
+            .isEqualTo(404);
     }
 
 }
