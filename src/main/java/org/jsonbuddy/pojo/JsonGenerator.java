@@ -29,13 +29,19 @@ import org.jsonbuddy.JsonNumber;
 import org.jsonbuddy.JsonObject;
 import org.jsonbuddy.JsonString;
 
+import javax.swing.text.html.Option;
+
 /**
  * Convert an object to JSON by mapping fields for any object
  * provided.
  */
 public class JsonGenerator {
 
+    public static final Function<String, String> UNDERSCORE_TRANSFORMER = 
+            s -> s.replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
+    
     private final boolean useDeclaringClassAsTemplate;
+    private Function<String, String> nameTransformer = Function.identity();
 
     protected JsonGenerator(boolean useDeclaringClassAsTemplate) {
         this.useDeclaringClassAsTemplate = useDeclaringClassAsTemplate;
@@ -59,7 +65,7 @@ public class JsonGenerator {
      * @param object The object that will be converted to json
      */
     public static JsonNode generate(Object object) {
-        return new JsonGenerator(true).generateNode(object,Optional.empty());
+        return new JsonGenerator(true).generateNode(object);
     }
 
 
@@ -79,11 +85,11 @@ public class JsonGenerator {
      *
      */
     public static JsonNode generateUsingImplementationAsTemplate(Object object) {
-        return new JsonGenerator(false).generateNode(object,Optional.empty());
+        return new JsonGenerator(false).generateNode(object);
     }
 
     public static JsonNode generateWithSpecifyingClass(Object object, Class<?> classToUse) {
-        return new JsonGenerator(true).generateNode(object,Optional.of(classToUse));
+        return new JsonGenerator(true).generateNode(object, Optional.of(classToUse));
     }
 
     private final Map<Class<?>, Function<Object, JsonNode>> converters = new HashMap<>();
@@ -102,6 +108,15 @@ public class JsonGenerator {
     public <T> void addConverter(Class<T> sourceClass, Function<T, JsonNode> converter) {
         //noinspection unchecked
         converters.put(sourceClass,  (Function<Object, JsonNode>) converter);
+    }
+
+    public JsonGenerator withNameTransformer(Function<String, String> nameTransformer) {
+        this.nameTransformer = nameTransformer;
+        return this;
+    }
+
+    public JsonNode generateNode(Object object) {
+        return generateNode(object, Optional.empty());
     }
 
     public JsonNode generateNode(Object object, Optional<Type> objectType) {
@@ -215,7 +230,7 @@ public class JsonGenerator {
     }
 
     protected String getName(Field field) {
-        return field.getName();
+        return transformName(field.getName());
     }
 
     protected String getName(Method getMethod) {
@@ -223,7 +238,11 @@ public class JsonGenerator {
         String name = "" + methodName.charAt(3);
         name = name.toLowerCase();
         name = name + methodName.substring(4);
-        return name;
+        return transformName(name);
+    }
+
+    protected String transformName(String name) {
+        return nameTransformer.apply(name);
     }
 
 }

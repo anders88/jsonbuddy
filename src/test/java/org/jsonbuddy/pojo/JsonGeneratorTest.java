@@ -37,6 +37,7 @@ import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
 import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
 import org.jsonbuddy.pojo.testclasses.JsonGeneratorOverrides;
 import org.jsonbuddy.pojo.testclasses.SimpleWithName;
+import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
 
 public class JsonGeneratorTest {
@@ -344,8 +345,16 @@ public class JsonGeneratorTest {
     }
 
     @Test
-    public void shouldHandeGenrationWithPut() {
+    public void shouldHandleGenerationWithPut() {
         JsonObject jsonObject = JsonFactory.jsonObject().put("myNested",new JsonGeneratorOverrides());
         assertThat(jsonObject.requiredObject("myNested").requiredLong("myOverriddenValue")).isEqualTo(42L);
+    }
+    
+    @Test
+    public void shouldSupportGenerationWithSnakeCasing() {
+        SimpleWithNameGetter object = new SimpleWithNameGetter();
+        object.setFullName("Darth Vader");
+        assertThat(new JsonGenerator().withNameTransformer(JsonGenerator.UNDERSCORE_TRANSFORMER).generateNode(object))
+                .isEqualTo(new JsonObject().put("full_name", "Darth Vader"));
     }
 }
