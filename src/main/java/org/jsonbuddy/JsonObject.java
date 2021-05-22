@@ -364,12 +364,15 @@ public class JsonObject extends JsonNode {
      * @throws JsonConversionException if the value is not of the specified type
      */
     public <T extends JsonNode> Optional<T> get(String key, Class<T> t) throws JsonConversionException {
-        Optional<JsonNode> value = value(key);
-        if (value.isPresent() && !t.isAssignableFrom(value.get().getClass())) {
+        JsonNode value = values.get(key);
+        if (value == null || value instanceof JsonNull) {
+            return Optional.empty();
+        }
+        if (!t.isAssignableFrom(value.getClass())) {
             throw new JsonConversionException("Can't convert " + key + " to " + t);
         }
         //noinspection unchecked
-        return value.map(node -> (T) node);
+        return Optional.of((T) value);
     }
 
     private Supplier<JsonValueNotPresentException> throwKeyNotPresent(String key) {

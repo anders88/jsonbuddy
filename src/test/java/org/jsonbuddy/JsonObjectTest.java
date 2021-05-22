@@ -97,6 +97,13 @@ public class JsonObjectTest {
         assertThat(o.numberValue("largeNumber")).contains(largeNumber);
         assertThat(o.requiredString("largeNumber")).isEqualTo(numberAsString.toString());
     }
+    
+    @Test
+    public void shouldHandleNullNumbers() {
+        assertThat(new JsonObject().numberValue("missing")).isEmpty();
+        assertThat(new JsonObject().put("missing", null).numberValue("missing")).isEmpty();
+        assertThat(new JsonObject().put("missing", new JsonNull()).numberValue("missing")).isEmpty();
+    }
 
     @Test
     public void shouldClearObject() {
@@ -177,6 +184,13 @@ public class JsonObjectTest {
     public void shouldThrowOnTypeMismatch() {
         assertThatThrownBy(() -> new JsonObject().put("a", "a").objectValue("a"))
             .isInstanceOf(JsonConversionException.class);
+    }
+    
+    @Test
+    public void shouldHandleNullObjectValues() {
+        assertThat(new JsonObject().objectValue("missingValue")).isEmpty();
+        assertThat(new JsonObject().put("missingValue", null).objectValue("missingValue")).isEmpty();
+        assertThat(new JsonObject().put("missingValue", new JsonNull()).objectValue("missingValue")).isEmpty();
     }
 
     @Test
