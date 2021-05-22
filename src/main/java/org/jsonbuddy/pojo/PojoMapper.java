@@ -83,7 +83,7 @@ public class PojoMapper {
 
     private final List<PojoMappingRule> mappingRules;
 
-    protected PojoMapper(PojoMappingRule[] options) {
+    public PojoMapper(PojoMappingRule... options) {
         this.mappingRules = options == null ? Collections.emptyList() : Arrays.asList(options);
     }
 
@@ -164,10 +164,14 @@ public class PojoMapper {
     public Map<String, Object> mapToMap(JsonObject nodeValue, Type mapType) throws CanNotMapException {
         ParameterizedType genericType = (ParameterizedType) mapType;
         Map<String, Object> result = new HashMap<>();
+        writeToMap(result, nodeValue, genericType);
+        return result;
+    }
+
+    public void writeToMap(Map<String, Object> result, JsonObject nodeValue, ParameterizedType genericType) {
         for (String key : nodeValue.keys()) {
             result.put(key, mapValue(nodeValue.requiredValue(key), genericType.getActualTypeArguments()[1]));
         }
-        return result;
     }
 
     private Object mapValue(JsonNode jsonNode, Type type) throws CanNotMapException {
@@ -190,10 +194,16 @@ public class PojoMapper {
                 return Optional.of(mapValue(jsonNode, getElementClass(type)));
             }
         }
-        if (Map.class.isAssignableFrom(clazz) && (jsonNode instanceof JsonObject)) {
+        if (Map.class.isAssignableFrom(clazz)) {
+            if (!(jsonNode instanceof JsonObject)) {
+                throw new CanNotMapException("Cannot map " + jsonNode.getClass().getSimpleName() + " to " + clazz);
+            }
             return mapToMap((JsonObject) jsonNode, type);
         }
-        if (jsonNode instanceof JsonArray) {
+        if (Collection.class.isAssignableFrom(clazz) || Stream.class.isAssignableFrom(clazz)) {
+            if (!(jsonNode instanceof JsonArray)) {
+                throw new CanNotMapException("Cannot map " + jsonNode.getClass().getSimpleName() + " to " + clazz);
+            }
             return mapToPojo((JsonArray) jsonNode, type, getElementClass(type));
         }
         for (PojoMappingRule pojoMappingRule : mappingRules) {
@@ -277,6 +287,11 @@ public class PojoMapper {
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw new CanNotMapException(e.getMessage());
         }
+        writeFields(result, jsonObject, clazz);
+        return result;
+    }
+
+    protected void writeFields(Object result, JsonObject jsonObject, Class<?> clazz) {
         for (String key : jsonObject.keys()) {
             try {
                 if (tryToSetField(clazz, result, key, jsonObject)) {
@@ -293,7 +308,6 @@ public class PojoMapper {
                 throw new CanNotMapException(e);
             }
         }
-        return result;
     }
 
     protected boolean tryToSetField(Class<?> clazz, Object instance, String key, JsonObject jsonObject) throws Exception {

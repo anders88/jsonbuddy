@@ -324,14 +324,30 @@ public class PojoMapperTest {
         assertThat(o.enumCollection).containsExactly(EnumClass.THREE, EnumClass.ONE);
     }
 
-
     @Test
     public void shouldHandleClassWithMapWithList() {
         JsonObject jsonObject = new JsonObject()
                 .put("parentAndChildren", new JsonObject().put("Darth", new JsonArray().add("Luke").add("Leia")));
         ClassWithMapWithList withList = PojoMapper.map(jsonObject, ClassWithMapWithList.class);
         assertThat(withList.parentAndChildren.get("Darth")).containsExactly("Luke","Leia");
+    }
 
+    @Test
+    public void shouldGiveSensibleErrorOnAttemptToMapJsonObjectToList() {
+        JsonObject jsonObject = new JsonObject()
+                .put("parentAndChildren", new JsonObject().put("Darth", new JsonObject().put("name", "Luke")));
+        assertThatThrownBy(() -> PojoMapper.map(jsonObject, ClassWithMapWithList.class))
+                .isInstanceOf(CanNotMapException.class)
+                .hasMessageContaining("Cannot map JsonObject to interface java.util.List");
+    }
+
+    @Test
+    public void shouldGiveSensibleErrorOnAttemptToMapJsonArrayToMap() {
+        JsonObject jsonObject = new JsonObject()
+                .put("parentAndChildren", new JsonArray().add("Luke").add("Leia"));
+        assertThatThrownBy(() -> PojoMapper.map(jsonObject, ClassWithMapWithList.class))
+                .isInstanceOf(CanNotMapException.class)
+                .hasMessageContaining("Cannot map JsonArray to interface java.util.Map");
     }
 
     @Test
@@ -405,6 +421,12 @@ public class PojoMapperTest {
     public void shouldMapListOfNumber() {
         assertThat(PojoMapper.map(new JsonArray().add(1L).add(3L), Long.class))
                 .isEqualTo(Arrays.asList(1L, 3L));
+    }
+
+    @Test
+    public void shouldMapJsonArrayToJsonArray() {
+        assertThat((Object)PojoMapper.mapType(new JsonArray().add(1L).add(3L), JsonArray.class))
+                .isEqualTo(new JsonArray().add(1L).add(3L));
     }
 
     @Test
@@ -560,7 +582,7 @@ public class PojoMapperTest {
         o.inetAddress = InetAddress.getByName("127.0.0.1");
         JsonNode json = JsonGenerator.generate(o);
         ClassWithJdkValueTypes deserialized = PojoMapper.mapType(json, ClassWithJdkValueTypes.class);
-        assertThat(deserialized).isEqualToComparingFieldByField(o);
+        assertThat(deserialized).usingRecursiveComparison().isEqualTo(o);
     }
 
     @Test
@@ -578,7 +600,7 @@ public class PojoMapperTest {
         JsonNode json = JsonGenerator.generate(o);
         Type type = getClass().getMethod("primitivesFactory").getGenericReturnType();
         ClassWithPrimitiveValues deserialized = PojoMapper.mapType(json, type);
-        assertThat(deserialized).isEqualToComparingFieldByField(o);
+        assertThat(deserialized).usingRecursiveComparison().isEqualTo(o);
     }
 
     public ClassWithPrimitiveValues primitivesFactory() {
