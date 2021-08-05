@@ -32,6 +32,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
 import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
 import org.jsonbuddy.pojo.testclasses.ClassWithMap;
 import org.jsonbuddy.pojo.testclasses.ClassWithStaticFieldsFromInterface;
+import org.jsonbuddy.pojo.testclasses.ClassWithSuperclass;
 import org.jsonbuddy.pojo.testclasses.ClassWithTime;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
 import org.jsonbuddy.pojo.testclasses.InterfaceWithMethod;
@@ -356,5 +357,14 @@ public class JsonGeneratorTest {
         object.setFullName("Darth Vader");
         assertThat(new JsonGenerator().withNameTransformer(JsonGenerator.UNDERSCORE_TRANSFORMER).generateNode(object))
                 .isEqualTo(new JsonObject().put("full_name", "Darth Vader"));
+    }
+    
+    @Test
+    public void shouldMapPropertiesInSuperclass() {
+        ClassWithSuperclass object = new ClassWithSuperclass();
+        object.setType("some type");
+        object.setName("some name");
+        assertThat(new JsonGenerator().generateNode(object))
+                .isEqualTo(new JsonObject().put("type", "some type").put("name", "some name"));
     }
 }

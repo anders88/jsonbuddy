@@ -103,6 +103,7 @@ public class JsonGenerator {
         addConverter(URI.class, o -> new JsonString(o.toString()));
         addConverter(InetAddress.class, o -> new JsonString(o.getHostName()));
         addConverter(Temporal.class, o -> new JsonString(o.toString()));
+        addConverter(Optional.class, o -> (JsonNode) o.map(v -> generateNode(v)).orElse(new JsonNull()));
     }
 
     public <T> void addConverter(Class<T> sourceClass, Function<T, JsonNode> converter) {
@@ -154,7 +155,7 @@ public class JsonGenerator {
     }
 
     public static boolean isGetMethod(Method method) {
-        if (!Modifier.isPublic(method.getModifiers())) {
+        if (!Modifier.isPublic(method.getModifiers()) || method.getDeclaringClass() == Object.class) {
             return false;
         }
         String methodName = method.getName();
@@ -179,26 +180,28 @@ public class JsonGenerator {
     protected JsonObject handleSpecificClass(Object object, Optional<Type> objectType) {
         JsonObject jsonObject = JsonFactory.jsonObject();
         Class<?> theClass = objectType.isPresent() && this.useDeclaringClassAsTemplate ? getRawType(objectType.get()) : object.getClass();
-        Arrays.stream(theClass.getFields())
-            .filter(fi -> Modifier.isPublic(fi.getModifiers()) && !Modifier.isStatic(fi.getModifiers()))
-            .forEach(fi -> {
+        for (Field field : theClass.getFields()) {
+            if (Modifier.isPublic(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
                 try {
-                    jsonObject.put(getName(fi),
-                            generateNode(fi.get(object), Optional.of(fi.getGenericType())));
+                    jsonObject.put(getName(field),
+                            generateNode(field.get(object), Optional.of(field.getGenericType())));
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
-            });
-        Arrays.stream(theClass.getDeclaredMethods())
-                .filter(JsonGenerator::isGetMethod)
-                .forEach(method -> {
-                    try {
-                        jsonObject.put(getName(method),
-                                generateNode(method.invoke(object), Optional.of(method.getGenericReturnType())));
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+            }
+        }
+        for (Method method : theClass.getMethods()) {
+            if (isGetMethod(method)) {
+                try {
+                    jsonObject.put(
+                            getName(method),
+                            generateNode(method.invoke(object), Optional.of(method.getGenericReturnType()))
+                    );
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
         return jsonObject;
     }
 
