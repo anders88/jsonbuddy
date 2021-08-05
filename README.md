@@ -1,6 +1,6 @@
 ## Status
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.jsonbuddy/jsonbuddy)
-[![Build Status](https://travis-ci.org/anders88/jsonbuddy.png)](https://travis-ci.org/anders88/jsonbuddy)
+[![Build](https://github.com/anders88/jsonbuddy/actions/workflows/maven.yml/badge.svg)](https://github.com/anders88/jsonbuddy/actions/workflows/maven.yml)
 [![Coverage Status](https://coveralls.io/repos/anders88/jsonbuddy/badge.svg?branch=master&service=github)](https://coveralls.io/github/anders88/jsonbuddy?branch=master)
 
 # jsonbuddy
@@ -51,7 +51,7 @@ POJO             | JsonNode         | JsonGenerator.generate(pojo)
 
 Parsing a string to a JsonObject
 
-```java
+```jshelllanguage
 String jsonString = "{\"name\":\"Darth Vader\"}";
 JsonObject o = JsonObject.parse(jsonString);
 String name = node.requiredString("name"); // = Darth Vader
@@ -59,7 +59,7 @@ String name = node.requiredString("name"); // = Darth Vader
 
 You can also parse from a Reader.
 
-```java
+```jshelllanguage
 String jsonString = "{\"name\":\"Darth Vader\"}";
 JsonObject jsonObject = JsonObject.parse(jsonString);
 ```
@@ -70,7 +70,7 @@ This will cast an exception if the result is not an object. You can similary use
 
 Generating JSON as string
 
-```java
+```jshelllanguage
 JsonObject jsonObject = new JsonObject()
         .put("name", "Darth Vader");
 String jsonString = jsonObject.toJson(); // {"name":"Darth Vader"}
@@ -80,7 +80,7 @@ You can also send a PrintWriter, and the result will be written to the writer.
 
 The builder syntax is optimized for fluent building of complex hierarchies:
 
-```java
+```jshelllanguage
 JsonObject orderJson = new JsonObject()
     .put("customer", new JsonObject()
             .put("name", "Darth Vader")
@@ -95,7 +95,7 @@ JsonObject orderJson = new JsonObject()
 
 This also works well with complex Java objects:
 
-```java
+```jshelllanguage
 JsonObject orderJson = new JsonObject()
     .put("customer", new JsonObject()
             .put("name", order.getCustomer().getName())
@@ -113,7 +113,7 @@ JsonObject orderJson = new JsonObject()
 
 ### Traversing parsed result (JsonObject to Java objects)
 
-```java
+```jshelllanguage
 JsonObject object = new JsonObject()
         .put("bool", true)
         .put("double", 0.0)
@@ -128,7 +128,7 @@ object.requiredArray("array").strings(); // List<String> of "a", "b"
 
 The syntax also works well for constructing complex objects
 
-```java
+```jshelllanguage
 Order order = new Order();
 order.setCustomer(orderJson.objectValue("customer")
         .map(customerJson -> {
@@ -147,7 +147,7 @@ order.setOrderLines(orderJson.requiredArray("orderLines").objects(
 ### Json to POJO
 
 
-```java
+```jshelllanguage
 JsonObject jsonObject = JsonFactory.jsonObject()
         .put("name", "Darth Vader");
 PojoMapper pojoMapper = new PojoMapper();
@@ -162,9 +162,13 @@ You can map Json to an interface using the DynamicInterfaceMapper mapping rule.
 public interface NameInterface {
     String getName();
 }
-JsonObject jsonobject = JsonFactory.jsonObject().put("name","Darth Vader");
-NameInterface nameInterface = PojoMapper.map(jsonObject, NameInterface.class,new DynamicInterfaceMapper());
-nameInterface.getName() // = "Darth Vader"
+public class Main {
+    public static void main(String[] args) {
+        JsonObject jsonobject = JsonFactory.jsonObject().put("name","Darth Vader");
+        NameInterface nameInterface = PojoMapper.map(jsonObject, NameInterface.class,new DynamicInterfaceMapper());
+        System.out.println(nameInterface.getName()); // = "Darth Vader"
+    }
+}
 ```
 
 Jsonbuddy uses Bytebuddy (bytebuddy.net) to generate a runtime implementation of the interface. You need to supply bytebuddy as a maven dependency when using DynamicInterfaceMapper.
