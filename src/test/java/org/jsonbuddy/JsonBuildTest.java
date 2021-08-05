@@ -9,29 +9,31 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
 public class JsonBuildTest {
 
     @Test
-    public void shouldCreateValue() throws Exception {
+    public void shouldCreateValue() {
         JsonValue jsonValue = new JsonString("Darth Vader");
         assertThat(jsonValue.stringValue()).isEqualTo("Darth Vader");
 
     }
 
     @Test
-    public void shouldCreateObjectWithValue() throws Exception {
+    public void shouldCreateObjectWithValue() {
         JsonObject jsonObject = new JsonObject()
                 .put("name", new JsonString("Darth Vader"));
 
-        assertThat(jsonObject.stringValue("name").get()).isEqualTo("Darth Vader");
-        assertThat(jsonObject.stringValue("xxx").isPresent()).isFalse();
+        assertThat(jsonObject.stringValue("name")).get().isEqualTo("Darth Vader");
+        assertThat(jsonObject.stringValue("xxx")).isEmpty();
 
     }
 
     @Test
-    public void shouldCreateJsonArray() throws Exception {
+    public void shouldCreateJsonArray() {
         JsonArray jsonArray = new JsonArray()
                 .add("Darth")
                 .add("Luke");
@@ -39,7 +41,7 @@ public class JsonBuildTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfRequiredValueIsNotPresent() throws Exception {
+    public void shouldThrowExceptionIfRequiredValueIsNotPresent() {
         try {
             JsonFactory.jsonObject().requiredString("cake");
             fail("Expected exception");
@@ -49,13 +51,13 @@ public class JsonBuildTest {
     }
 
     @Test
-    public void shouldHandleTextValue() throws Exception {
+    public void shouldHandleTextValue() {
         JsonArray array = new JsonArray().add("one").add("two");
         assertThat(array.strings()).containsExactly("one","two");
     }
 
     @Test
-    public void shouldHandleDates() throws Exception {
+    public void shouldHandleDates() {
         Instant instant = LocalDateTime.of(2015, 8, 30, 13, 21, 12,314000000).atOffset(ZoneOffset.ofHours(2)).toInstant();
         JsonObject jsonObject = JsonFactory.jsonObject().put("time", instant);
 
@@ -65,7 +67,7 @@ public class JsonBuildTest {
     }
 
     @Test
-    public void shouldClone() throws Exception {
+    public void shouldClone() {
         JsonObject orig = JsonFactory.jsonObject()
                 .put("name", "Darth Vader")
                 .put("properties", JsonFactory.jsonObject().put("religion", "sith"))
@@ -89,7 +91,7 @@ public class JsonBuildTest {
     }
 
     @Test
-    public void shouldHandleNullAsStringValue() throws Exception {
+    public void shouldHandleNullAsStringValue() {
         JsonObject jsonObject = JsonFactory.jsonObject().put("nullValue", new JsonNull());
 
         assertThat(jsonObject.value("nullValue")).isPresent();
@@ -98,7 +100,7 @@ public class JsonBuildTest {
     }
 
     @Test
-    public void shouldGiveStringFormattetAsInstantAsInstant() throws Exception {
+    public void shouldGiveStringFormattetAsInstantAsInstant() {
         Instant now = Instant.now();
         JsonObject jsonObject = JsonFactory.jsonObject().put("now", JsonFactory.jsonString(now.toString()));
         assertThat(jsonObject.requiredInstant("now")).isEqualTo(now);

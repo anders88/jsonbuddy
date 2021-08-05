@@ -42,7 +42,6 @@ import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
 
-import javax.swing.text.html.Option;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;

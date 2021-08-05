@@ -1,5 +1,14 @@
 package org.jsonbuddy.pojo;
 
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonBoolean;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonNumber;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonString;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -19,17 +28,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonBoolean;
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonNumber;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonString;
-
-import javax.swing.text.html.Option;
 
 /**
  * Convert an object to JSON by mapping fields for any object
@@ -103,7 +101,7 @@ public class JsonGenerator {
         addConverter(URI.class, o -> new JsonString(o.toString()));
         addConverter(InetAddress.class, o -> new JsonString(o.getHostName()));
         addConverter(Temporal.class, o -> new JsonString(o.toString()));
-        addConverter(Optional.class, o -> (JsonNode) o.map(v -> generateNode(v)).orElse(new JsonNull()));
+        addConverter(Optional.class, o -> (JsonNode) o.map(this::generateNode).orElse(new JsonNull()));
     }
 
     public <T> void addConverter(Class<T> sourceClass, Function<T, JsonNode> converter) {

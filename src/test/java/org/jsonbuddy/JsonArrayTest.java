@@ -78,7 +78,7 @@ public class JsonArrayTest {
 
         assertThat(array.arrays()).isEqualTo(Arrays.asList(subArray1, subArray2, subArray3));
         assertThat(array.arrayStream())
-            .isEqualTo(Arrays.asList(subArray1, subArray2, subArray3));
+                .containsExactly(subArray1, subArray2, subArray3);
     }
 
     @Test

@@ -1,5 +1,14 @@
 package org.jsonbuddy.parse;
 
+import org.jsonbuddy.JsonArray;
+import org.jsonbuddy.JsonBoolean;
+import org.jsonbuddy.JsonFactory;
+import org.jsonbuddy.JsonNode;
+import org.jsonbuddy.JsonNull;
+import org.jsonbuddy.JsonNumber;
+import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonValue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,15 +18,6 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-
-import org.jsonbuddy.JsonArray;
-import org.jsonbuddy.JsonBoolean;
-import org.jsonbuddy.JsonFactory;
-import org.jsonbuddy.JsonNode;
-import org.jsonbuddy.JsonNull;
-import org.jsonbuddy.JsonNumber;
-import org.jsonbuddy.JsonObject;
-import org.jsonbuddy.JsonValue;
 
 /**
  * Create a JsonNode from an input Reader. Use {@link #parse} to parse any
@@ -221,7 +221,7 @@ public class JsonParser {
             readNext();
         }
         if (!res.toString().equals(value)) {
-            throw new JsonParseException(String.format("Unexpected value %s",res.toString()));
+            throw new JsonParseException(String.format("Unexpected value %s", res));
         }
     }
 

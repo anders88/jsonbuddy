@@ -1,12 +1,12 @@
 package org.jsonbuddy.parse;
 
+import org.jsonbuddy.JsonObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
-
-import org.jsonbuddy.JsonObject;
 
 /**
  * Signals that the HTTP endpoint returned a 4xx error code for a URL.
