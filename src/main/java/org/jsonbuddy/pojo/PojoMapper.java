@@ -68,7 +68,7 @@ public class PojoMapper {
      * @throws CanNotMapException if there is no appropriate constructor
      */
     public static <T> List<T> map(JsonArray jsonArray, Class<T> listClazz, PojoMappingRule... options) {
-        return create(options).mapToPojo(jsonArray,listClazz);
+        return create(options).mapArrayToPojo(jsonArray,listClazz);
     }
 
     /**
@@ -115,8 +115,8 @@ public class PojoMapper {
      *
      * @return a new object of the specified class
      */
-    public <T> List<T> mapToPojo(JsonArray jsonArray, Type listClazz) throws CanNotMapException {
-        return mapToPojo(jsonArray, List.class, listClazz);
+    public <T> List<T> mapArrayToPojo(JsonArray jsonArray, Type listClazz) throws CanNotMapException {
+        return mapArrayToPojo(jsonArray, List.class, listClazz);
     }
 
     /**
@@ -128,7 +128,7 @@ public class PojoMapper {
      * @return a new collection of the specified class with elements of the specified class
      */
     @SuppressWarnings("unchecked")
-    public <T> T mapToPojo(JsonArray jsonArray, Type collectionType, Type elementType) {
+    public <T> T mapArrayToPojo(JsonArray jsonArray, Type collectionType, Type elementType) {
         if (getClassType(collectionType) == JsonArray.class) {
             return (T) jsonArray;
         }
@@ -184,15 +184,15 @@ public class PojoMapper {
                 throw new CanNotMapException(e);
             }
         }
-        if (clazz.isAssignableFrom(jsonNode.getClass())) {
-            return jsonNode;
-        }
         if (clazz == Optional.class) {
-            if (jsonNode instanceof JsonNull) {
+            if (jsonNode instanceof JsonNull || jsonNode == null) {
                 return Optional.empty();
             } else {
                 return Optional.of(mapValue(jsonNode, getElementClass(type)));
             }
+        }
+        if (jsonNode == null || clazz.isAssignableFrom(jsonNode.getClass())) {
+            return jsonNode;
         }
         if (Map.class.isAssignableFrom(clazz)) {
             if (!(jsonNode instanceof JsonObject)) {
@@ -204,7 +204,7 @@ public class PojoMapper {
             if (!(jsonNode instanceof JsonArray)) {
                 throw new CanNotMapException("Cannot map " + jsonNode.getClass().getSimpleName() + " to " + clazz);
             }
-            return mapToPojo((JsonArray) jsonNode, type, getElementClass(type));
+            return mapArrayToPojo((JsonArray) jsonNode, type, getElementClass(type));
         }
         for (PojoMappingRule pojoMappingRule : mappingRules) {
             if (pojoMappingRule.isApplicableToClass(clazz, jsonNode)) {

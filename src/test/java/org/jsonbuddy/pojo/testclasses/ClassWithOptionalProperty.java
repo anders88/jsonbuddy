@@ -3,7 +3,7 @@ package org.jsonbuddy.pojo.testclasses;
 import java.util.Optional;
 
 public class ClassWithOptionalProperty {
-    private Optional<String> ostr;
+    private Optional<String> ostr = Optional.empty();
 
     public Optional<String> getOptStr() {
         return ostr;

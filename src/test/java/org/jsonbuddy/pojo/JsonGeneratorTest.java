@@ -122,7 +122,14 @@ public class JsonGeneratorTest {
         assertThat(person).isPresent();
         assertThat(person.get()).isInstanceOf(JsonObject.class);
         assertThat(person.get().requiredString("name")).isEqualTo("Darth Vader");
-
+    }
+    
+    @Test
+    public void shouldHandleOptionalValues() {
+        assertThat(JsonGenerator.generate(Optional.of(new SimpleWithName("Darth"))))
+                .isEqualTo(new JsonObject().put("name", "Darth"));
+        assertThat(JsonGenerator.generate(Optional.empty()))
+                .isEqualTo(new JsonNull());
     }
 
 
@@ -257,12 +264,7 @@ public class JsonGeneratorTest {
 
     @Test
     public void shouldHandleAnonymousClass() {
-        InterfaceWithMethod interfaceWithMethod = new InterfaceWithMethod() {
-            @Override
-            public String getPublicvalue() {
-                return "Hello world";
-            }
-        };
+        InterfaceWithMethod interfaceWithMethod = () -> "Hello world";
         JsonNode generated = JsonGenerator.generateWithSpecifyingClass(interfaceWithMethod, InterfaceWithMethod.class);
         JsonObject jsonObject = (JsonObject) generated;
         assertThat(jsonObject.requiredString("publicvalue")).isEqualTo("Hello world");

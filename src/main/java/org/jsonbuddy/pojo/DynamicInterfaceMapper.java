@@ -47,16 +47,16 @@ public class DynamicInterfaceMapper implements PojoMappingRule {
 
         Map<String,Method> methodsToMap = new HashMap<>();
         if (mapAllGetters) {
-            Arrays.stream(clazz.getDeclaredMethods())
-                    .filter(JsonGenerator::isGetMethod)
-                    .forEach(method -> {
-                        String methodName = method.getName();
-                        String key =  "" + Character.toLowerCase(methodName.charAt(3));
-                        if (methodName.length() > 4) {
-                            key = key + methodName.substring(4);
-                        }
-                        methodsToMap.put(key,method);
-                    });
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (JsonGenerator.isGetMethod(method)) {
+                    String methodName = method.getName();
+                    String key = "" + Character.toLowerCase(methodName.charAt(3));
+                    if (methodName.length() > 4) {
+                        key = key + methodName.substring(4);
+                    }
+                    methodsToMap.put(key, method);
+                }
+            }
         } else {
             for (String key : jsonObject.keys()) {
                 String getterName = "get" + Character.toUpperCase(key.charAt(0)) + key.substring(1);

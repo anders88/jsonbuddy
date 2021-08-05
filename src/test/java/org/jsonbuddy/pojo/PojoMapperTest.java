@@ -6,6 +6,7 @@ import org.jsonbuddy.JsonFactory;
 import org.jsonbuddy.JsonNode;
 import org.jsonbuddy.JsonNull;
 import org.jsonbuddy.JsonObject;
+import org.jsonbuddy.JsonString;
 import org.jsonbuddy.pojo.testclasses.ClassContainingAnnotated;
 import org.jsonbuddy.pojo.testclasses.ClassContainingOverriddenAsSetter;
 import org.jsonbuddy.pojo.testclasses.ClassWithAnnotation;
@@ -41,6 +42,7 @@ import org.jsonbuddy.pojo.testclasses.SimpleWithName;
 import org.jsonbuddy.pojo.testclasses.SimpleWithNameGetter;
 import org.junit.Test;
 
+import javax.swing.text.html.Option;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -58,6 +60,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,43 +73,43 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class PojoMapperTest {
     @Test
     public void shouldHandleEmptyClass() {
-        JsonObject empty = JsonFactory.jsonObject();
+        JsonObject empty = new JsonObject();
         SimpleWithNameGetter result = PojoMapper.map(empty, SimpleWithNameGetter.class);
         assertThat(result).isNotNull();
     }
 
     @Test
     public void shouldHandleClassWithSimpleValueGetter() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("fullName", "Darth Vader");
+        JsonObject jsonObject = new JsonObject().put("fullName", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getFullName()).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldHandlePropertiesWithUnderscore() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("full_name", "Darth Vader");
+        JsonObject jsonObject = new JsonObject().put("full_name", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getFullName()).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldIgnoreUnmappedValues() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("namex", "Darth Vader");
+        JsonObject jsonObject = new JsonObject().put("namex", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getFullName()).isNull();
     }
 
     @Test
     public void shouldHandleClassWithFinalField() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "Darth Vader");
+        JsonObject jsonObject = new JsonObject().put("name", "Darth Vader");
         SimpleWithName result = PojoMapper.map(jsonObject, SimpleWithName.class);
         assertThat(result.name).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldHandleCombinedClass() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("person", JsonFactory.jsonObject().put("name", "Darth Vader"))
+        JsonObject jsonObject = new JsonObject()
+                .put("person", new JsonObject().put("name", "Darth Vader"))
                 .put("occupation", "Dark Lord of Sith");
         CombinedClass combinedClass = PojoMapper.map(jsonObject, CombinedClass.class);
 
@@ -116,8 +119,8 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleCombinedClassWithGetterSetter() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("person", JsonFactory.jsonObject().put("name", "Darth Vader"))
+        JsonObject jsonObject = new JsonObject()
+                .put("person", new JsonObject().put("name", "Darth Vader"))
                 .put("occupation", "Dark Lord of Sith");
         CombinedClassWithSetter combinedClassWithSetter = PojoMapper.map(jsonObject, CombinedClassWithSetter.class);
 
@@ -148,7 +151,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleDifferentTypes() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("text", "the meaning")
                 .put("number", 42)
                 .put("bool", JsonFactory.jsonTrue())
@@ -186,7 +189,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleLists() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("name", "Darth")
                 .put("children", Arrays.asList("Luke", "Leia"));
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
@@ -196,14 +199,14 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleClassWithInstant() {
         Instant now = Instant.now();
-        JsonObject jsonObject = JsonFactory.jsonObject().put("time", now);
+        JsonObject jsonObject = new JsonObject().put("time", now);
         ClassWithTime classWithTime = PojoMapper.map(jsonObject, ClassWithTime.class);
         assertThat(classWithTime.getTime()).isEqualTo(now);
     }
 
     @Test
     public void shouldThrowOnInvalidInstant() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("time", "noon tomorrow");
+        JsonObject jsonObject = new JsonObject().put("time", "noon tomorrow");
         assertThatThrownBy(() -> PojoMapper.map(jsonObject, ClassWithTime.class))
                 .isInstanceOf(CanNotMapException.class)
                 .hasMessageContaining(DateTimeParseException.class.getName())
@@ -217,9 +220,9 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleEmbeddedJsonElements() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("name", "Darth Vader")
-                .put("myObject", JsonFactory.jsonObject().put("title", "Dark Lord"))
+                .put("myObject", new JsonObject().put("title", "Dark Lord"))
                 .put("myArray", JsonFactory.jsonArray().addAll(Arrays.asList("Luke", "Leia")));
         ClassWithJsonElements classWithJsonElements = PojoMapper.map(jsonObject, ClassWithJsonElements.class);
 
@@ -230,7 +233,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithAnnotation() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("name", "Darth Vader");
         ClassWithAnnotation classWithAnnotation = PojoMapper.map(jsonObject, ClassWithAnnotation.class);
         assertThat(classWithAnnotation.value).isEqualTo("overridden");
@@ -238,9 +241,9 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithOverriddenNull() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("name", "Darth Vader")
-                .put("myHack",JsonFactory.jsonObject().put("wont matter","nope"));
+                .put("myHack",new JsonObject().put("wont matter","nope"));
         PojoMapperOverride.returnNull = true;
         CombinedClassWithAnnotation classWithAnnotation;
         try {
@@ -256,8 +259,8 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithMap() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("properties", JsonFactory.jsonObject().put("firstname", "Darth").put("lastname", "Vader"));
+        JsonObject jsonObject = new JsonObject()
+                .put("properties", new JsonObject().put("firstname", "Darth").put("lastname", "Vader"));
         ClassWithMap classWithMap = PojoMapper.map(jsonObject, ClassWithMap.class);
 
         assertThat(classWithMap.properties.get("firstname")).isEqualTo("Darth");
@@ -266,14 +269,14 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithPrivateConstructor() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "Darth Vader");
+        JsonObject jsonObject = new JsonObject().put("name", "Darth Vader");
         ClassWithPrivateConstructor privateConstr = PojoMapper.map(jsonObject, ClassWithPrivateConstructor.class);
         assertThat(privateConstr.name).isEqualTo("Darth Vader");
     }
 
     @Test
     public void shouldConvertTextToNumberIfNessesary() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("text", "Darth Vader").put("number", "42");
+        JsonObject jsonObject = new JsonObject().put("text", "Darth Vader").put("number", "42");
         ClassWithDifferentTypes classWithDifferentTypes = PojoMapper.map(jsonObject, ClassWithDifferentTypes.class);
         assertThat(classWithDifferentTypes.number).isEqualTo(42);
 
@@ -281,10 +284,8 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassWithEmbeddedMap() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("names",
-                        JsonFactory.jsonObject()
-                                .put("darth", JsonFactory.jsonObject().put("name", "Darth Vader")));
+        JsonObject jsonObject = new JsonObject()
+                .put("names", new JsonObject().put("darth", new JsonObject().put("name", "Darth Vader")));
         ClassWithEmbeddedMap withEmbeddedMap = PojoMapper.map(jsonObject, ClassWithEmbeddedMap.class);
         assertThat(withEmbeddedMap.names.get("darth").name).isEqualTo("Darth Vader");
 
@@ -352,41 +353,44 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleOptionalField() {
-        ClassWithOptional classWithOptional = PojoMapper.map(JsonFactory.jsonObject(), ClassWithOptional.class);
+        ClassWithOptional classWithOptional = PojoMapper.map(new JsonObject(), ClassWithOptional.class);
         assertThat(classWithOptional.optStr).isNull();
 
-        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr",new JsonNull()), ClassWithOptional.class);
+        classWithOptional = PojoMapper.map(new JsonObject().put("optStr",new JsonNull()), ClassWithOptional.class);
         assertThat(classWithOptional.optStr).isEmpty();
 
-        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptional.class);
+        classWithOptional = PojoMapper.map(new JsonObject().put("optStr","abc"), ClassWithOptional.class);
         assertThat(classWithOptional.optStr).isPresent().contains("abc");
 
     }
 
     @Test
     public void shouldHandleOptionalProperty() {
-        ClassWithOptionalProperty classWithOptional = PojoMapper.map(JsonFactory.jsonObject(), ClassWithOptionalProperty.class);
-        assertThat(classWithOptional.getOptStr()).isNull();
-
-        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr",new JsonNull()), ClassWithOptionalProperty.class);
+        ClassWithOptionalProperty classWithOptional = PojoMapper.map(new JsonObject(), ClassWithOptionalProperty.class);
         assertThat(classWithOptional.getOptStr().isPresent()).isFalse();
 
-        classWithOptional = PojoMapper.map(JsonFactory.jsonObject().put("optStr","abc"), ClassWithOptionalProperty.class);
+        classWithOptional = PojoMapper.map(new JsonObject().put("optStr",new JsonNull()), ClassWithOptionalProperty.class);
+        assertThat(classWithOptional.getOptStr().isPresent()).isFalse();
+
+        classWithOptional = PojoMapper.map(new JsonObject().put("optStr", null), ClassWithOptionalProperty.class);
+        assertThat(classWithOptional.getOptStr().isPresent()).isFalse();
+
+        classWithOptional = PojoMapper.map(new JsonObject().put("optStr","abc"), ClassWithOptionalProperty.class);
         assertThat(classWithOptional.getOptStr()).isPresent().contains("abc");
     }
 
     @Test
     public void shouldHandleIntegerToFloatingPointConversion() {
-        ClassWithNumbers classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("floatValue", 17), ClassWithNumbers.class);
+        ClassWithNumbers classWithNumbers = PojoMapper.map(new JsonObject().put("floatValue", 17), ClassWithNumbers.class);
         assertThat(classWithNumbers.getFloatValue()).isEqualTo(17.0f);
 
-        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("floatValue", 17L), ClassWithNumbers.class);
+        classWithNumbers = PojoMapper.map(new JsonObject().put("floatValue", 17L), ClassWithNumbers.class);
         assertThat(classWithNumbers.getFloatValue()).isEqualTo(17.0f);
 
-        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("doubleValue", 89), ClassWithNumbers.class);
+        classWithNumbers = PojoMapper.map(new JsonObject().put("doubleValue", 89), ClassWithNumbers.class);
         assertThat(classWithNumbers.getDoubleValue()).isEqualTo(89.0);
 
-        classWithNumbers = PojoMapper.map(JsonFactory.jsonObject().put("doubleValue", 89L), ClassWithNumbers.class);
+        classWithNumbers = PojoMapper.map(new JsonObject().put("doubleValue", 89L), ClassWithNumbers.class);
         assertThat(classWithNumbers.getDoubleValue()).isEqualTo(89.0);
     }
 
@@ -394,7 +398,7 @@ public class PojoMapperTest {
     public void shouldHandleListWithNulls() {
         List<String> withNull = Arrays.asList("one",null,"two");
         JsonArray arr = JsonArray.fromStringList(withNull);
-        JsonObject jsonObject = JsonFactory.jsonObject().put("name", "darth").put("children", arr);
+        JsonObject jsonObject = new JsonObject().put("name", "darth").put("children", arr);
         ClassWithList classWithList = PojoMapper.map(jsonObject, ClassWithList.class);
         assertThat(classWithList.children.get(1)).isNull();
     }
@@ -408,8 +412,8 @@ public class PojoMapperTest {
     @Test
     public void shouldHandleListOfOverriddenValues() {
         JsonArray jsonArray = JsonFactory.jsonArray()
-                .add(JsonFactory.jsonObject())
-                .add(JsonFactory.jsonObject());
+                .add(new JsonObject())
+                .add(new JsonObject());
 
         List<ClassWithAnnotation> result = PojoMapper.map(jsonArray, ClassWithAnnotation.class);
         assertThat(result).hasSize(2);
@@ -439,7 +443,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleCombined() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("name", "Darth Vader")
                 .put("myHack",JsonFactory.jsonArray().add("Hola"));
         CombinedClassWithAnnotation combinedClassWithAnnotation = PojoMapper.map(jsonObject, CombinedClassWithAnnotation.class);
@@ -449,10 +453,10 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassContainingAnnotated() {
-        JsonObject obj = JsonFactory.jsonObject().put("annonlist",
+        JsonObject obj = new JsonObject().put("annonlist",
                 JsonFactory.jsonArray()
-                        .add(JsonFactory.jsonObject().put("value", "one"))
-                        .add(JsonFactory.jsonObject().put("value", "two")));
+                        .add(new JsonObject().put("value", "one"))
+                        .add(new JsonObject().put("value", "two")));
         ClassContainingAnnotated containingAnnotated = PojoMapper.map(obj, ClassContainingAnnotated.class);
         List<ClassWithPojoOverride> result = containingAnnotated.annonlist;
         assertThat(result).hasSize(2);
@@ -463,10 +467,10 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleClassContainingMethodAnnotated() {
-        JsonObject obj = JsonFactory.jsonObject().put("annonlist",
+        JsonObject obj = new JsonObject().put("annonlist",
                 JsonFactory.jsonArray()
-                        .add(JsonFactory.jsonObject().put("value", "one"))
-                        .add(JsonFactory.jsonObject().put("value", "two")));
+                        .add(new JsonObject().put("value", "one"))
+                        .add(new JsonObject().put("value", "two")));
         ClassContainingOverriddenAsSetter containingAnnotated = PojoMapper.map(obj, ClassContainingOverriddenAsSetter.class);
         List<ClassWithPojoOverride> result = containingAnnotated.getAnnonlist();
         assertThat(result).hasSize(2);
@@ -476,7 +480,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleBigNumbers() {
-        JsonObject obj = JsonFactory.jsonObject()
+        JsonObject obj = new JsonObject()
                 .put("oneBigInt", 42L)
                 .put("oneBigDec", 3.14d);
         ClassWithBigNumbers classWithBigNumbers = PojoMapper.map(obj, ClassWithBigNumbers.class);
@@ -487,7 +491,7 @@ public class PojoMapperTest {
 
     @Test
     public void shouldParseToInterface() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
+        JsonObject jsonObject = new JsonObject().put("publicvalue", "A public value");
         InterfaceWithMethod interfaceWithMethod = PojoMapper.map(jsonObject, InterfaceWithMethod.class, new DynamicInterfaceMapper());
         assertThat(interfaceWithMethod).isNotNull();
         assertThat(interfaceWithMethod.getPublicvalue()).isEqualTo("A public value");
@@ -495,23 +499,23 @@ public class PojoMapperTest {
 
     @Test
     public void shouldNotHandleInterfacesWithoiyMapOption() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("publicvalue", "A public value");
+        JsonObject jsonObject = new JsonObject().put("publicvalue", "A public value");
         assertThatThrownBy(() -> PojoMapper.map(jsonObject, InterfaceWithMethod.class))
             .isInstanceOf(CanNotMapException.class);
     }
 
     @Test
     public void shouldHandleInterfacesAsFields() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("myInterface", JsonFactory.jsonObject().put("publicvalue", "A public value"));
+        JsonObject jsonObject = new JsonObject()
+                .put("myInterface", new JsonObject().put("publicvalue", "A public value"));
         ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,new DynamicInterfaceMapper());
         assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isEqualTo("A public value");
     }
 
     @Test
     public void shoudHandleNullValues() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("myInterface", JsonFactory.jsonObject().put("publicvalue", null));
+        JsonObject jsonObject = new JsonObject()
+                .put("myInterface", new JsonObject().put("publicvalue", null));
         ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,new DynamicInterfaceMapper());
         assertThat(classWithGetterInterface.getMyInterface()).isNotNull();
         assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isNull();
@@ -519,8 +523,8 @@ public class PojoMapperTest {
 
     @Test
     public void shoulHandleAbsentValues() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
-                .put("myInterface", JsonFactory.jsonObject());
+        JsonObject jsonObject = new JsonObject()
+                .put("myInterface", new JsonObject());
         ClassWithGetterInterface classWithGetterInterface = PojoMapper.map(jsonObject, ClassWithGetterInterface.class,DynamicInterfaceMapper.mapperThatMapsAllGetters());
         assertThat(classWithGetterInterface.getMyInterface()).isNotNull();
         assertThat(classWithGetterInterface.getMyInterface().getPublicvalue()).isNull();
@@ -528,8 +532,8 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleInterfaceInLists() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("myList", JsonArray.fromNodeList(Collections.singletonList(
-                JsonFactory.jsonObject().put("publicvalue", "A public value")
+        JsonObject jsonObject = new JsonObject().put("myList", JsonArray.fromNodeList(Collections.singletonList(
+                new JsonObject().put("publicvalue", "A public value")
         )));
 
         ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class,new DynamicInterfaceMapper());
@@ -539,24 +543,24 @@ public class PojoMapperTest {
 
     @Test
     public void shouldHandleInterfaceInMaps() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("myMap", JsonFactory.jsonObject().put("intkey",
-                JsonFactory.jsonObject().put("publicvalue", "A public value")));
+        JsonObject jsonObject = new JsonObject().put("myMap", new JsonObject().put("intkey",
+                new JsonObject().put("publicvalue", "A public value")));
         ClassWithInterfaceListAndMapMethods result = PojoMapper.map(jsonObject, ClassWithInterfaceListAndMapMethods.class, new DynamicInterfaceMapper());
         assertThat(result.getMyMap().get("intkey").getPublicvalue()).isEqualTo("A public value");
     }
 
     @Test
     public void shouldHandleInputWithSingleCharKey() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("", "dsfds");
+        JsonObject jsonObject = new JsonObject().put("", "dsfds");
         SimpleWithName simpleWithName = PojoMapper.map(jsonObject, SimpleWithName.class);
         assertThat(simpleWithName.name).isNull();
     }
 
     @Test
     public void shouldMapToFieldOfSetOfNumbers() {
-        JsonObject jsonObject = JsonFactory.jsonObject()
+        JsonObject jsonObject = new JsonObject()
                 .put("numberSet", JsonFactory.jsonArray().add(1).add(2).add(3))
-                .put("mapOfSetOfString", JsonFactory.jsonObject()
+                .put("mapOfSetOfString", new JsonObject()
                         .put("first", JsonFactory.jsonArray().add("4").add("5").add("6")));
         ClassWithNumberSet o = PojoMapper.map(jsonObject, ClassWithNumberSet.class);
         assertThat(o.numberSet).containsOnly(1L, 2L, 3L);
@@ -565,7 +569,7 @@ public class PojoMapperTest {
 
     @Test
     public void shoulHandleBothInterfaceAndEnum() {
-        JsonObject jsonObject = JsonFactory.jsonObject().put("name","Darth").put("enumNumber",EnumClass.THREE.toString());
+        JsonObject jsonObject = new JsonObject().put("name","Darth").put("enumNumber",EnumClass.THREE.toString());
         InterfaceWithEnum interfaceWithEnum = PojoMapper.map(jsonObject, InterfaceWithEnum.class, new DynamicInterfaceMapper(), new EnumMapper());
         assertThat(interfaceWithEnum.getName()).isEqualTo("Darth");
         assertThat(interfaceWithEnum.getEnumNumber()).isEqualTo(EnumClass.THREE);
@@ -645,16 +649,45 @@ public class PojoMapperTest {
     @Test
     public void shouldReturnArrayForArray() {
         JsonArray array = new JsonArray().add("one").add("two");
-        assertThat((Object)PojoMapper.create().mapToPojo(array, JsonArray.class, String.class)).isEqualTo(array);
+        assertThat((Object)PojoMapper.create().mapArrayToPojo(array, JsonArray.class, String.class)).isEqualTo(array);
         assertThat((Object)PojoMapper.mapType(array, JsonArray.class)).isEqualTo(array);
     }
 
     @Test
     public void shouldThrowOnUnsupportedCollectionType() {
         JsonArray array = new JsonArray().add("one").add("two");
-        assertThatThrownBy(() -> PojoMapper.create().mapToPojo(array, ArrayList.class, String.class))
+        assertThatThrownBy(() -> PojoMapper.create().mapArrayToPojo(array, ArrayList.class, String.class))
             .isInstanceOf(CanNotMapException.class)
             .hasMessageContaining(ArrayList.class.getName());
+    }
+    
+    @Test
+    public void shouldReturnOptionalValues() throws NoSuchMethodException {
+        Type optionalString = ClassWithOptionalProperty.class.getMethod("getOptStr").getGenericReturnType();
+        Object value = PojoMapper.create().mapToPojo(new JsonString("test"), optionalString);
+        assertThat(value).isEqualTo(Optional.of("test"));
+        Object jsonNull = PojoMapper.create().mapToPojo(new JsonNull(), optionalString);
+        assertThat(jsonNull).isEqualTo(Optional.empty());
+        Object javaNull = PojoMapper.create().mapToPojo(null, optionalString);
+        assertThat(javaNull).isEqualTo(Optional.empty());
+    }
+    
+    @Test
+    public void shouldReturnOptionalObjects() throws NoSuchMethodException {
+        Type optionalObject = getClass().getMethod("optionalFactory").getGenericReturnType();
+        Object value = PojoMapper.create().mapToPojo(new JsonObject().put("name", "Darth Vader"), optionalObject);
+        assertThat(value).usingRecursiveComparison().isEqualTo(Optional.of(new SimpleWithName("Darth Vader")));
+        Object jsonNull = PojoMapper.create().mapToPojo(new JsonNull(), optionalObject);
+        assertThat(jsonNull).isEqualTo(Optional.empty());
+        Object javaNull = PojoMapper.create().mapToPojo(null, optionalObject);
+        assertThat(javaNull).isEqualTo(Optional.empty());
+    }
+    
+    @Test
+    public void shouldReturnNulls() {
+        assertThat(PojoMapper.create().<String>mapToPojo(new JsonString("test"), String.class)).isEqualTo("test");
+        assertThat(PojoMapper.create().<String>mapToPojo(new JsonNull(), String.class)).isNull();
+        assertThat(PojoMapper.create().<String>mapToPojo(null, String.class)).isNull();
     }
 
     public List<SimpleWithName> listFactory() {
@@ -667,6 +700,10 @@ public class PojoMapperTest {
 
     public Map<String, SimpleWithName> mapFactory() {
         return null;
+    }
+    
+    public Optional<SimpleWithName> optionalFactory() { 
+        return Optional.empty();
     }
 
 
