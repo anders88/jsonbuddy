@@ -213,6 +213,7 @@ Version | Description
 0.15    | Better support for reading and writing to the network, e.g. `JsonObject.parse(HttpURLConnection)`. Bugfix on parsing `"[  ]"`
 0.16    | Bugfix
 0.17    | More flexible generation and mapping with POJOs. Automatically map to any parametrized type with PojoMapper#mapToType. Customize mapping and generation work JsonGenerator#addConverter, PojoMapper#addStringConverter and PojoMapper#addNumberConverter
+0.18    | Underscore serialization support, Include properties from superclass, Support for Optional types, Error handling for mapping of List and Maps
 
 
 # Licence
