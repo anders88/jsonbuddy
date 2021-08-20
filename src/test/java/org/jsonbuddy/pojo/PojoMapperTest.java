@@ -32,6 +32,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithPojoOverride;
 import org.jsonbuddy.pojo.testclasses.ClassWithPrimitiveValues;
 import org.jsonbuddy.pojo.testclasses.ClassWithPrivateConstructor;
 import org.jsonbuddy.pojo.testclasses.ClassWithTime;
+import org.jsonbuddy.pojo.testclasses.ClassWithUnderscore;
 import org.jsonbuddy.pojo.testclasses.CombinedClass;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithAnnotation;
 import org.jsonbuddy.pojo.testclasses.CombinedClassWithSetter;
@@ -90,6 +91,13 @@ public class PojoMapperTest {
         JsonObject jsonObject = new JsonObject().put("full_name", "Darth Vader");
         SimpleWithNameGetter result = PojoMapper.map(jsonObject, SimpleWithNameGetter.class);
         assertThat(result.getFullName()).isEqualTo("Darth Vader");
+    }
+
+    @Test
+    public void shouldHandleFieldNameWithUnderscore() {
+        JsonObject jsonObject = new JsonObject().put("access_token", "something");
+        ClassWithUnderscore classWithUnderscore = PojoMapper.map(jsonObject, ClassWithUnderscore.class);
+        assertThat(classWithUnderscore.getAccess_token()).isEqualTo("something");
     }
 
     @Test

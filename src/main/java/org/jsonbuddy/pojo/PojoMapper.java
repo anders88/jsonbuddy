@@ -297,10 +297,16 @@ public class PojoMapper {
     protected void writeFields(Object result, JsonObject jsonObject, Class<?> clazz) {
         for (String key : jsonObject.keys()) {
             try {
-                if (tryToSetField(clazz, result, key, jsonObject)) {
+                if (tryToSetField(clazz, result, fieldName(key), jsonObject.requiredValue(key))) {
                     continue;
                 }
-                if (tryToSetProperty(clazz, result, key, jsonObject)) {
+                if (tryToSetField(clazz, result, key, jsonObject.requiredValue(key))) {
+                    continue;
+                }
+                if (tryToSetProperty(clazz, result, fieldName(key), jsonObject.requiredValue(key))) {
+                    continue;
+                }
+                if (tryToSetProperty(clazz, result, key, jsonObject.requiredValue(key))) {
                     continue;
                 }
             } catch (CanNotMapException e) {
@@ -313,29 +319,28 @@ public class PojoMapper {
         }
     }
 
-    protected boolean tryToSetField(Class<?> clazz, Object instance, String key, JsonObject jsonObject) throws Exception {
+    protected boolean tryToSetField(Class<?> clazz, Object instance, String fieldName, JsonNode value) throws Exception {
         Field declaredField;
         try {
-            declaredField = clazz.getDeclaredField(fieldName(key));
+            declaredField = clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
             return false;
         }
-        Object value = mapValue(jsonObject.requiredValue(key), declaredField.getGenericType());
         declaredField.setAccessible(true);
-        declaredField.set(instance, value);
+        declaredField.set(instance, mapValue(value, declaredField.getGenericType()));
         declaredField.setAccessible(false);
         return true;
     }
 
-    protected boolean tryToSetProperty(Class<?> clazz, Object instance, String key, JsonObject jsonObject) throws Exception {
-        String setterName = setterName(key);
+    protected boolean tryToSetProperty(Class<?> clazz, Object instance, String fieldName, JsonNode value) throws Exception {
+        String setterName = setterName(fieldName);
         Optional<Method> setter = Arrays.stream(clazz.getMethods())
                 .filter(met -> setterName.equals(met.getName()) && met.getParameterCount() == 1)
                 .findAny();
         if (!setter.isPresent()) {
             return false;
         }
-        setter.get().invoke(instance, mapValue(jsonObject.requiredValue(key), setter.get().getGenericParameterTypes()[0]));
+        setter.get().invoke(instance, mapValue(value, setter.get().getGenericParameterTypes()[0]));
         return true;
     }
 
@@ -353,9 +358,8 @@ public class PojoMapper {
         return null;
     }
 
-    protected String setterName(String key) {
-        String fieldName = fieldName(key);
-        return "set" + (key.length() > 0 ? Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1) : "");
+    protected String setterName(String fieldName) {
+        return "set" + (fieldName.length() > 0 ? Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1) : "");
     }
 
     protected String fieldName(String key) {
