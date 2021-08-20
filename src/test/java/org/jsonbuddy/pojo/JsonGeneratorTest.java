@@ -369,4 +369,17 @@ public class JsonGeneratorTest {
         assertThat(new JsonGenerator().generateNode(object))
                 .isEqualTo(new JsonObject().put("type", "some type").put("name", "some name"));
     }
+
+    @Test
+    public void optionalEmptyShouldReturnJsonNull() {
+        assertThat(new JsonGenerator().generateNode(Optional.empty())).isEqualTo(new JsonNull());
+    }
+    
+    @Test
+    public void optionalPresentShouldReturnObject() {
+        assertThat(new JsonGenerator().generateNode(Optional.of(
+                new SimpleWithName("Darth Vader")
+        ))).isEqualTo(new JsonObject().put("name", "Darth Vader"));
+    }
+    
 }

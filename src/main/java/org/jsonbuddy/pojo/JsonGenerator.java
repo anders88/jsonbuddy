@@ -41,11 +41,11 @@ public class JsonGenerator {
     private final boolean useDeclaringClassAsTemplate;
     private Function<String, String> nameTransformer = Function.identity();
 
-    protected JsonGenerator(boolean useDeclaringClassAsTemplate) {
+    public JsonGenerator(boolean useDeclaringClassAsTemplate) {
         this.useDeclaringClassAsTemplate = useDeclaringClassAsTemplate;
     }
 
-    protected JsonGenerator() {
+    public JsonGenerator() {
         this(true);
     }
 
