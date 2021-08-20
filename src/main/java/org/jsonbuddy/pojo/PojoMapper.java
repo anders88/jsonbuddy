@@ -194,6 +194,9 @@ public class PojoMapper {
         if (jsonNode == null || clazz.isAssignableFrom(jsonNode.getClass())) {
             return jsonNode;
         }
+        if (jsonNode instanceof JsonNull) {
+            return null;
+        }
         if (Map.class.isAssignableFrom(clazz)) {
             if (!(jsonNode instanceof JsonObject)) {
                 throw new CanNotMapException("Cannot map " + jsonNode.getClass().getSimpleName() + " to " + clazz);

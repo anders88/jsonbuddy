@@ -20,6 +20,7 @@ import org.jsonbuddy.pojo.testclasses.ClassWithGetterInterface;
 import org.jsonbuddy.pojo.testclasses.ClassWithInterfaceListAndMapMethods;
 import org.jsonbuddy.pojo.testclasses.ClassWithJdkValueTypes;
 import org.jsonbuddy.pojo.testclasses.ClassWithJsonElements;
+import org.jsonbuddy.pojo.testclasses.ClassWithJsonProperty;
 import org.jsonbuddy.pojo.testclasses.ClassWithList;
 import org.jsonbuddy.pojo.testclasses.ClassWithMap;
 import org.jsonbuddy.pojo.testclasses.ClassWithMapWithList;
@@ -688,6 +689,29 @@ public class PojoMapperTest {
         assertThat(PojoMapper.create().<String>mapToPojo(new JsonNull(), String.class)).isNull();
         assertThat(PojoMapper.create().<String>mapToPojo(null, String.class)).isNull();
     }
+    
+    @Test
+    public void shouldSupportNullCollections() {
+        ClassWithList object = new ClassWithList("name", null);
+        assertThat(
+                PojoMapper.map((JsonObject)JsonGenerator.generate(object), ClassWithList.class).children
+        ).isNull();
+    }
+    
+    @Test
+    public void shouldSupportPojosWithJsonBuddyFields() {
+        ClassWithJsonProperty object = new ClassWithJsonProperty();
+        object.setJsonNode(new JsonString("hello"));
+        assertThat(
+                PojoMapper.map((JsonObject)JsonGenerator.generate(object), ClassWithJsonProperty.class).getJsonNode()
+        ).isEqualTo(new JsonString("hello"));
+        
+        object.setJsonNode(new JsonNull());
+        assertThat(
+                PojoMapper.map((JsonObject)JsonGenerator.generate(object), ClassWithJsonProperty.class).getJsonNode()
+        ).isInstanceOf(JsonNull.class);
+    }
+    
 
     public List<SimpleWithName> listFactory() {
         return null;
